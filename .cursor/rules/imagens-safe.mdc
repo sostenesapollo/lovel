@@ -1,0 +1,40 @@
+---
+description: Sempre usar SafeImage para URLs de produto/categoria — evita imagem quebrada
+globs: **/*.{tsx,ts,jsx,js}
+alwaysApply: true
+---
+
+# Imagens — nunca deixar URL quebrada no site
+
+Qualquer imagem de **produto, categoria, hero, carrinho, checkout ou conteúdo do admin** deve usar `SafeImage`. URLs do R2/CDN falham; `<Image>` / `<img>` crus mostram ícone quebrado.
+
+## Obrigatório
+
+```tsx
+import { SafeImage } from "@/components/safe-image";
+import { PRODUCT_PLACEHOLDER } from "@/lib/constants";
+
+// ✅ GOOD — fallback automático se src vazio ou onError
+<SafeImage src={product.image} alt={product.name} width={400} height={400} unoptimized />
+
+// ❌ BAD — quebra quando a URL do R2/CDN falha
+<Image src={product.image} alt={product.name} width={400} height={400} />
+<img src={product.image} alt={product.name} />
+```
+
+- Componente: `src/components/safe-image.tsx`
+- Placeholder: `PRODUCT_PLACEHOLDER` (`/product-placeholder.svg`) em `src/lib/constants.ts`
+- URLs externas (R2): preferir `unoptimized` (padrão já usado no catálogo)
+
+## Exceções (podem usar `next/image` ou `<img>` sem SafeImage)
+
+- Logo estático `/icone.jpg`
+- Assets locais fixos (`/oops.gif`, etc.)
+- QR PIX / e-mail HTML (`data:` / `cid:`)
+
+## Ao criar ou editar UI com imagem
+
+1. Usar `SafeImage` desde o primeiro commit da tela.
+2. Não renderizar `src=""` — `SafeImage` já troca por placeholder.
+3. Em animações DOM (`createElement("img")`), setar `onerror` → `PRODUCT_PLACEHOLDER` (ver `fly-to-cart.ts`).
+4. Não usar `background-image: url(...)` com URL de produto sem fallback visual.

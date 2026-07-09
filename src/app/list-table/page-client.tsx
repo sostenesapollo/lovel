@@ -436,6 +436,11 @@ export default function ListTablePage() {
   const [r2Configured, setR2Configured] = useState(false);
   const [productSearch, setProductSearch] = useState("");
   const [productCategoryFilter, setProductCategoryFilter] = useState("");
+  const [productDropActive, setProductDropActive] = useState(false);
+  const [categoryDropActive, setCategoryDropActive] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const productDragDepth = useRef(0);
+  const categoryDragDepth = useRef(0);
 
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -525,6 +530,7 @@ export default function ListTablePage() {
   const loadAll = useCallback(async () => {
     if (!token) return;
     const h = headers();
+    setLoadError(false);
     try {
       const responses = await Promise.all([
         fetch("/api/admin/stats", { headers: h, credentials: "same-origin" }),
@@ -543,7 +549,14 @@ export default function ListTablePage() {
         localStorage.removeItem(ADMIN_TOKEN_KEY);
         await fetch("/api/admin/session", { method: "DELETE", credentials: "same-origin" }).catch(() => null);
         setToken(null);
+        setLoadError(false);
         toast("Sessão expirada. Entre novamente.");
+        return;
+      }
+
+      if (responses.some((r) => !r.ok)) {
+        setLoadError(true);
+        toast("Falha ao carregar dados do admin.");
         return;
       }
 
@@ -568,7 +581,9 @@ export default function ListTablePage() {
       setHeroProductIds(Array.isArray(hero?.productIds) ? hero.productIds : []);
       setR2Configured(Boolean(r2?.configured));
       setEmailLogs(Array.isArray(logs) ? logs : []);
+      setLoadError(false);
     } catch {
+      setLoadError(true);
       toast("Falha ao carregar dados do admin.");
     }
   }, [token, headers, toast]);
@@ -903,6 +918,87 @@ export default function ListTablePage() {
       const images = [...f.images, url];
       return { ...f, images, image: images[0] ?? url };
     });
+  }
+
+  async function appendProductImages(files: FileList | File[]) {
+    const images = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    for (const file of images) {
+      await appendProductImage(file);
+    }
+  }
+
+  function resetProductDrop() {
+    productDragDepth.current = 0;
+    setProductDropActive(false);
+  }
+
+  function resetCategoryDrop() {
+    categoryDragDepth.current = 0;
+    setCategoryDropActive(false);
+  }
+
+  function onProductDragEnter(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (![...e.dataTransfer.types].includes("Files")) return;
+    productDragDepth.current += 1;
+    setProductDropActive(true);
+  }
+
+  function onProductDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    productDragDepth.current = Math.max(0, productDragDepth.current - 1);
+    if (productDragDepth.current === 0) setProductDropActive(false);
+  }
+
+  function onProductDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if ([...e.dataTransfer.types].includes("Files")) {
+      e.dataTransfer.dropEffect = "copy";
+    }
+  }
+
+  async function onProductDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    resetProductDrop();
+    if (uploading) return;
+    const files = e.dataTransfer.files;
+    if (files?.length) await appendProductImages(files);
+  }
+
+  function onCategoryDragEnter(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (![...e.dataTransfer.types].includes("Files")) return;
+    categoryDragDepth.current += 1;
+    setCategoryDropActive(true);
+  }
+
+  function onCategoryDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    categoryDragDepth.current = Math.max(0, categoryDragDepth.current - 1);
+    if (categoryDragDepth.current === 0) setCategoryDropActive(false);
+  }
+
+  function onCategoryDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if ([...e.dataTransfer.types].includes("Files")) {
+      e.dataTransfer.dropEffect = "copy";
+    }
+  }
+
+  async function onCategoryDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    resetCategoryDrop();
+    if (uploading) return;
+    const file = Array.from(e.dataTransfer.files).find((f) => f.type.startsWith("image/"));
+    if (file) await appendCategoryImage(file);
   }
 
   function removeProductImage(index: number) {
@@ -1357,6 +1453,8 @@ export default function ListTablePage() {
       /* ignore */
     }
     localStorage.removeItem(ADMIN_TOKEN_KEY);
+    setLoadError(false);
+    setMsg("");
     setToken(null);
   }
 
@@ -1383,7 +1481,7 @@ export default function ListTablePage() {
           <Link href="/" className="btn btn--outline btn--sm">
             Loja
           </Link>
-          <button type="button" className="btn btn--outline btn--sm" onClick={logout}>
+          <button type="button" className="btn btn--sm btn--logout" onClick={logout}>
             Sair
           </button>
         </div>
@@ -1391,14 +1489,41 @@ export default function ListTablePage() {
 
       {msg && (
         <div className="admin-toast">
-          {msg}{" "}
-          <button type="button" onClick={() => setMsg("")}>
-            ×
-          </button>
+          <span>{msg}</span>
+          <div className="admin-toast__actions">
+            {loadError && (
+              <button type="button" className="btn btn--outline btn--sm" onClick={logout}>
+                Sair
+              </button>
+            )}
+            <button type="button" onClick={() => setMsg("")} aria-label="Fechar">
+              ×
+            </button>
+          </div>
         </div>
       )}
 
       <main className="admin-main container">
+        {loadError && (
+          <div className="admin-load-error">
+            <h2>Não foi possível carregar o admin</h2>
+            <p>
+              Os dados não vieram do servidor. Você pode tentar de novo ou sair e entrar com outra
+              chave.
+            </p>
+            <div className="admin-load-error__actions">
+              <button type="button" className="btn btn--gold btn--sm" onClick={() => loadAll()}>
+                Tentar de novo
+              </button>
+              <button type="button" className="btn btn--outline btn--sm" onClick={logout}>
+                Sair
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!loadError && (
+          <>
         {tab === "dashboard" && stats && (
           <div className="admin-stats">
             <div className="admin-stat">
@@ -1455,17 +1580,13 @@ export default function ListTablePage() {
               </label>
               <label className="form-field admin-product-filters__category">
                 <span>Categoria</span>
-                <select
+                <AutocompleteSelect
                   value={productCategoryFilter}
-                  onChange={(e) => setProductCategoryFilter(e.target.value)}
-                >
-                  <option value="">Todas</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.slug}>
-                      {c.title}
-                    </option>
-                  ))}
-                </select>
+                  options={categories.map((c) => ({ value: c.slug, label: c.title }))}
+                  onChange={setProductCategoryFilter}
+                  placeholder="Todas as categorias"
+                  allowClear
+                />
               </label>
             </div>
             <div className="admin-table-wrap">
@@ -1673,11 +1794,7 @@ export default function ListTablePage() {
                   {pagedCategories.map((c) => (
                     <tr key={c.id}>
                       <td>
-                        {c.image ? (
-                          <SafeImage src={c.image} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
-                        ) : (
-                          <span style={{ color: "var(--color-muted)" }}>—</span>
-                        )}
+                        <SafeImage src={c.image} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
                       </td>
                       <td>{c.title}</td>
                       <td>{c.slug}</td>
@@ -2078,18 +2195,14 @@ export default function ListTablePage() {
                 {heroSlides.map((p, i) => (
                   <li key={p.id} className="admin-hero-list__item">
                     <span className="admin-hero-list__order">{i + 1}</span>
-                    {p.image ? (
-                      <SafeImage
-                        src={p.image}
-                        alt=""
-                        width={48}
-                        height={48}
-                        className="admin-hero-list__thumb"
-                        unoptimized
-                      />
-                    ) : (
-                      <span className="admin-hero-list__thumb admin-hero-list__thumb--empty" />
-                    )}
+                    <SafeImage
+                      src={p.image}
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="admin-hero-list__thumb"
+                      unoptimized
+                    />
                     <div className="admin-hero-list__meta">
                       <strong>{p.brand}</strong>
                       <span>{p.name}</span>
@@ -2204,6 +2317,8 @@ export default function ListTablePage() {
               ))}
             </div>
           </div>
+        )}
+          </>
         )}
       </main>
 
@@ -2506,21 +2621,39 @@ export default function ListTablePage() {
               ))}
 
               <p className="admin-section-title">Imagens</p>
-              <div className="admin-form-row">
-                <label className="admin-upload">
-                  {uploading ? "Enviando…" : "Upload R2 (append)"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    disabled={uploading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) appendProductImage(file);
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
+              <label
+                className={
+                  "admin-dropzone" + (productDropActive ? " admin-dropzone--active" : "")
+                }
+                onDragEnter={onProductDragEnter}
+                onDragLeave={onProductDragLeave}
+                onDragOver={onProductDragOver}
+                onDrop={onProductDrop}
+              >
+                <span className="admin-dropzone__label">
+                  {uploading
+                    ? "Enviando…"
+                    : productDropActive
+                      ? "Solte as fotos aqui"
+                      : "Arraste fotos ou clique para enviar"}
+                </span>
+                <span className="admin-dropzone__hint">
+                  PNG, JPG ou WebP — várias de uma vez
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  hidden
+                  disabled={uploading}
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files?.length) appendProductImages(files);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <div className="admin-form-row" style={{ marginTop: "0.75rem" }}>
                 <label className="form-field" style={{ flex: 1, minWidth: 180 }}>
                   <span>Ou cole URL</span>
                   <input
@@ -2659,24 +2792,48 @@ export default function ListTablePage() {
                   />
                   Mostrar na home
                 </label>
-                <label className="admin-upload">
-                  {uploading ? "Enviando…" : "Upload imagem R2"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    disabled={uploading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) appendCategoryImage(file);
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
-                {categoryForm.image && (
-                  <SafeImage src={categoryForm.image} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
-                )}
               </div>
+              <label
+                className={
+                  "admin-dropzone" + (categoryDropActive ? " admin-dropzone--active" : "")
+                }
+                onDragEnter={onCategoryDragEnter}
+                onDragLeave={onCategoryDragLeave}
+                onDragOver={onCategoryDragOver}
+                onDrop={onCategoryDrop}
+              >
+                <span className="admin-dropzone__label">
+                  {uploading
+                    ? "Enviando…"
+                    : categoryDropActive
+                      ? "Solte a foto aqui"
+                      : "Arraste uma foto ou clique para enviar"}
+                </span>
+                <span className="admin-dropzone__hint">PNG, JPG ou WebP</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  disabled={uploading}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) appendCategoryImage(file);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              {categoryForm.image && (
+                <div className="admin-form-row" style={{ marginTop: "0.75rem" }}>
+                  <SafeImage
+                    src={categoryForm.image}
+                    alt=""
+                    width={48}
+                    height={48}
+                    unoptimized
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              )}
 
               <p className="admin-section-title">Subcategorias</p>
               {categoryForm.subcategories.map((s, i) => (

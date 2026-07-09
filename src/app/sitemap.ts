@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
+import { prisma } from "@/lib/db";
 import { SEO_PAGES } from "@/lib/seo/catalog";
 import { getSiteUrl } from "@/lib/seo/site";
+import { productPath } from "@/lib/utils";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
   const now = new Date();
 
@@ -86,5 +88,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     };
   });
 
-  return [...staticRoutes, ...seoRoutes];
+  const products = await prisma.product.findMany({
+    where: { active: true },
+    select: { slug: true, updatedAt: true },
+  });
+
+  const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
+    url: `${base}${productPath(p)}`,
+    lastModified: p.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...seoRoutes, ...productRoutes];
 }
