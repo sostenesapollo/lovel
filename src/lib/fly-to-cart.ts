@@ -1,3 +1,5 @@
+import { PRODUCT_PLACEHOLDER } from "@/lib/constants";
+
 const CART_SELECTOR = ".header__cart";
 const FLY_DURATION_MS = 980;
 
@@ -65,7 +67,7 @@ export function flyToCart(source: Element | null, imageUrl?: string | null) {
   const startRect = startEl.getBoundingClientRect();
   const size = Math.min(88, Math.max(56, Math.min(startRect.width || 64, startRect.height || 64) * 0.48));
 
-  const src = imageUrl || imgEl?.currentSrc || imgEl?.src || "";
+  const src = imageUrl || imgEl?.currentSrc || imgEl?.src || PRODUCT_PLACEHOLDER;
 
   const flyer = document.createElement("div");
   flyer.className = "cart-flyer";
@@ -75,15 +77,16 @@ export function flyToCart(source: Element | null, imageUrl?: string | null) {
   flyer.style.left = `${start.x}px`;
   flyer.style.top = `${start.y}px`;
 
-  if (src) {
-    const img = document.createElement("img");
-    img.src = src;
-    img.alt = "";
-    img.draggable = false;
-    flyer.appendChild(img);
-  } else {
-    flyer.classList.add("cart-flyer--dot");
-  }
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = "";
+  img.draggable = false;
+  img.onerror = () => {
+    if (img.src.endsWith(PRODUCT_PLACEHOLDER)) return;
+    img.onerror = null;
+    img.src = PRODUCT_PLACEHOLDER;
+  };
+  flyer.appendChild(img);
 
   document.body.appendChild(flyer);
 

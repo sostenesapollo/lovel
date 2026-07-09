@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { createPixPayment, isMercadoPagoConfigured } from "@/lib/mercadopago";
 import { sendOrderStatusEmail } from "@/lib/order-emails";
 import { notifyNewOrder } from "@/lib/ntfy";
+import { ensureCustomerFromOrder } from "@/lib/password-reset";
+import { pixQrCodeBase64FromPayload } from "@/lib/pix-qr";
 
 const schema = z.object({
   customer: z.record(z.string(), z.unknown()),
@@ -54,6 +56,14 @@ export async function POST(request: Request) {
     pixCode = `00020126580014BR.GOV.BCB.PIX0136lovel@pagamentos.com.br52040000530398654${String(Math.round(body.data.total * 100)).padStart(6, "0")}5802BR5925LOVEL PERFUMARIA LTDA6009SAO PAULO62070503***6304ABCD`;
   }
 
+  if (pixCode && !pixQrCodeBase64) {
+    try {
+      pixQrCodeBase64 = await pixQrCodeBase64FromPayload(pixCode);
+    } catch (err) {
+      console.error("[orders] Failed to generate PIX QR image:", err);
+    }
+  }
+
   const order = await prisma.order.create({
     data: {
       id: orderId,
@@ -73,6 +83,14 @@ export async function POST(request: Request) {
       status: "pending_payment",
     },
   });
+
+  if (!user && email) {
+    void ensureCustomerFromOrder({
+      email,
+      name: customer.name,
+      orderId: order.id,
+    }).catch((err) => console.error("[orders] ensureCustomerFromOrder:", err));
+  }
 
   void sendOrderStatusEmail(order, "pending_payment");
   void notifyNewOrder(order);

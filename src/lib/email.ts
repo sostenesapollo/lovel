@@ -9,7 +9,7 @@ function getResend() {
 }
 
 function fromAddress() {
-  return process.env.RESEND_FROM || "LOVEL <noreply@lovel.com>";
+  return process.env.RESEND_FROM || "LOVEL <noreply@lovelessence.com>";
 }
 
 export function renderEmailHtml(body: string) {

@@ -9,7 +9,10 @@ export async function GET(request: NextRequest) {
   const launch = searchParams.get("launch");
   const featured = searchParams.get("featured");
 
-  let products = await prisma.product.findMany({ orderBy: { name: "asc" } });
+  let products = await prisma.product.findMany({
+    where: { active: true },
+    orderBy: { name: "asc" },
+  });
 
   if (tipo === "lancamentos") {
     products = products.filter((p) => p.isLaunch);

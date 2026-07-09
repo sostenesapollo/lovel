@@ -35,7 +35,7 @@ export async function saveHeroCarouselConfig(productIds: string[]) {
 /** Slides do carrossel da home: config do admin, ou fallback featured + lançamentos. */
 export async function getHeroSlides() {
   const config = await getHeroCarouselConfig();
-  const rows = await prisma.product.findMany();
+  const rows = await prisma.product.findMany({ where: { active: true } });
   const products = rows.map(parseProduct);
   const byId = new Map(products.map((p) => [p.id, p]));
 

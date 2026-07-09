@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { SafeImage } from "@/components/safe-image";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { useCart } from "@/context/cart-context";
 import {
@@ -88,6 +88,7 @@ export default function CheckoutPage() {
     pixQrCodeBase64?: string | null;
   } | null>(null);
   const [form, setForm] = useState<CheckoutForm>(EMPTY_FORM);
+  const [pixCopied, setPixCopied] = useState(false);
   const purchaseTracked = useRef(false);
   const shippingTracked = useRef(false);
 
@@ -260,26 +261,47 @@ export default function CheckoutPage() {
                   ? "Pagamento gerado. Conclua o PIX abaixo para confirmarmos seu pedido."
                   : "Recebemos seu pedido. Em breve você receberá atualizações por e-mail."}
               </p>
-              {success.pixQrCodeBase64 && (
-                <div className="pix-box">
-                  <p>Escaneie o QR Code PIX</p>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`data:image/png;base64,${success.pixQrCodeBase64}`}
-                    alt="QR Code PIX"
-                    width={220}
-                    height={220}
-                    style={{ margin: "1rem auto", display: "block" }}
-                  />
-                </div>
-              )}
               {success.pixCode && (
                 <div className="pix-box">
-                  <p>Ou copie o código PIX</p>
-                  <code style={{ wordBreak: "break-all" }}>{success.pixCode}</code>
+                  {success.pixQrCodeBase64 && (
+                    <div className="pix-box__qr">
+                      <p className="pix-box__label">Escaneie o QR Code PIX</p>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={
+                          success.pixQrCodeBase64.startsWith("data:")
+                            ? success.pixQrCodeBase64
+                            : `data:image/png;base64,${success.pixQrCodeBase64}`
+                        }
+                        alt="QR Code PIX"
+                        width={220}
+                        height={220}
+                        className="pix-box__img"
+                      />
+                    </div>
+                  )}
+                  <p className="pix-box__label">
+                    {success.pixQrCodeBase64 ? "Ou copie o código PIX" : "Copie o código PIX"}
+                  </p>
+                  <code className="pix-box__code">{success.pixCode}</code>
+                  <button
+                    type="button"
+                    className="btn btn--dark btn--full"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(success.pixCode!);
+                        setPixCopied(true);
+                        window.setTimeout(() => setPixCopied(false), 2000);
+                      } catch {
+                        setError("Não foi possível copiar. Selecione o código manualmente.");
+                      }
+                    }}
+                  >
+                    {pixCopied ? "Código copiado" : "Copiar código PIX"}
+                  </button>
                 </div>
               )}
-              <Link href="/conta" className="btn btn--dark btn--full">
+              <Link href="/conta" className="btn btn--outline btn--full">
                 Ver meus pedidos
               </Link>
             </div>
@@ -414,8 +436,8 @@ export default function CheckoutPage() {
                     );
                     return (
                       <div key={`${product.id}-${offer.variantIndex}`} className="order-bump__item">
-                        <Image
-                          src={product.image || "/product-placeholder.svg"}
+                        <SafeImage
+                          src={product.image}
                           alt={product.name}
                           width={72}
                           height={72}
@@ -432,7 +454,7 @@ export default function CheckoutPage() {
                         </div>
                         <button
                           type="button"
-                          className="btn btn--dark btn--sm"
+                          className="order-bump__add"
                           disabled={already}
                           onClick={() =>
                             add(product, offer.variantIndex, {
@@ -441,7 +463,7 @@ export default function CheckoutPage() {
                             })
                           }
                         >
-                          {already ? "Adicionado" : "Adicionar"}
+                          {already ? "No carrinho" : "Adicionar"}
                         </button>
                       </div>
                     );

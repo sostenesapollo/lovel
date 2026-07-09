@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AutocompleteSelect } from "@/components/autocomplete-select";
+import { SafeImage } from "@/components/safe-image";
 import { ADMIN_TOKEN_KEY, EMAIL_TEMPLATES } from "@/lib/constants";
 import { adminAuthHeaders } from "@/lib/admin-auth";
 import type { Product, ProductVariant, SafeUser } from "@/lib/types";
@@ -1327,7 +1328,7 @@ export default function ListTablePage() {
                             aria-label={`Editar ${p.name}`}
                           >
                             {thumb ? (
-                              <Image src={thumb} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
+                              <SafeImage src={thumb} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
                             ) : (
                               <span className="admin-thumb-edit__empty">+</span>
                             )}
@@ -1481,7 +1482,7 @@ export default function ListTablePage() {
                     <tr key={c.id}>
                       <td>
                         {c.image ? (
-                          <Image src={c.image} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
+                          <SafeImage src={c.image} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
                         ) : (
                           <span style={{ color: "var(--color-muted)" }}>—</span>
                         )}
@@ -1886,7 +1887,7 @@ export default function ListTablePage() {
                   <li key={p.id} className="admin-hero-list__item">
                     <span className="admin-hero-list__order">{i + 1}</span>
                     {p.image ? (
-                      <Image
+                      <SafeImage
                         src={p.image}
                         alt=""
                         width={48}
@@ -2304,7 +2305,7 @@ export default function ListTablePage() {
                         padding: "0.35rem",
                       }}
                     >
-                      <Image src={url} alt="" width={64} height={64} unoptimized style={{ objectFit: "cover" }} />
+                      <SafeImage src={url} alt="" width={64} height={64} unoptimized style={{ objectFit: "cover" }} />
                       <div className="admin-actions">
                         {i > 0 && (
                           <button type="button" className="btn btn--sm btn--outline" onClick={() => setPrimaryImage(i)}>
@@ -2420,7 +2421,7 @@ export default function ListTablePage() {
                   />
                 </label>
                 {categoryForm.image && (
-                  <Image src={categoryForm.image} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
+                  <SafeImage src={categoryForm.image} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
                 )}
               </div>
 

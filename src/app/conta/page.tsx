@@ -14,12 +14,16 @@ type Order = {
   createdAt: string;
 };
 
+type AuthMode = "login" | "register" | "forgot";
+
 export default function AccountPage() {
   const [user, setUser] = useState<SafeUser | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<AuthMode>("login");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [message, setMessage] = useState("");
+  const [messageOk, setMessageOk] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function loadSession() {
     const res = await fetch("/api/auth/me");
@@ -38,16 +42,34 @@ export default function AccountPage() {
   async function submitAuth(e: React.FormEvent) {
     e.preventDefault();
     setMessage("");
-    const res = await fetch("/api/auth/login", {
-      method: mode === "login" ? "POST" : "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    if (data.success) {
-      await loadSession();
-    } else {
-      setMessage(data.message);
+    setMessageOk(false);
+    setLoading(true);
+    try {
+      if (mode === "forgot") {
+        const res = await fetch("/api/auth/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: form.email }),
+        });
+        const data = await res.json();
+        setMessage(data.message);
+        setMessageOk(Boolean(data.success));
+        return;
+      }
+
+      const res = await fetch("/api/auth/login", {
+        method: mode === "login" ? "POST" : "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadSession();
+      } else {
+        setMessage(data.message);
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -57,6 +79,15 @@ export default function AccountPage() {
     setOrders([]);
   }
 
+  function switchMode(next: AuthMode) {
+    setMode(next);
+    setMessage("");
+    setMessageOk(false);
+  }
+
+  const title =
+    mode === "login" ? "Entrar" : mode === "register" ? "Criar conta" : "Definir senha";
+
   return (
     <>
       <SiteHeader />
@@ -64,8 +95,13 @@ export default function AccountPage() {
         <div className="container account-layout">
           {!user ? (
             <div className="auth-card">
-              <h1>{mode === "login" ? "Entrar" : "Criar conta"}</h1>
-              <form onSubmit={submitAuth}>
+              <h1>{title}</h1>
+              {mode === "forgot" && (
+                <p className="auth-message">
+                  Digite o e-mail da compra. Enviamos um link para criar ou redefinir sua senha.
+                </p>
+              )}
+              <form className="auth-form" onSubmit={submitAuth}>
                 {mode === "register" && (
                   <label className="form-field">
                     <span>Nome</span>
@@ -74,20 +110,61 @@ export default function AccountPage() {
                 )}
                 <label className="form-field">
                   <span>E-mail</span>
-                  <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                  <input
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  />
                 </label>
-                <label className="form-field">
-                  <span>Senha</span>
-                  <input type="password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-                </label>
-                {message && <p className="form-error">{message}</p>}
-                <button type="submit" className="btn btn--gold btn--full">
-                  {mode === "login" ? "Entrar" : "Cadastrar"}
+                {mode !== "forgot" && (
+                  <label className="form-field">
+                    <span>Senha</span>
+                    <input
+                      type="password"
+                      required
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    />
+                  </label>
+                )}
+                {message && (
+                  <p className={messageOk ? "auth-message auth-message--success" : "form-error"}>
+                    {message}
+                  </p>
+                )}
+                <button type="submit" className="btn btn--gold btn--full" disabled={loading}>
+                  {loading
+                    ? "Aguarde…"
+                    : mode === "login"
+                      ? "Entrar"
+                      : mode === "register"
+                        ? "Cadastrar"
+                        : "Enviar link"}
                 </button>
               </form>
-              <button type="button" className="btn btn--link" onClick={() => setMode(mode === "login" ? "register" : "login")}>
-                {mode === "login" ? "Criar conta" : "Já tenho conta"}
-              </button>
+              <div className="auth-links">
+                {mode === "login" && (
+                  <>
+                    <button type="button" className="btn btn--link" onClick={() => switchMode("forgot")}>
+                      Esqueci / não tenho senha
+                    </button>
+                    <button type="button" className="btn btn--link" onClick={() => switchMode("register")}>
+                      Criar conta
+                    </button>
+                  </>
+                )}
+                {mode === "register" && (
+                  <button type="button" className="btn btn--link" onClick={() => switchMode("login")}>
+                    Já tenho conta
+                  </button>
+                )}
+                {mode === "forgot" && (
+                  <button type="button" className="btn btn--link" onClick={() => switchMode("login")}>
+                    Voltar para entrar
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="account-panel">

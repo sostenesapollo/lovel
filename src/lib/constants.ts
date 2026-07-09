@@ -4,6 +4,9 @@ export const ADMIN_TOKEN_KEY = "lovel:admin-token";
 export const ADMIN_SESSION_COOKIE = "lovel_admin";
 export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 
+/** Fallback local quando a URL da imagem de produto/categoria falha ou está vazia */
+export const PRODUCT_PLACEHOLDER = "/product-placeholder.svg";
+
 export const PIX_DISCOUNT = 0.05;
 export const FREE_SHIPPING_THRESHOLD = 199;
 /** Fallback quando o CEP ainda não foi informado (média Sudeste, origem Paraná) */
@@ -97,6 +100,18 @@ export const EMAIL_TEMPLATES = [
     name: "Cupom primeira compra",
     subject: "10% OFF na sua primeira compra — LOVEL",
     body: "Olá {{name}},\n\nUse o cupom PRIMEIRACOMPRA e ganhe 10% de desconto na sua primeira compra.\n\nFrete grátis acima de R$199 e 5% OFF no PIX.\n\nEquipe LOVEL",
+  },
+  {
+    id: "set_password",
+    name: "Definir senha",
+    subject: "Defina sua senha para ver seus pedidos — LOVEL",
+    body: "Olá {{name}},\n\nRecebemos seu pedido e criamos sua conta na LOVEL.\n\nPara acompanhar seus pedidos, defina sua senha neste link (válido por 48 horas):\n{{resetUrl}}\n\nSe você não fez este pedido, ignore este e-mail.\n\nEquipe LOVEL",
+  },
+  {
+    id: "reset_password",
+    name: "Redefinir senha",
+    subject: "Redefina sua senha — LOVEL",
+    body: "Olá {{name}},\n\nRecebemos um pedido para redefinir a senha da sua conta LOVEL.\n\nClique no link abaixo (válido por 48 horas):\n{{resetUrl}}\n\nSe você não solicitou, ignore este e-mail.\n\nEquipe LOVEL",
   },
 ] as const;
 

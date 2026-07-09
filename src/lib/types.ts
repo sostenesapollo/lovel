@@ -29,6 +29,7 @@ export type Product = {
   featured?: boolean;
   isLaunch?: boolean;
   soldOut?: boolean;
+  active?: boolean;
 };
 
 export type CartItem = {

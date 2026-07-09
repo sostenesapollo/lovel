@@ -7,4 +7,5 @@ server
 .env
 .env.local
 *.db
+*.db.bak
 *.db-journal

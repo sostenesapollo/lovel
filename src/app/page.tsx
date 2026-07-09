@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [rows, heroSlides] = await Promise.all([
-    prisma.product.findMany(),
+    prisma.product.findMany({ where: { active: true } }),
     getHeroSlides(),
   ]);
   const products = rows.map(parseProduct);

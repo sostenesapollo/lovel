@@ -2,6 +2,7 @@ node_modules/
 .next/
 out/
 *.db
+*.db.bak
 *.db-journal
 .env
 .env.local

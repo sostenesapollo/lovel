@@ -1,7 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import { SafeImage } from "@/components/safe-image";
+import { PRODUCT_PLACEHOLDER } from "@/lib/constants";
 
 export type HeroSlide = {
   src: string;
@@ -13,7 +14,7 @@ export type HeroSlide = {
 const INTERVAL_MS = 4200;
 
 export function HeroMedia({ slides }: { slides: HeroSlide[] }) {
-  const items = slides.length > 0 ? slides : [{ src: "/product-placeholder.svg", alt: "LOVEL" }];
+  const items = slides.length > 0 ? slides : [{ src: PRODUCT_PLACEHOLDER, alt: "LOVEL" }];
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -41,7 +42,7 @@ export function HeroMedia({ slides }: { slides: HeroSlide[] }) {
           className={`hero__slide${i === index ? " hero__slide--active" : ""}`}
           aria-hidden={i !== index}
         >
-          <Image
+          <SafeImage
             src={slide.src}
             alt={slide.alt}
             fill

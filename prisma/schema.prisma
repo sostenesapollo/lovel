@@ -26,19 +26,33 @@ enum OrderStatus {
 }
 
 model User {
-  id           String     @id @default(cuid())
-  email        String     @unique
+  id           String               @id @default(cuid())
+  email        String               @unique
   passwordHash String
   name         String
-  role         UserRole   @default(CUSTOMER)
-  status       UserStatus @default(ACTIVE)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  role         UserRole             @default(CUSTOMER)
+  status       UserStatus           @default(ACTIVE)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
   orders       Order[]
   emailLogs    EmailLog[]
+  resetTokens  PasswordResetToken[]
 
   @@index([status])
   @@index([createdAt(sort: Desc)])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Category {
@@ -78,6 +92,7 @@ model Product {
   featured       Boolean  @default(false)
   isLaunch       Boolean  @default(false)
   soldOut        Boolean  @default(false)
+  active         Boolean  @default(true)
   promoText      String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -85,6 +100,7 @@ model Product {
   @@index([type])
   @@index([featured])
   @@index([isLaunch])
+  @@index([active])
 }
 
 model Coupon {

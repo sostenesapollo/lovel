@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { slug } = await params;
   const product = await prisma.product.findFirst({
-    where: { OR: [{ slug }, { id: slug }] },
+    where: { active: true, OR: [{ slug }, { id: slug }] },
   });
   if (!product) return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 });
   return NextResponse.json(parseProduct(product));

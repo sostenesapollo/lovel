@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useRef, useState } from "react";
+import { SafeImage } from "@/components/safe-image";
 import type { Product } from "@/lib/types";
+import { PRODUCT_PLACEHOLDER } from "@/lib/constants";
 import { formatPrice, pixPrice, productPath, getVariant } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
 import { flyToCart } from "@/lib/fly-to-cart";
@@ -22,9 +23,9 @@ export function ProductCard({ product }: { product: Product }) {
   const { add } = useCart();
   const cardRef = useRef<HTMLElement>(null);
   const [selected, setSelected] = useState(product.defaultVariant ?? 0);
-  const [imgSrc, setImgSrc] = useState(product.image || "/product-placeholder.svg");
   const [justAdded, setJustAdded] = useState(false);
   const variant = getVariant(product, selected);
+  const imageSrc = product.image || PRODUCT_PLACEHOLDER;
 
   return (
     <article
@@ -32,14 +33,13 @@ export function ProductCard({ product }: { product: Product }) {
       className={`product-card${product.soldOut ? " product-card--sold-out" : ""}`}
     >
       <Link href={productPath(product)} className="product-card__image-wrap">
-        <Image
-          src={imgSrc}
+        <SafeImage
+          src={imageSrc}
           alt={product.name}
           width={400}
           height={400}
           className="product-card__image"
           unoptimized
-          onError={() => setImgSrc("/product-placeholder.svg")}
         />
         <div className="product-card__badges"><Badges badges={product.badges} /></div>
       </Link>
@@ -80,7 +80,7 @@ export function ProductCard({ product }: { product: Product }) {
           disabled={product.soldOut}
           onClick={() => {
             if (!add(product, selected)) return;
-            flyToCart(cardRef.current, imgSrc);
+            flyToCart(cardRef.current, imageSrc);
             setJustAdded(true);
             window.setTimeout(() => setJustAdded(false), 1400);
           }}

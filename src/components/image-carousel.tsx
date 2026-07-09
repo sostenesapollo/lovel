@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useRef, useState } from "react";
-
-const PLACEHOLDER = "/product-placeholder.svg";
+import { SafeImage } from "@/components/safe-image";
+import { PRODUCT_PLACEHOLDER } from "@/lib/constants";
 
 type ImageCarouselProps = {
   images: string[];
@@ -11,13 +10,12 @@ type ImageCarouselProps = {
 };
 
 export function ImageCarousel({ images, alt }: ImageCarouselProps) {
-  const slides = images.length > 0 ? images : [PLACEHOLDER];
+  const slides = images.length > 0 ? images : [PRODUCT_PLACEHOLDER];
   const [index, setIndex] = useState(0);
-  const [broken, setBroken] = useState<Record<number, boolean>>({});
   const drag = useRef<{ startX: number; moved: boolean } | null>(null);
 
   const current = Math.min(index, slides.length - 1);
-  const src = broken[current] ? PLACEHOLDER : slides[current];
+  const src = slides[current];
 
   function go(delta: number) {
     setIndex((i) => (i + delta + slides.length) % slides.length);
@@ -55,7 +53,7 @@ export function ImageCarousel({ images, alt }: ImageCarouselProps) {
         }}
         style={{ touchAction: "pan-y", cursor: slides.length > 1 ? "grab" : "default" }}
       >
-        <Image
+        <SafeImage
           src={src}
           alt={alt}
           width={640}
@@ -63,7 +61,6 @@ export function ImageCarousel({ images, alt }: ImageCarouselProps) {
           unoptimized
           priority
           draggable={false}
-          onError={() => setBroken((b) => ({ ...b, [current]: true }))}
         />
         {slides.length > 1 && (
           <>
@@ -111,13 +108,12 @@ export function ImageCarousel({ images, alt }: ImageCarouselProps) {
                 onClick={() => setIndex(i)}
                 aria-label={`Miniatura ${i + 1}`}
               >
-                <Image
-                  src={broken[i] ? PLACEHOLDER : slide}
+                <SafeImage
+                  src={slide}
                   alt=""
                   width={64}
                   height={64}
                   unoptimized
-                  onError={() => setBroken((b) => ({ ...b, [i]: true }))}
                 />
               </button>
             ))}

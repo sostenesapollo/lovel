@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/safe-image";
 import { categoryPath } from "@/lib/utils";
 
 const CARDS = [
@@ -43,7 +43,7 @@ export function CurationSection() {
           {CARDS.map((card) => (
             <Link key={card.title} href={card.href} className="curation-card">
               <div className="curation-card__image">
-                <Image
+                <SafeImage
                   src={card.image}
                   alt={card.title}
                   fill

@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { SafeImage } from "@/components/safe-image";
 import { ShippingEstimator } from "@/components/shipping-estimator";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { useCart } from "@/context/cart-context";
@@ -10,7 +10,7 @@ import { cartItemToAnalytics, trackBeginCheckout } from "@/lib/analytics";
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 import { quoteShipping } from "@/lib/shipping";
 import type { Product } from "@/lib/types";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getVariant } from "@/lib/utils";
 
 export default function CartPage() {
   const {
@@ -77,10 +77,18 @@ export default function CartPage() {
               <div className="cart-items">
                 {items.map((item) => (
                   <div key={item.key} className="cart-item">
-                    <Image src={item.image} alt={item.name} width={80} height={80} unoptimized />
+                    <SafeImage
+                      src={item.image}
+                      alt={item.name}
+                      width={80}
+                      height={80}
+                      unoptimized
+                      className="cart-item__img"
+                    />
                     <div className="cart-item__info">
-                      <strong>{item.name}</strong>
-                      <span>{item.brand} · {item.variantLabel}</span>
+                      <span className="cart-item__brand">{item.brand}</span>
+                      <strong className="cart-item__name">{item.name}</strong>
+                      <span className="cart-item__variant">{item.variantLabel}</span>
                       {item.crossSell && <span className="cart-item__cross">Cross-sell -10%</span>}
                     </div>
                     <div className="cart-item__qty">
@@ -95,20 +103,49 @@ export default function CartPage() {
 
                 {offers.length > 0 && (
                   <div className="cross-sell">
-                    <h3>Leve o frasco inteiro com 10% OFF</h3>
-                    {offers.map(({ product, variantIndex, price }) => (
-                      <div key={`${product.id}-${variantIndex}`} className="cross-sell__item">
-                        <span>{product.name} — Frasco Inteiro</span>
-                        <span>{formatPrice(price)}</span>
-                        <button
-                          type="button"
-                          className="btn btn--dark btn--sm"
-                          onClick={() => add(product, variantIndex, { crossSell: true, crossSellPrice: price })}
-                        >
-                          Adicionar
-                        </button>
-                      </div>
-                    ))}
+                    <div className="cross-sell__header">
+                      <h3>Leve o frasco inteiro</h3>
+                      <span className="cross-sell__badge">10% OFF</span>
+                    </div>
+                    <p className="cross-sell__desc">Oferta exclusiva no carrinho</p>
+                    <div className="cross-sell__list">
+                      {offers.map(({ product, variantIndex, price }) => {
+                        const variant = getVariant(product, variantIndex);
+                        const already = items.some(
+                          (i) => i.productId === product.id && i.variantIndex === variantIndex,
+                        );
+                        return (
+                          <div key={`${product.id}-${variantIndex}`} className="cross-sell__item">
+                            <SafeImage
+                              src={product.image}
+                              alt={product.name}
+                              width={56}
+                              height={56}
+                              unoptimized
+                              className="cross-sell__img"
+                            />
+                            <div className="cross-sell__info">
+                              <strong>{product.name}</strong>
+                              <span>{variant.label}</span>
+                              <div className="cross-sell__prices">
+                                <span className="cross-sell__old">{formatPrice(variant.price)}</span>
+                                <span className="cross-sell__new">{formatPrice(price)}</span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="cross-sell__add"
+                              disabled={already}
+                              onClick={() =>
+                                add(product, variantIndex, { crossSell: true, crossSellPrice: price })
+                              }
+                            >
+                              {already ? "No carrinho" : "Adicionar"}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 
@@ -147,11 +184,31 @@ export default function CartPage() {
                 )}
                 <div className="cart-summary__row cart-summary__total"><span>Total PIX</span><span>{formatPrice(t.total)}</span></div>
                 <div className="coupon-form">
-                  <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Cupom" />
-                  <button type="button" className="btn btn--outline" onClick={applyCoupon}>Aplicar</button>
+                  <label className="coupon-form__label" htmlFor="cart-coupon">
+                    Cupom de desconto
+                  </label>
+                  <div className="coupon-form__row">
+                    <input
+                      id="cart-coupon"
+                      className="coupon-form__input"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.toUpperCase())}
+                      placeholder="Digite o cupom"
+                      autoComplete="off"
+                    />
+                    <button type="button" className="coupon-form__btn" onClick={applyCoupon}>
+                      Aplicar
+                    </button>
+                  </div>
                 </div>
-                {couponMsg && <p className="coupon-msg">{couponMsg}</p>}
-                {coupon && <p className="coupon-applied">Cupom {coupon.code} aplicado</p>}
+                {couponMsg && (
+                  <p className={`coupon-msg${coupon ? " coupon-msg--ok" : " coupon-msg--err"}`}>
+                    {couponMsg}
+                  </p>
+                )}
+                {coupon && !couponMsg && (
+                  <p className="coupon-msg coupon-msg--ok">Cupom {coupon.code} aplicado</p>
+                )}
                 <Link href="/checkout" className="btn btn--gold btn--full" onClick={goCheckout}>
                   Finalizar compra
                 </Link>
