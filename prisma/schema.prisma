@@ -26,17 +26,19 @@ enum OrderStatus {
 }
 
 model User {
-  id           String               @id @default(cuid())
-  email        String               @unique
-  passwordHash String
-  name         String
-  role         UserRole             @default(CUSTOMER)
-  status       UserStatus           @default(ACTIVE)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  orders       Order[]
-  emailLogs    EmailLog[]
-  resetTokens  PasswordResetToken[]
+  id            String               @id @default(cuid())
+  email         String               @unique
+  passwordHash  String
+  name          String
+  role          UserRole             @default(CUSTOMER)
+  status        UserStatus           @default(ACTIVE)
+  /// null = conta criada no pedido, ainda sem senha escolhida
+  passwordSetAt DateTime?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  orders        Order[]
+  emailLogs     EmailLog[]
+  resetTokens   PasswordResetToken[]
 
   @@index([status])
   @@index([createdAt(sort: Desc)])

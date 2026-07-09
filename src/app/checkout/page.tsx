@@ -227,10 +227,14 @@ export default function CheckoutPage() {
     });
 
     const data = await res.json();
-    setLoading(false);
     if (data.success) {
       markPurchased();
       clear();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl as string;
+        return;
+      }
+      setLoading(false);
       setSuccess({
         orderId: data.orderId,
         total: orderTotal,
@@ -241,6 +245,7 @@ export default function CheckoutPage() {
         pixQrCodeBase64: data.pixQrCodeBase64,
       });
     } else {
+      setLoading(false);
       setError(data.message || "Não foi possível criar o pedido.");
     }
   }

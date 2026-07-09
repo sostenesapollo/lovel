@@ -169,11 +169,22 @@ async function main() {
     if (existing) {
       await prisma.user.update({
         where: { email },
-        data: { name: u.name, role, passwordHash },
+        data: {
+          name: u.name,
+          role,
+          passwordHash,
+          passwordSetAt: existing.passwordSetAt ?? new Date(),
+        },
       });
     } else {
       await prisma.user.create({
-        data: { email, name: u.name, role, passwordHash },
+        data: {
+          email,
+          name: u.name,
+          role,
+          passwordHash,
+          passwordSetAt: new Date(),
+        },
       });
     }
   }

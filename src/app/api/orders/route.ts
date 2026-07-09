@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { createPixPayment, isMercadoPagoConfigured } from "@/lib/mercadopago";
+import {
+  createCardCheckoutPreference,
+  createPixPayment,
+  isMercadoPagoConfigured,
+} from "@/lib/mercadopago";
+import { createStripePixPayment, isStripeConfigured } from "@/lib/stripe";
 import { sendOrderStatusEmail } from "@/lib/order-emails";
 import { notifyNewOrder } from "@/lib/ntfy";
 import { ensureCustomerFromOrder } from "@/lib/password-reset";
@@ -33,27 +38,77 @@ export async function POST(request: Request) {
   let paymentId: string | undefined;
   let pixCode: string | null = null;
   let pixQrCodeBase64: string | null = null;
+  let checkoutUrl: string | null = null;
 
-  if (body.data.payment === "pix" && isMercadoPagoConfigured() && email) {
+  if (body.data.payment === "pix" && email) {
+    const description = `Pedido LOVEL ${orderId}`;
+
+    if (isMercadoPagoConfigured()) {
+      try {
+        const pix = await createPixPayment({
+          orderId,
+          amount: body.data.total,
+          email,
+          description,
+        });
+        paymentId = pix.paymentId;
+        pixCode = pix.qrCode || null;
+        pixQrCodeBase64 = pix.qrCodeBase64 || null;
+      } catch (err) {
+        console.error("[orders] Mercado Pago PIX failed, trying Stripe:", err);
+      }
+    }
+
+    if (!pixCode && isStripeConfigured()) {
+      try {
+        const pix = await createStripePixPayment({
+          orderId,
+          amount: body.data.total,
+          email,
+          description,
+        });
+        paymentId = pix.paymentId;
+        pixCode = pix.qrCode || null;
+        pixQrCodeBase64 = pix.qrCodeBase64 || null;
+      } catch (err) {
+        console.error("[orders] Stripe PIX failed:", err);
+        return NextResponse.json(
+          { success: false, message: "Falha ao gerar PIX. Tente novamente." },
+          { status: 502 },
+        );
+      }
+    }
+
+    if (!pixCode) {
+      return NextResponse.json(
+        { success: false, message: "Pagamento PIX não configurado." },
+        { status: 503 },
+      );
+    }
+  } else if (body.data.payment === "card") {
+    if (!isMercadoPagoConfigured() || !email) {
+      return NextResponse.json(
+        { success: false, message: "Pagamento com cartão indisponível no momento." },
+        { status: 503 },
+      );
+    }
     try {
-      const pix = await createPixPayment({
+      const preference = await createCardCheckoutPreference({
         orderId,
         amount: body.data.total,
         email,
+        name: customer.name,
         description: `Pedido LOVEL ${orderId}`,
       });
-      paymentId = pix.paymentId;
-      pixCode = pix.qrCode || null;
-      pixQrCodeBase64 = pix.qrCodeBase64 || null;
+      paymentId = preference.preferenceId;
+      checkoutUrl = preference.initPoint;
     } catch (err) {
-      console.error("[orders] Mercado Pago PIX failed:", err);
+      console.error("[orders] Mercado Pago card preference failed:", err);
       return NextResponse.json(
-        { success: false, message: "Falha ao gerar PIX. Tente novamente." },
+        { success: false, message: "Falha ao abrir o checkout do cartão. Tente novamente." },
         { status: 502 },
       );
     }
-  } else if (body.data.payment === "pix") {
-    pixCode = `00020126580014BR.GOV.BCB.PIX0136lovel@pagamentos.com.br52040000530398654${String(Math.round(body.data.total * 100)).padStart(6, "0")}5802BR5925LOVEL PERFUMARIA LTDA6009SAO PAULO62070503***6304ABCD`;
   }
 
   if (pixCode && !pixQrCodeBase64) {
@@ -117,6 +172,7 @@ export async function POST(request: Request) {
     pixCode,
     pixQrCodeBase64,
     paymentId,
+    checkoutUrl,
     message: "Pedido criado com sucesso!",
   });
 }

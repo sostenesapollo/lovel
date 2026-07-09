@@ -29,6 +29,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: "E-mail ou senha incorretos." });
   }
 
+  if (!user.passwordSetAt) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordSetAt: new Date() },
+    });
+  }
+
   await createSession(user);
   void sendLoginAlertEmail(user);
   void notifyLogin(user);
@@ -60,6 +67,7 @@ export async function PUT(request: Request) {
       name: body.data.name,
       passwordHash,
       role: "CUSTOMER",
+      passwordSetAt: new Date(),
     },
   });
 

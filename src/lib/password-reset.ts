@@ -81,10 +81,14 @@ export async function sendResetPasswordEmail(user: {
   return token;
 }
 
+function hasPasswordSet(user: { passwordSetAt: Date | null }) {
+  return Boolean(user.passwordSetAt);
+}
+
 /**
  * Cria/vincula conta do comprador guest.
- * Se `issueSetPasswordLink` for true (padrão), gera token e devolve a URL —
- * o e-mail do pedido usa esse link (não envia e-mail separado).
+ * - Sem senha definida → link para /conta/senha?token=...
+ * - Já definiu senha → link para /conta (login)
  */
 export async function ensureCustomerFromOrder(input: {
   email: string;
@@ -92,7 +96,7 @@ export async function ensureCustomerFromOrder(input: {
   orderId: string;
   issueSetPasswordLink?: boolean;
 }): Promise<{
-  user: { id: string; email: string; name: string; status: string };
+  user: { id: string; email: string; name: string; status: string; passwordSetAt: Date | null };
   accountUrl: string | null;
   created: boolean;
 } | null> {
@@ -116,12 +120,20 @@ export async function ensureCustomerFromOrder(input: {
       data: { userId: existing.id, userEmail: email },
     });
 
-    // Conta já existia: link vai para /conta (login). Só gera set-password se pedir.
-    return {
-      user: existing,
-      accountUrl: absoluteUrl("/conta"),
-      created: false,
-    };
+    if (hasPasswordSet(existing)) {
+      return {
+        user: existing,
+        accountUrl: absoluteUrl("/conta"),
+        created: false,
+      };
+    }
+
+    let accountUrl: string | null = absoluteUrl("/conta");
+    if (issueLink) {
+      const { token } = await createPasswordResetToken(existing.id);
+      accountUrl = resetPasswordUrl(token);
+    }
+    return { user: existing, accountUrl, created: false };
   }
 
   const passwordHash = await hashPassword(randomBytes(32).toString("hex"));
@@ -131,6 +143,7 @@ export async function ensureCustomerFromOrder(input: {
       name,
       passwordHash,
       role: "CUSTOMER",
+      passwordSetAt: null,
     },
   });
 
@@ -171,14 +184,15 @@ export async function consumeResetToken(rawToken: string, newPassword: string) {
   if (!record) return null;
 
   const passwordHash = await hashPassword(newPassword);
+  const now = new Date();
   await prisma.$transaction([
     prisma.user.update({
       where: { id: record.userId },
-      data: { passwordHash },
+      data: { passwordHash, passwordSetAt: now },
     }),
     prisma.passwordResetToken.update({
       where: { id: record.id },
-      data: { usedAt: new Date() },
+      data: { usedAt: now },
     }),
     prisma.passwordResetToken.deleteMany({
       where: { userId: record.userId, usedAt: null, NOT: { id: record.id } },
@@ -206,7 +220,7 @@ export async function requestPasswordAccess(emailRaw: string) {
     const name = (customer?.name?.trim() || email.split("@")[0] || "Cliente").slice(0, 80);
     const passwordHash = await hashPassword(randomBytes(32).toString("hex"));
     user = await prisma.user.create({
-      data: { email, name, passwordHash, role: "CUSTOMER" },
+      data: { email, name, passwordHash, role: "CUSTOMER", passwordSetAt: null },
     });
     await prisma.order.updateMany({
       where: { userEmail: email, userId: null },
@@ -217,5 +231,11 @@ export async function requestPasswordAccess(emailRaw: string) {
   }
 
   if (user.status === "REVOKED") return;
+
+  if (!hasPasswordSet(user)) {
+    await sendSetPasswordEmail(user);
+    return;
+  }
+
   await sendResetPasswordEmail(user);
 }
