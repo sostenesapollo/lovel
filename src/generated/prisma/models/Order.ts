@@ -45,6 +45,9 @@ export type OrderMinAggregateOutputType = {
   userId: string | null
   userEmail: string | null
   payment: string | null
+  paymentId: string | null
+  pixQrCode: string | null
+  pixQrCodeBase64: string | null
   subtotal: number | null
   discount: number | null
   shipping: number | null
@@ -59,6 +62,9 @@ export type OrderMaxAggregateOutputType = {
   userId: string | null
   userEmail: string | null
   payment: string | null
+  paymentId: string | null
+  pixQrCode: string | null
+  pixQrCodeBase64: string | null
   subtotal: number | null
   discount: number | null
   shipping: number | null
@@ -75,6 +81,9 @@ export type OrderCountAggregateOutputType = {
   customer: number
   items: number
   payment: number
+  paymentId: number
+  pixQrCode: number
+  pixQrCodeBase64: number
   coupon: number
   subtotal: number
   discount: number
@@ -106,6 +115,9 @@ export type OrderMinAggregateInputType = {
   userId?: true
   userEmail?: true
   payment?: true
+  paymentId?: true
+  pixQrCode?: true
+  pixQrCodeBase64?: true
   subtotal?: true
   discount?: true
   shipping?: true
@@ -120,6 +132,9 @@ export type OrderMaxAggregateInputType = {
   userId?: true
   userEmail?: true
   payment?: true
+  paymentId?: true
+  pixQrCode?: true
+  pixQrCodeBase64?: true
   subtotal?: true
   discount?: true
   shipping?: true
@@ -136,6 +151,9 @@ export type OrderCountAggregateInputType = {
   customer?: true
   items?: true
   payment?: true
+  paymentId?: true
+  pixQrCode?: true
+  pixQrCodeBase64?: true
   coupon?: true
   subtotal?: true
   discount?: true
@@ -240,6 +258,9 @@ export type OrderGroupByOutputType = {
   customer: runtime.JsonValue
   items: runtime.JsonValue
   payment: string
+  paymentId: string | null
+  pixQrCode: string | null
+  pixQrCodeBase64: string | null
   coupon: runtime.JsonValue | null
   subtotal: number
   discount: number
@@ -280,6 +301,9 @@ export type OrderWhereInput = {
   customer?: Prisma.JsonFilter<"Order">
   items?: Prisma.JsonFilter<"Order">
   payment?: Prisma.StringFilter<"Order"> | string
+  paymentId?: Prisma.StringNullableFilter<"Order"> | string | null
+  pixQrCode?: Prisma.StringNullableFilter<"Order"> | string | null
+  pixQrCodeBase64?: Prisma.StringNullableFilter<"Order"> | string | null
   coupon?: Prisma.JsonNullableFilter<"Order">
   subtotal?: Prisma.FloatFilter<"Order"> | number
   discount?: Prisma.FloatFilter<"Order"> | number
@@ -298,6 +322,9 @@ export type OrderOrderByWithRelationInput = {
   customer?: Prisma.SortOrder
   items?: Prisma.SortOrder
   payment?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  pixQrCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  pixQrCodeBase64?: Prisma.SortOrderInput | Prisma.SortOrder
   coupon?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
@@ -319,6 +346,9 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   customer?: Prisma.JsonFilter<"Order">
   items?: Prisma.JsonFilter<"Order">
   payment?: Prisma.StringFilter<"Order"> | string
+  paymentId?: Prisma.StringNullableFilter<"Order"> | string | null
+  pixQrCode?: Prisma.StringNullableFilter<"Order"> | string | null
+  pixQrCodeBase64?: Prisma.StringNullableFilter<"Order"> | string | null
   coupon?: Prisma.JsonNullableFilter<"Order">
   subtotal?: Prisma.FloatFilter<"Order"> | number
   discount?: Prisma.FloatFilter<"Order"> | number
@@ -337,6 +367,9 @@ export type OrderOrderByWithAggregationInput = {
   customer?: Prisma.SortOrder
   items?: Prisma.SortOrder
   payment?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  pixQrCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  pixQrCodeBase64?: Prisma.SortOrderInput | Prisma.SortOrder
   coupon?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
@@ -362,6 +395,9 @@ export type OrderScalarWhereWithAggregatesInput = {
   customer?: Prisma.JsonWithAggregatesFilter<"Order">
   items?: Prisma.JsonWithAggregatesFilter<"Order">
   payment?: Prisma.StringWithAggregatesFilter<"Order"> | string
+  paymentId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  pixQrCode?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  pixQrCodeBase64?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   coupon?: Prisma.JsonNullableWithAggregatesFilter<"Order">
   subtotal?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   discount?: Prisma.FloatWithAggregatesFilter<"Order"> | number
@@ -378,6 +414,9 @@ export type OrderCreateInput = {
   customer: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment: string
+  paymentId?: string | null
+  pixQrCode?: string | null
+  pixQrCodeBase64?: string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal: number
   discount?: number
@@ -396,6 +435,9 @@ export type OrderUncheckedCreateInput = {
   customer: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment: string
+  paymentId?: string | null
+  pixQrCode?: string | null
+  pixQrCodeBase64?: string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal: number
   discount?: number
@@ -412,6 +454,9 @@ export type OrderUpdateInput = {
   customer?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCodeBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -430,6 +475,9 @@ export type OrderUncheckedUpdateInput = {
   customer?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCodeBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -447,6 +495,9 @@ export type OrderCreateManyInput = {
   customer: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment: string
+  paymentId?: string | null
+  pixQrCode?: string | null
+  pixQrCodeBase64?: string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal: number
   discount?: number
@@ -463,6 +514,9 @@ export type OrderUpdateManyMutationInput = {
   customer?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCodeBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -480,6 +534,9 @@ export type OrderUncheckedUpdateManyInput = {
   customer?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCodeBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -507,6 +564,9 @@ export type OrderCountOrderByAggregateInput = {
   customer?: Prisma.SortOrder
   items?: Prisma.SortOrder
   payment?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrder
+  pixQrCode?: Prisma.SortOrder
+  pixQrCodeBase64?: Prisma.SortOrder
   coupon?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
@@ -529,6 +589,9 @@ export type OrderMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   userEmail?: Prisma.SortOrder
   payment?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrder
+  pixQrCode?: Prisma.SortOrder
+  pixQrCodeBase64?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   shipping?: Prisma.SortOrder
@@ -543,6 +606,9 @@ export type OrderMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   userEmail?: Prisma.SortOrder
   payment?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrder
+  pixQrCode?: Prisma.SortOrder
+  pixQrCodeBase64?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   shipping?: Prisma.SortOrder
@@ -611,6 +677,9 @@ export type OrderCreateWithoutUserInput = {
   customer: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment: string
+  paymentId?: string | null
+  pixQrCode?: string | null
+  pixQrCodeBase64?: string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal: number
   discount?: number
@@ -627,6 +696,9 @@ export type OrderUncheckedCreateWithoutUserInput = {
   customer: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment: string
+  paymentId?: string | null
+  pixQrCode?: string | null
+  pixQrCodeBase64?: string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal: number
   discount?: number
@@ -672,6 +744,9 @@ export type OrderScalarWhereInput = {
   customer?: Prisma.JsonFilter<"Order">
   items?: Prisma.JsonFilter<"Order">
   payment?: Prisma.StringFilter<"Order"> | string
+  paymentId?: Prisma.StringNullableFilter<"Order"> | string | null
+  pixQrCode?: Prisma.StringNullableFilter<"Order"> | string | null
+  pixQrCodeBase64?: Prisma.StringNullableFilter<"Order"> | string | null
   coupon?: Prisma.JsonNullableFilter<"Order">
   subtotal?: Prisma.FloatFilter<"Order"> | number
   discount?: Prisma.FloatFilter<"Order"> | number
@@ -688,6 +763,9 @@ export type OrderCreateManyUserInput = {
   customer: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment: string
+  paymentId?: string | null
+  pixQrCode?: string | null
+  pixQrCodeBase64?: string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal: number
   discount?: number
@@ -704,6 +782,9 @@ export type OrderUpdateWithoutUserInput = {
   customer?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCodeBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -720,6 +801,9 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   customer?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCodeBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -736,6 +820,9 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   customer?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   items?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   payment?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pixQrCodeBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coupon?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -755,6 +842,9 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   customer?: boolean
   items?: boolean
   payment?: boolean
+  paymentId?: boolean
+  pixQrCode?: boolean
+  pixQrCodeBase64?: boolean
   coupon?: boolean
   subtotal?: boolean
   discount?: boolean
@@ -773,6 +863,9 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   customer?: boolean
   items?: boolean
   payment?: boolean
+  paymentId?: boolean
+  pixQrCode?: boolean
+  pixQrCodeBase64?: boolean
   coupon?: boolean
   subtotal?: boolean
   discount?: boolean
@@ -791,6 +884,9 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   customer?: boolean
   items?: boolean
   payment?: boolean
+  paymentId?: boolean
+  pixQrCode?: boolean
+  pixQrCodeBase64?: boolean
   coupon?: boolean
   subtotal?: boolean
   discount?: boolean
@@ -809,6 +905,9 @@ export type OrderSelectScalar = {
   customer?: boolean
   items?: boolean
   payment?: boolean
+  paymentId?: boolean
+  pixQrCode?: boolean
+  pixQrCodeBase64?: boolean
   coupon?: boolean
   subtotal?: boolean
   discount?: boolean
@@ -819,7 +918,7 @@ export type OrderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "userEmail" | "customer" | "items" | "payment" | "coupon" | "subtotal" | "discount" | "shipping" | "total" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "userEmail" | "customer" | "items" | "payment" | "paymentId" | "pixQrCode" | "pixQrCodeBase64" | "coupon" | "subtotal" | "discount" | "shipping" | "total" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
 }
@@ -842,6 +941,9 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     customer: runtime.JsonValue
     items: runtime.JsonValue
     payment: string
+    paymentId: string | null
+    pixQrCode: string | null
+    pixQrCodeBase64: string | null
     coupon: runtime.JsonValue | null
     subtotal: number
     discount: number
@@ -1280,6 +1382,9 @@ export interface OrderFieldRefs {
   readonly customer: Prisma.FieldRef<"Order", 'Json'>
   readonly items: Prisma.FieldRef<"Order", 'Json'>
   readonly payment: Prisma.FieldRef<"Order", 'String'>
+  readonly paymentId: Prisma.FieldRef<"Order", 'String'>
+  readonly pixQrCode: Prisma.FieldRef<"Order", 'String'>
+  readonly pixQrCodeBase64: Prisma.FieldRef<"Order", 'String'>
   readonly coupon: Prisma.FieldRef<"Order", 'Json'>
   readonly subtotal: Prisma.FieldRef<"Order", 'Float'>
   readonly discount: Prisma.FieldRef<"Order", 'Float'>

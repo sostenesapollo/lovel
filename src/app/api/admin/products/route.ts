@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       featured: Boolean(body.featured),
       isLaunch: Boolean(body.isLaunch),
       soldOut: Boolean(body.soldOut),
+      promoText: body.promoText ?? null,
     },
   });
 

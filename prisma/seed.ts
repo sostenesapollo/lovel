@@ -18,11 +18,82 @@ function loadJson<T>(file: string): T {
   return JSON.parse(readFileSync(join(dataDir, file), "utf8"));
 }
 
+const DEFAULT_CATEGORIES = [
+  {
+    slug: "perfumes",
+    title: "Perfumes",
+    subtitle: "Decants & Frascos Inteiros",
+    image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800&h=500&fit=crop",
+    showOnHome: true,
+    sortOrder: 0,
+    variantLabels: ["4ml", "10ml", "100ml", "Frasco Inteiro"],
+    subcategories: [
+      { slug: "arabes", label: "Árabes" },
+      { slug: "grifes", label: "Grifes" },
+      { slug: "nicho", label: "Nicho" },
+    ],
+  },
+  {
+    slug: "cabelos",
+    title: "Cabelos",
+    subtitle: "Fracionados & Inteiros",
+    image: "https://images.unsplash.com/photo-1522338140262-f46f5913618a?w=800&h=500&fit=crop",
+    showOnHome: true,
+    sortOrder: 1,
+    variantLabels: ["30g", "50g", "100ml", "Frasco Inteiro"],
+    subcategories: [
+      { slug: "tratamento", label: "Tratamento" },
+      { slug: "mascaras", label: "Máscaras" },
+      { slug: "oleos", label: "Óleos" },
+      { slug: "shampoos", label: "Shampoos" },
+    ],
+  },
+  {
+    slug: "skincare",
+    title: "Skincare",
+    subtitle: "Rotina Facial Importada",
+    image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800&h=500&fit=crop",
+    showOnHome: true,
+    sortOrder: 2,
+    variantLabels: ["15ml", "30ml", "50ml"],
+    subcategories: [
+      { slug: "serum", label: "Séruns" },
+      { slug: "protetor", label: "Protetores" },
+      { slug: "hidratante", label: "Hidratantes" },
+    ],
+  },
+];
+
 async function main() {
   const products = loadJson<Array<Record<string, unknown>>>("products.json");
   const coupons = loadJson<Array<Record<string, unknown>>>("coupons.json");
   const users = loadJson<Array<{ id: string; email: string; password: string; name: string; role: string }>>("users.json");
   const promotions = loadJson<Record<string, unknown>>("promotions.json");
+
+  for (const cat of DEFAULT_CATEGORIES) {
+    await prisma.category.upsert({
+      where: { slug: cat.slug },
+      create: {
+        slug: cat.slug,
+        title: cat.title,
+        subtitle: cat.subtitle,
+        image: cat.image,
+        showOnHome: cat.showOnHome,
+        sortOrder: cat.sortOrder,
+        variantLabels: cat.variantLabels,
+        subcategories: cat.subcategories,
+      },
+      update: {
+        title: cat.title,
+        subtitle: cat.subtitle,
+        image: cat.image,
+        showOnHome: cat.showOnHome,
+        sortOrder: cat.sortOrder,
+        variantLabels: cat.variantLabels,
+        subcategories: cat.subcategories,
+      },
+    });
+  }
 
   for (const p of products) {
     await prisma.product.upsert({
@@ -93,15 +164,16 @@ async function main() {
   for (const u of users) {
     const role = u.role === "admin" ? "ADMIN" : "CUSTOMER";
     const passwordHash = await bcrypt.hash(u.password, 12);
-    const existing = await prisma.user.findUnique({ where: { email: u.email } });
+    const email = u.email.toLowerCase();
+    const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       await prisma.user.update({
-        where: { email: u.email },
+        where: { email },
         data: { name: u.name, role, passwordHash },
       });
     } else {
       await prisma.user.create({
-        data: { email: u.email, name: u.name, role, passwordHash },
+        data: { email, name: u.name, role, passwordHash },
       });
     }
   }
@@ -112,7 +184,9 @@ async function main() {
     update: { value: promotions as object },
   });
 
-  console.log(`Seed OK: ${products.length} products, ${coupons.length} coupons, ${users.length} users`);
+  console.log(
+    `Seed OK: ${DEFAULT_CATEGORIES.length} categories, ${products.length} products, ${coupons.length} coupons, ${users.length} users`,
+  );
 }
 
 main()

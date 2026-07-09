@@ -48,6 +48,18 @@ export const EMAIL_TEMPLATES = [
     body: "Olá {{name}},\n\nSeja bem-vinda à LOVEL — sua boutique de essências e cuidados premium.\n\nExplore nossa coleção de perfumes, cabelos e skincare selecionados.\n\nCom carinho,\nEquipe LOVEL",
   },
   {
+    id: "login_alert",
+    name: "Alerta de acesso",
+    subject: "Novo acesso à sua conta LOVEL",
+    body: "Olá {{name}},\n\nDetectamos um novo acesso à sua conta LOVEL.\n\nSe não foi você, altere sua senha imediatamente.\n\nEquipe LOVEL",
+  },
+  {
+    id: "register",
+    name: "Conta criada",
+    subject: "Conta criada — LOVEL Boutique",
+    body: "Olá {{name}},\n\nSeja bem-vinda à LOVEL — sua boutique de essências e cuidados premium.\n\nExplore nossa coleção de perfumes, cabelos e skincare selecionados.\n\nCom carinho,\nEquipe LOVEL",
+  },
+  {
     id: "order_pending",
     name: "Pedido recebido",
     subject: "Pedido {{orderId}} recebido — LOVEL",
@@ -60,9 +72,29 @@ export const EMAIL_TEMPLATES = [
     body: "Olá {{name}},\n\nSeu pagamento do pedido {{orderId}} foi confirmado!\n\nEm breve você receberá o código de rastreio.\n\nEquipe LOVEL",
   },
   {
+    id: "order_shipped",
+    name: "Pedido enviado",
+    subject: "Pedido {{orderId}} enviado",
+    body: "Olá {{name}},\n\nSeu pedido {{orderId}} foi enviado!\n\nEm breve você receberá atualizações de rastreio.\n\nEquipe LOVEL",
+  },
+  {
+    id: "order_delivered",
+    name: "Pedido entregue",
+    subject: "Pedido {{orderId}} entregue",
+    body: "Olá {{name}},\n\nSeu pedido {{orderId}} foi entregue.\n\nEsperamos que você ame cada detalhe.\n\nEquipe LOVEL",
+  },
+  {
+    id: "order_cancelled",
+    name: "Pedido cancelado",
+    subject: "Pedido {{orderId}} cancelado",
+    body: "Olá {{name}},\n\nSeu pedido {{orderId}} foi cancelado.\n\nSe tiver dúvidas, fale conosco.\n\nEquipe LOVEL",
+  },
+  {
     id: "promo_primeira",
     name: "Cupom primeira compra",
     subject: "10% OFF na sua primeira compra — LOVEL",
     body: "Olá {{name}},\n\nUse o cupom PRIMEIRACOMPRA e ganhe 10% de desconto na sua primeira compra.\n\nFrete grátis acima de R$199 e 5% OFF no PIX.\n\nEquipe LOVEL",
   },
 ] as const;
+
+export type EmailTemplateId = (typeof EMAIL_TEMPLATES)[number]["id"];

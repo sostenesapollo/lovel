@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { createPixPayment, isMercadoPagoConfigured } from "@/lib/mercadopago";
+import { sendOrderStatusEmail } from "@/lib/order-emails";
 
 const schema = z.object({
   customer: z.record(z.string(), z.unknown()),
@@ -22,15 +24,46 @@ export async function POST(request: Request) {
   }
 
   const orderId = `LVL-${Date.now()}`;
-  const customer = body.data.customer as { email?: string };
+  const customer = body.data.customer as { email?: string; name?: string };
+  const email = user?.email ?? customer.email ?? "";
+
+  let paymentId: string | undefined;
+  let pixCode: string | null = null;
+  let pixQrCodeBase64: string | null = null;
+
+  if (body.data.payment === "pix" && isMercadoPagoConfigured() && email) {
+    try {
+      const pix = await createPixPayment({
+        orderId,
+        amount: body.data.total,
+        email,
+        description: `Pedido LOVEL ${orderId}`,
+      });
+      paymentId = pix.paymentId;
+      pixCode = pix.qrCode || null;
+      pixQrCodeBase64 = pix.qrCodeBase64 || null;
+    } catch (err) {
+      console.error("[orders] Mercado Pago PIX failed:", err);
+      return NextResponse.json(
+        { success: false, message: "Falha ao gerar PIX. Tente novamente." },
+        { status: 502 },
+      );
+    }
+  } else if (body.data.payment === "pix") {
+    pixCode = `00020126580014BR.GOV.BCB.PIX0136lovel@pagamentos.com.br52040000530398654${String(Math.round(body.data.total * 100)).padStart(6, "0")}5802BR5925LOVEL PERFUMARIA LTDA6009SAO PAULO62070503***6304ABCD`;
+  }
+
   const order = await prisma.order.create({
     data: {
       id: orderId,
       userId: user?.id,
-      userEmail: user?.email ?? customer.email,
+      userEmail: email || null,
       customer: body.data.customer as object,
       items: body.data.items as object[],
       payment: body.data.payment,
+      paymentId,
+      pixQrCode: pixCode,
+      pixQrCodeBase64,
       coupon: (body.data.coupon as object) ?? undefined,
       subtotal: body.data.subtotal,
       discount: body.data.discount,
@@ -40,15 +73,14 @@ export async function POST(request: Request) {
     },
   });
 
-  const pixCode =
-    body.data.payment === "pix"
-      ? `00020126580014BR.GOV.BCB.PIX0136lovel@pagamentos.com.br52040000530398654${String(Math.round(body.data.total * 100)).padStart(6, "0")}5802BR5925LOVEL PERFUMARIA LTDA6009SAO PAULO62070503***6304ABCD`
-      : null;
+  void sendOrderStatusEmail(order, "pending_payment");
 
   return NextResponse.json({
     success: true,
     orderId: order.id,
     pixCode,
+    pixQrCodeBase64,
+    paymentId,
     message: "Pedido criado com sucesso!",
   });
 }

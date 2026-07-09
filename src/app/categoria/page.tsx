@@ -5,18 +5,31 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { ProductCard } from "@/components/product-card";
-import { CATEGORIES } from "@/lib/constants";
 import type { Product } from "@/lib/types";
+
+type Category = {
+  slug: string;
+  title: string;
+  subtitle: string;
+  subcategories: Array<{ slug: string; label: string }>;
+};
 
 function CategoryContent() {
   const params = useSearchParams();
   const tipo = params.get("tipo") ?? "perfumes";
   const sub = params.get("sub") ?? "";
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const isLaunch = tipo === "lancamentos";
-  const catKey = isLaunch ? "perfumes" : tipo;
-  const category = CATEGORIES[catKey as keyof typeof CATEGORIES];
+  const category = categories.find((c) => c.slug === tipo);
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }, []);
 
   useEffect(() => {
     const qs = new URLSearchParams();
@@ -41,7 +54,7 @@ function CategoryContent() {
             <p>{subtitle}</p>
           </header>
 
-          {category && !isLaunch && (
+          {category && !isLaunch && category.subcategories?.length > 0 && (
             <div className="subcategory-tabs">
               <Link
                 href={`/categoria?tipo=${tipo}`}
@@ -62,7 +75,9 @@ function CategoryContent() {
           )}
 
           <div className="product-grid">
-            {products.map((p) => <ProductCard key={p.id} product={p} />)}
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
           </div>
           {products.length === 0 && (
             <p className="empty-state">Nenhum produto encontrado nesta categoria.</p>

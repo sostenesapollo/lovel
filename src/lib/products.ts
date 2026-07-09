@@ -43,9 +43,11 @@ export function parseProduct(row: {
   featured: boolean;
   isLaunch: boolean;
   soldOut: boolean;
+  promoText?: string | null;
 }) {
   return {
     ...row,
+    promoText: row.promoText ?? null,
     images: row.images as string[],
     notes: row.notes as Record<string, string> | undefined,
     badges: row.badges as Array<{ type: string; text: string }>,

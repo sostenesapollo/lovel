@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  Category: 'Category',
   Product: 'Product',
   Coupon: 'Coupon',
   Order: 'Order',
@@ -86,6 +87,23 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+export const CategoryScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  subtitle: 'subtitle',
+  image: 'image',
+  showOnHome: 'showOnHome',
+  sortOrder: 'sortOrder',
+  variantLabels: 'variantLabels',
+  subcategories: 'subcategories',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
+
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
@@ -104,6 +122,7 @@ export const ProductScalarFieldEnum = {
   featured: 'featured',
   isLaunch: 'isLaunch',
   soldOut: 'soldOut',
+  promoText: 'promoText',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -131,6 +150,9 @@ export const OrderScalarFieldEnum = {
   customer: 'customer',
   items: 'items',
   payment: 'payment',
+  paymentId: 'paymentId',
+  pixQrCode: 'pixQrCode',
+  pixQrCodeBase64: 'pixQrCodeBase64',
   coupon: 'coupon',
   subtotal: 'subtotal',
   discount: 'discount',

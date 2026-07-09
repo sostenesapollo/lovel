@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSession, hashPassword, toSafeUser, verifyPassword } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { sendLoginAlertEmail, sendWelcomeEmail } from "@/lib/order-emails";
 
 const loginSchema = z.object({
   email: z.string().min(1),
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
   }
 
   await createSession(user);
+  void sendLoginAlertEmail(user);
   return NextResponse.json({ success: true, user: toSafeUser(user) });
 }
 
@@ -60,5 +62,6 @@ export async function PUT(request: Request) {
   });
 
   await createSession(user);
+  void sendWelcomeEmail(user);
   return NextResponse.json({ success: true, user: toSafeUser(user) });
 }

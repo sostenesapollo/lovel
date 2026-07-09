@@ -4,12 +4,20 @@ import { ProductCard } from "@/components/product-card";
 import { prisma } from "@/lib/db";
 import { parseProduct } from "@/lib/products";
 import { categoryPath } from "@/lib/utils";
-import { CATEGORIES } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const rows = await prisma.product.findMany();
+  let categories: Awaited<ReturnType<typeof prisma.category.findMany>> = [];
+  try {
+    categories = await prisma.category.findMany({
+      where: { showOnHome: true },
+      orderBy: { sortOrder: "asc" },
+    });
+  } catch {
+    categories = [];
+  }
   const products = rows.map(parseProduct);
   const featured = products.filter((p) => p.featured).slice(0, 8);
   const launches = products.filter((p) => p.isLaunch).slice(0, 4);
@@ -34,19 +42,28 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="section">
-          <div className="container">
-            <h2 className="section__title">Categorias</h2>
-            <div className="category-grid">
-              {Object.entries(CATEGORIES).map(([key, cat]) => (
-                <Link key={key} href={categoryPath(key)} className="category-card">
-                  <h3>{cat.title}</h3>
-                  <p>{cat.subtitle}</p>
-                </Link>
-              ))}
+        {categories.length > 0 && (
+          <section className="section">
+            <div className="container">
+              <h2 className="section__title">Categorias</h2>
+              <div className="category-grid">
+                {categories.map((cat) => (
+                  <Link key={cat.id} className="category-card" href={categoryPath(cat.slug)}>
+                    <div
+                      className="category-card__visual"
+                      style={cat.image ? { backgroundImage: `url(${cat.image})` } : undefined}
+                    />
+                    <div className="category-card__bg" />
+                    <div className="category-card__content">
+                      <h3 className="category-card__title">{cat.title}</h3>
+                      <p className="category-card__sub">{cat.subtitle}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {launches.length > 0 && (
           <section className="section section--alt">

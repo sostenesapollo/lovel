@@ -10,7 +10,12 @@ export default function CheckoutPage() {
   const { items, totals, clear, markPurchased, coupon } = useCart();
   const [payment, setPayment] = useState<"pix" | "card">("pix");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<{ orderId: string; pixCode?: string } | null>(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState<{
+    orderId: string;
+    pixCode?: string | null;
+    pixQrCodeBase64?: string | null;
+  } | null>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -31,6 +36,7 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (items.length === 0) return;
     setLoading(true);
+    setError("");
 
     const res = await fetch("/api/orders", {
       method: "POST",
@@ -52,7 +58,13 @@ export default function CheckoutPage() {
     if (data.success) {
       markPurchased();
       clear();
-      setSuccess({ orderId: data.orderId, pixCode: data.pixCode });
+      setSuccess({
+        orderId: data.orderId,
+        pixCode: data.pixCode,
+        pixQrCodeBase64: data.pixQrCodeBase64,
+      });
+    } else {
+      setError(data.message || "Não foi possível criar o pedido.");
     }
   }
 
@@ -63,14 +75,31 @@ export default function CheckoutPage() {
         <main className="page">
           <div className="container checkout-success">
             <h1>Pedido confirmado!</h1>
-            <p>Número: <strong>{success.orderId}</strong></p>
-            {success.pixCode && (
+            <p>
+              Número: <strong>{success.orderId}</strong>
+            </p>
+            {success.pixQrCodeBase64 && (
               <div className="pix-box">
-                <p>Copie o código PIX:</p>
-                <code>{success.pixCode}</code>
+                <p>Escaneie o QR Code PIX:</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`data:image/png;base64,${success.pixQrCodeBase64}`}
+                  alt="QR Code PIX"
+                  width={220}
+                  height={220}
+                  style={{ margin: "1rem auto", display: "block" }}
+                />
               </div>
             )}
-            <Link href="/conta" className="btn btn--gold">Ver meus pedidos</Link>
+            {success.pixCode && (
+              <div className="pix-box">
+                <p>Ou copie o código PIX:</p>
+                <code style={{ wordBreak: "break-all" }}>{success.pixCode}</code>
+              </div>
+            )}
+            <Link href="/conta" className="btn btn--gold">
+              Ver meus pedidos
+            </Link>
           </div>
         </main>
         <SiteFooter />
@@ -87,41 +116,81 @@ export default function CheckoutPage() {
             <h1>Checkout</h1>
             {(["name", "email", "phone", "cpf"] as const).map((field) => (
               <label key={field} className="form-field">
-                <span>{field === "name" ? "Nome" : field === "email" ? "E-mail" : field === "phone" ? "Telefone" : "CPF"}</span>
+                <span>
+                  {field === "name"
+                    ? "Nome"
+                    : field === "email"
+                      ? "E-mail"
+                      : field === "phone"
+                        ? "Telefone"
+                        : "CPF"}
+                </span>
                 <input
                   required={field !== "cpf"}
+                  type={field === "email" ? "email" : "text"}
                   value={form[field]}
                   onChange={(e) => setForm({ ...form, [field]: e.target.value })}
                 />
               </label>
             ))}
             <h3>Endereço</h3>
-            {(["cep", "street", "number", "complement", "neighborhood", "city", "state"] as const).map((field) => (
-              <label key={field} className="form-field">
-                <span>{field.toUpperCase()}</span>
-                <input
-                  required={field !== "complement"}
-                  value={form[field]}
-                  onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-                />
-              </label>
-            ))}
+            {(["cep", "street", "number", "complement", "neighborhood", "city", "state"] as const).map(
+              (field) => (
+                <label key={field} className="form-field">
+                  <span>{field.toUpperCase()}</span>
+                  <input
+                    required={field !== "complement"}
+                    value={form[field]}
+                    onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                  />
+                </label>
+              ),
+            )}
 
             <div className="payment-options">
-              <label><input type="radio" checked={payment === "pix"} onChange={() => setPayment("pix")} /> PIX (-5%)</label>
-              <label><input type="radio" checked={payment === "card"} onChange={() => setPayment("card")} /> Cartão</label>
+              <label>
+                <input
+                  type="radio"
+                  checked={payment === "pix"}
+                  onChange={() => setPayment("pix")}
+                />{" "}
+                PIX (-5%)
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  checked={payment === "card"}
+                  onChange={() => setPayment("card")}
+                />{" "}
+                Cartão
+              </label>
             </div>
 
-            <button type="submit" className="btn btn--gold btn--full" disabled={loading || items.length === 0}>
+            {error && <p className="form-error">{error}</p>}
+
+            <button
+              type="submit"
+              className="btn btn--gold btn--full"
+              disabled={loading || items.length === 0}
+            >
               {loading ? "Processando…" : `Pagar ${formatPrice(t.total)}`}
             </button>
           </form>
 
           <aside className="cart-summary">
             <h3>Resumo ({items.length} itens)</h3>
-            <div className="cart-summary__row"><span>Subtotal</span><span>{formatPrice(t.subtotal)}</span></div>
-            <div className="cart-summary__row"><span>Frete</span><span>{t.shipping === 0 ? "Grátis" : formatPrice(t.shipping)}</span></div>
-            <div className="cart-summary__row cart-summary__total"><span>Total</span><span>{formatPrice(t.total)}</span></div>
+            <div className="cart-summary__row">
+              <span>Subtotal</span>
+              <span>{formatPrice(t.subtotal)}</span>
+            </div>
+            <div className="cart-summary__row">
+              <span>Frete</span>
+              <span>{t.shipping === 0 ? "Grátis" : formatPrice(t.shipping)}</span>
+            </div>
+            <div className="cart-summary__row cart-summary__total">
+              <span>Total</span>
+              <span>{formatPrice(t.total)}</span>
+            </div>
           </aside>
         </div>
       </main>

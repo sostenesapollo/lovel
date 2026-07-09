@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminUnauthorized, isAdminAuthorized } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
+import { sendOrderStatusEmail } from "@/lib/order-emails";
 
 const schema = z.object({ status: z.string() });
 
@@ -16,10 +17,19 @@ export async function PUT(
     return NextResponse.json({ message: "Status inválido." }, { status: 400 });
   }
 
+  const status = body.data.status as
+    | "pending_payment"
+    | "paid"
+    | "shipped"
+    | "delivered"
+    | "cancelled";
+
   const order = await prisma.order.update({
     where: { id },
-    data: { status: body.data.status as "pending_payment" | "paid" | "shipped" | "delivered" | "cancelled" },
+    data: { status },
   });
+
+  void sendOrderStatusEmail(order, status);
 
   return NextResponse.json({ success: true, order });
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ImageCarousel } from "@/components/image-carousel";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { useCart } from "@/context/cart-context";
 import type { Product } from "@/lib/types";
@@ -14,7 +14,6 @@ export default function ProductPage() {
   const { add } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [selected, setSelected] = useState(0);
-  const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
     fetch(`/api/products/${params.slug}`)
@@ -43,18 +42,7 @@ export default function ProductPage() {
       <main className="page page--pdp">
         <div className="container pdp">
           <div className="pdp__gallery">
-            <div className="pdp__main-image">
-              <Image src={images[activeImage]} alt={product.name} width={600} height={600} unoptimized />
-            </div>
-            {images.length > 1 && (
-              <div className="pdp__thumbs">
-                {images.map((img, i) => (
-                  <button key={img} type="button" className={`pdp__thumb${i === activeImage ? " pdp__thumb--active" : ""}`} onClick={() => setActiveImage(i)}>
-                    <Image src={img} alt="" width={80} height={80} unoptimized />
-                  </button>
-                ))}
-              </div>
-            )}
+            <ImageCarousel images={images} alt={product.name} />
           </div>
           <div className="pdp__info">
             <span className="pdp__brand">{product.brand}</span>

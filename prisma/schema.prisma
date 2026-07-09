@@ -41,24 +41,44 @@ model User {
   @@index([createdAt(sort: Desc)])
 }
 
+model Category {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  subtitle       String   @default("")
+  image          String   @default("")
+  showOnHome     Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  /// Labels de volumetria disponíveis nesta categoria, ex.: ["4ml","10ml","100ml"]
+  variantLabels  Json     @default("[]")
+  /// Subcategorias: [{ "slug": "arabes", "label": "Árabes" }]
+  subcategories  Json     @default("[]")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([showOnHome])
+  @@index([sortOrder])
+}
+
 model Product {
   id             String   @id
   slug           String   @unique
   brand          String
   name           String
   type           String
-  subcategory    String
+  subcategory    String   @default("")
   category       String
   image          String
   images         Json
-  description    String
+  description    String   @default("")
   notes          Json?
-  badges         Json
+  badges         Json     @default("[]")
   variants       Json
   defaultVariant Int      @default(0)
   featured       Boolean  @default(false)
   isLaunch       Boolean  @default(false)
   soldOut        Boolean  @default(false)
+  promoText      String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -78,25 +98,29 @@ model Coupon {
 }
 
 model Order {
-  id        String      @id
-  userId    String?
-  user      User?       @relation(fields: [userId], references: [id])
-  userEmail String?
-  customer  Json
-  items     Json
-  payment   String
-  coupon    Json?
-  subtotal  Float
-  discount  Float       @default(0)
-  shipping  Float       @default(0)
-  total     Float
-  status    OrderStatus @default(pending_payment)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id              String      @id
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id])
+  userEmail       String?
+  customer        Json
+  items           Json
+  payment         String
+  paymentId       String?
+  pixQrCode       String?
+  pixQrCodeBase64 String?
+  coupon          Json?
+  subtotal        Float
+  discount        Float       @default(0)
+  shipping        Float       @default(0)
+  total           Float
+  status          OrderStatus @default(pending_payment)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   @@index([userId])
   @@index([userEmail])
   @@index([status])
+  @@index([paymentId])
   @@index([createdAt(sort: Desc)])
 }
 
