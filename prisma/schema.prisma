@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum UserStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum OrderStatus {
+  pending_payment
+  paid
+  shipped
+  delivered
+  cancelled
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  role         UserRole   @default(CUSTOMER)
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  orders       Order[]
+  emailLogs    EmailLog[]
+
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Product {
+  id             String   @id
+  slug           String   @unique
+  brand          String
+  name           String
+  type           String
+  subcategory    String
+  category       String
+  image          String
+  images         Json
+  description    String
+  notes          Json?
+  badges         Json
+  variants       Json
+  defaultVariant Int      @default(0)
+  featured       Boolean  @default(false)
+  isLaunch       Boolean  @default(false)
+  soldOut        Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([type])
+  @@index([featured])
+  @@index([isLaunch])
+}
+
+model Coupon {
+  code              String  @id
+  type              String
+  value             Float
+  minOrder          Float   @default(0)
+  firstPurchaseOnly Boolean @default(false)
+  description       String?
+  active            Boolean @default(true)
+}
+
+model Order {
+  id        String      @id
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id])
+  userEmail String?
+  customer  Json
+  items     Json
+  payment   String
+  coupon    Json?
+  subtotal  Float
+  discount  Float       @default(0)
+  shipping  Float       @default(0)
+  total     Float
+  status    OrderStatus @default(pending_payment)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([userEmail])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  userEmail String
+  template  String
+  subject   String
+  sentAt    DateTime @default(now())
+
+  @@index([userEmail])
+  @@index([sentAt(sort: Desc)])
+}

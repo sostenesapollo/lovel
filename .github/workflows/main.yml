@@ -1,0 +1,36 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "legacy/**"
+      - "server/**"
+  workflow_dispatch:
+
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: sostenesapollo/github-workflows/.github/workflows/docker-coolify-deploy.yml@v2
+    permissions:
+      contents: read
+      packages: write
+    with:
+      app_name: lovel
+      repo_name: lovel
+      deploy_branch: main
+      docker_context: .
+      dockerfile: ./Dockerfile
+      coolify_deploy_uuid: "e94spl9klhnl6o2zofjqd9jj"
+    secrets:
+      COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+      COOLIFY_API_URL: ${{ secrets.COOLIFY_API_URL }}
+      NTFY_URL: ${{ secrets.NTFY_URL }}
+      PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
+      EVOLUTION_API_URL: ${{ secrets.EVOLUTION_API_URL }}
+      EVOLUTION_API_KEY: ${{ secrets.EVOLUTION_API_KEY }}
+      WHATSAPP_NOTIFY_NUMBER: ${{ secrets.WHATSAPP_NOTIFY_NUMBER }}

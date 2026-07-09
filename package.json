@@ -1,10 +1,42 @@
 {
-  "name": "lovel-ecommerce",
+  "name": "lovel",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "npx --yes serve . -p 8080",
-    "api": "cd server && npm install && npm start",
-    "dev": "npx --yes concurrently \"npm run start\" \"npm run api\""
+    "dev": "prisma generate && node node_modules/next/dist/bin/next dev",
+    "build": "prisma generate && node node_modules/next/dist/bin/next build",
+    "build:docker": "prisma generate && node node_modules/next/dist/bin/next build",
+    "start": "node node_modules/next/dist/bin/next start",
+    "lint": "eslint",
+    "db:push": "prisma db push",
+    "db:seed": "node --import tsx prisma/seed.ts",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1079.0",
+    "@aws-sdk/s3-request-presigner": "^3.1079.0",
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.11.1",
+    "dotenv": "^17.4.2",
+    "jose": "^6.2.3",
+    "next": "16.2.10",
+    "prisma": "^7.8.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "resend": "^6.17.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "tsx": "^4.23.0",
+    "typescript": "^5"
   }
 }

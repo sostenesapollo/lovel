@@ -1,16 +1,16 @@
 [
   {
     "id": "u-admin",
-    "email": "admin@lovel.com",
-    "password": "admin123",
-    "name": "Admin LOVEL",
+    "email": "sostenesapollo25@gmail.com",
+    "password": "jacare12345!",
+    "name": "Sostenes Apollo",
     "role": "admin"
   },
   {
-    "id": "u-demo",
-    "email": "cliente@email.com",
-    "password": "123456",
-    "name": "Maria Silva",
+    "id": "u-joyce",
+    "email": "joycehellen",
+    "password": "jacare12345!",
+    "name": "Joyce Hellen",
     "role": "customer"
   }
 ]
