@@ -30,6 +30,8 @@ export type Product = {
   isLaunch?: boolean;
   soldOut?: boolean;
   active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type CartItem = {

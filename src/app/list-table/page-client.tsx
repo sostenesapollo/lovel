@@ -79,6 +79,7 @@ type ProductForm = {
   featured: boolean;
   isLaunch: boolean;
   soldOut: boolean;
+  active: boolean;
   promoText: string;
   notesTop: string;
   notesHeart: string;
@@ -88,6 +89,9 @@ type ProductForm = {
   images: string[];
   image: string;
 };
+
+const PRODUCT_DRAFT_KEY = "admin_product_draft_id";
+const DRAFT_AUTOSAVE_MS = 900;
 
 type CategoryForm = {
   id?: string;
@@ -141,6 +145,7 @@ function emptyProductForm(type = ""): ProductForm {
     featured: false,
     isLaunch: false,
     soldOut: false,
+    active: false,
     promoText: "",
     notesTop: "",
     notesHeart: "",
@@ -165,6 +170,7 @@ function productToForm(p: AdminProduct): ProductForm {
     featured: Boolean(p.featured),
     isLaunch: Boolean(p.isLaunch),
     soldOut: Boolean(p.soldOut),
+    active: p.active !== false,
     promoText: p.promoText ?? "",
     notesTop: p.notes?.top ?? "",
     notesHeart: p.notes?.heart ?? "",
@@ -180,6 +186,37 @@ function productToForm(p: AdminProduct): ProductForm {
     defaultVariant: p.defaultVariant ?? 0,
     images: p.images?.length ? [...p.images] : p.image ? [p.image] : [],
     image: p.image ?? "",
+  };
+}
+
+function buildProductPayload(form: ProductForm, opts?: { active?: boolean }) {
+  return {
+    brand: form.brand.trim(),
+    name: form.name.trim(),
+    type: form.type,
+    subcategory: form.subcategory,
+    category: form.category || form.type,
+    slug: form.slug || undefined,
+    description: form.description,
+    featured: form.featured,
+    isLaunch: form.isLaunch,
+    soldOut: form.soldOut,
+    active: opts?.active ?? form.active,
+    promoText: form.promoText || null,
+    notes: {
+      top: form.notesTop || undefined,
+      heart: form.notesHeart || undefined,
+      base: form.notesBase || undefined,
+    },
+    variants: form.variants.map((v, i) => ({
+      label: v.label,
+      price: Number(v.price) || 0,
+      sku: v.sku || `${form.slug || form.name}-${i + 1}`,
+      ...(v.oldPrice != null && v.oldPrice !== 0 ? { oldPrice: Number(v.oldPrice) } : {}),
+    })),
+    defaultVariant: form.defaultVariant,
+    images: form.images,
+    image: form.images[0] ?? form.image ?? "",
   };
 }
 
@@ -419,6 +456,12 @@ export default function ListTablePage() {
   const [productModal, setProductModal] = useState(false);
   const [productForm, setProductForm] = useState<ProductForm>(emptyProductForm());
   const [variantLabelMode, setVariantLabelMode] = useState<"pick" | "free">("free");
+  const [draftStatus, setDraftStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draftInFlight = useRef(false);
+  const draftQueued = useRef(false);
+  const productFormRef = useRef(productForm);
+  const skipDraftAutosave = useRef(false);
 
   const [categoryModal, setCategoryModal] = useState(false);
   const [categoryForm, setCategoryForm] = useState<CategoryForm>(emptyCategoryForm());
@@ -428,6 +471,7 @@ export default function ListTablePage() {
   const [inlineValue, setInlineValue] = useState("");
   const [inlineSaving, setInlineSaving] = useState(false);
   const skipInlineBlur = useRef(false);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [page, setPage] = useState(0);
 
   useEffect(() => {
@@ -732,22 +776,99 @@ export default function ListTablePage() {
   }
 
   function openNewProduct() {
+    const draftId = typeof window !== "undefined" ? localStorage.getItem(PRODUCT_DRAFT_KEY) : null;
+    if (draftId) {
+      const draft = products.find((p) => p.id === draftId && p.active === false);
+      if (draft) {
+        skipDraftAutosave.current = true;
+        setProductForm(productToForm(draft));
+        const cat = categoryBySlug.get(draft.type);
+        setVariantLabelMode(cat?.variantLabels?.length ? "pick" : "free");
+        setDraftStatus("saved");
+        setProductModal(true);
+        return;
+      }
+      // Só limpa se a lista já carregou e o rascunho sumiu (publicado/excluído).
+      if (products.length > 0) localStorage.removeItem(PRODUCT_DRAFT_KEY);
+    }
+
     const firstType = categories[0]?.slug ?? "";
     const form = emptyProductForm(firstType);
     if (categories[0]) {
       form.category = categories[0].title;
       form.type = categories[0].slug;
     }
+    skipDraftAutosave.current = true;
     setProductForm(form);
     setVariantLabelMode(categories[0]?.variantLabels?.length ? "pick" : "free");
+    setDraftStatus("idle");
     setProductModal(true);
   }
 
   function openEditProduct(p: AdminProduct) {
+    skipDraftAutosave.current = true;
     setProductForm(productToForm(p));
     const cat = categoryBySlug.get(p.type);
     setVariantLabelMode(cat?.variantLabels?.length ? "pick" : "free");
+    setDraftStatus("idle");
     setProductModal(true);
+  }
+
+  function closeProductModal() {
+    if (draftTimer.current) {
+      clearTimeout(draftTimer.current);
+      draftTimer.current = null;
+      const form = productFormRef.current;
+      if ((!form.id || !form.active) && form.brand.trim() && form.name.trim() && form.type) {
+        void persistProductDraft(form);
+      }
+    }
+    setProductModal(false);
+    setDraftStatus("idle");
+  }
+
+  useEffect(() => {
+    productFormRef.current = productForm;
+  }, [productForm]);
+
+  useEffect(() => {
+    if (!productModal) return;
+    if (skipDraftAutosave.current) {
+      skipDraftAutosave.current = false;
+      return;
+    }
+    // Autosave só em criação / rascunho desativado — produto publicado salva no botão.
+    if (productForm.id && productForm.active) return;
+    if (!productForm.brand.trim() || !productForm.name.trim() || !productForm.type) return;
+
+    if (draftTimer.current) clearTimeout(draftTimer.current);
+    draftTimer.current = setTimeout(() => {
+      void persistProductDraft(productFormRef.current);
+    }, DRAFT_AUTOSAVE_MS);
+
+    return () => {
+      if (draftTimer.current) {
+        clearTimeout(draftTimer.current);
+        draftTimer.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- autosave on form edits only
+  }, [productForm, productModal]);
+
+  function wrapDescriptionBold() {
+    const el = descriptionRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const value = el.value;
+    const selected = value.slice(start, end) || "texto";
+    const next = `${value.slice(0, start)}**${selected}**${value.slice(end)}`;
+    setProductForm((f) => ({ ...f, description: next }));
+    requestAnimationFrame(() => {
+      el.focus();
+      const cursor = start + 2 + selected.length;
+      el.setSelectionRange(start + 2, cursor);
+    });
   }
 
   function updateVariant(index: number, patch: Partial<ProductVariant>) {
@@ -803,40 +924,17 @@ export default function ListTablePage() {
 
   async function saveProduct(e: React.FormEvent) {
     e.preventDefault();
-    if (!productForm.brand || !productForm.name || !productForm.type) {
+    if (!productForm.brand.trim() || !productForm.name.trim() || !productForm.type) {
       toast("Marca, nome e tipo são obrigatórios.");
       return;
     }
+    if (draftTimer.current) {
+      clearTimeout(draftTimer.current);
+      draftTimer.current = null;
+    }
     setSaving(true);
     try {
-      const payload = {
-        brand: productForm.brand,
-        name: productForm.name,
-        type: productForm.type,
-        subcategory: productForm.subcategory,
-        category: productForm.category || productForm.type,
-        slug: productForm.slug || undefined,
-        description: productForm.description,
-        featured: productForm.featured,
-        isLaunch: productForm.isLaunch,
-        soldOut: productForm.soldOut,
-        promoText: productForm.promoText || null,
-        notes: {
-          top: productForm.notesTop || undefined,
-          heart: productForm.notesHeart || undefined,
-          base: productForm.notesBase || undefined,
-        },
-        variants: productForm.variants.map((v, i) => ({
-          label: v.label,
-          price: Number(v.price) || 0,
-          sku: v.sku || `${productForm.slug || productForm.name}-${i + 1}`,
-          ...(v.oldPrice != null && v.oldPrice !== 0 ? { oldPrice: Number(v.oldPrice) } : {}),
-        })),
-        defaultVariant: productForm.defaultVariant,
-        images: productForm.images,
-        image: productForm.images[0] ?? productForm.image ?? "",
-      };
-
+      const payload = buildProductPayload(productForm, { active: true });
       const isEdit = Boolean(productForm.id);
       const res = await fetch(isEdit ? `/api/admin/products/${productForm.id}` : "/api/admin/products", {
         method: isEdit ? "PUT" : "POST",
@@ -848,11 +946,74 @@ export default function ListTablePage() {
         toast(data.message ?? "Erro ao salvar produto.");
         return;
       }
-      toast(isEdit ? "Produto atualizado." : "Produto criado.");
-      setProductModal(false);
+      localStorage.removeItem(PRODUCT_DRAFT_KEY);
+      toast(isEdit ? "Produto atualizado." : "Produto publicado.");
+      closeProductModal();
       loadAll();
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function persistProductDraft(form: ProductForm) {
+    if (!form.brand.trim() || !form.name.trim() || !form.type) return;
+    if (draftInFlight.current) {
+      draftQueued.current = true;
+      return;
+    }
+
+    draftInFlight.current = true;
+    setDraftStatus("saving");
+    try {
+      // Autosave sempre deixa desativado; publicar é só pelo botão.
+      const payload = buildProductPayload(form, { active: false });
+      const isEdit = Boolean(form.id);
+      const res = await fetch(isEdit ? `/api/admin/products/${form.id}` : "/api/admin/products", {
+        method: isEdit ? "PUT" : "POST",
+        headers: { ...headers(), "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setDraftStatus("error");
+        return;
+      }
+
+      const saved = data.product as AdminProduct | undefined;
+      if (saved?.id) {
+        const isDraft = saved.active === false;
+        if (isDraft) localStorage.setItem(PRODUCT_DRAFT_KEY, saved.id);
+        skipDraftAutosave.current = true;
+        setProductForm((f) => ({
+          ...f,
+          id: saved.id,
+          slug: f.slug || saved.slug,
+          active: saved.active !== false,
+        }));
+        setProducts((list) => {
+          const next: AdminProduct = {
+            ...saved,
+            active: saved.active !== false,
+            promoText: saved.promoText ?? null,
+          };
+          const idx = list.findIndex((p) => p.id === saved.id);
+          if (idx >= 0) {
+            const copy = [...list];
+            copy[idx] = { ...list[idx], ...next };
+            return copy;
+          }
+          return [next, ...list];
+        });
+      }
+      setDraftStatus("saved");
+    } catch {
+      setDraftStatus("error");
+    } finally {
+      draftInFlight.current = false;
+      if (draftQueued.current) {
+        draftQueued.current = false;
+        void persistProductDraft(productFormRef.current);
+      }
     }
   }
 
@@ -863,6 +1024,9 @@ export default function ListTablePage() {
       const data = await res.json().catch(() => ({}));
       toast(data.message ?? "Erro ao excluir.");
       return;
+    }
+    if (localStorage.getItem(PRODUCT_DRAFT_KEY) === id) {
+      localStorage.removeItem(PRODUCT_DRAFT_KEY);
     }
     toast("Produto excluído.");
     loadAll();
@@ -875,6 +1039,19 @@ export default function ListTablePage() {
       body: JSON.stringify({ soldOut: !p.soldOut }),
     });
     toast(p.soldOut ? "Produto ativado." : "Produto esgotado.");
+    loadAll();
+  }
+
+  async function toggleProductActive(p: AdminProduct) {
+    const next = p.active === false;
+    await fetch(`/api/admin/products/${p.id}`, {
+      method: "PUT",
+      headers: { ...headers(), "Content-Type": "application/json" },
+      body: JSON.stringify({ active: next }),
+    });
+    if (next) localStorage.removeItem(PRODUCT_DRAFT_KEY);
+    else localStorage.setItem(PRODUCT_DRAFT_KEY, p.id);
+    toast(next ? "Produto publicado." : "Produto desativado (rascunho).");
     loadAll();
   }
 
@@ -1309,12 +1486,19 @@ export default function ListTablePage() {
                     const thumb = p.images?.[0] || p.image;
                     const editingName = inlineEdit?.id === p.id && inlineEdit.field === "name";
                     const editingPrice = inlineEdit?.id === p.id && inlineEdit.field === "price";
-                    const statusLabel = p.soldOut ? "Esgotado" : "Ativo";
+                    const isDraft = p.active === false;
+                    const statusLabel = isDraft ? "Rascunho" : p.soldOut ? "Esgotado" : "Ativo";
                     return (
                       <tr key={p.id}>
                         <td className="admin-table__status-col">
                           <span
-                            className={`admin-status-dot${p.soldOut ? " admin-status-dot--sold-out" : " admin-status-dot--active"}`}
+                            className={`admin-status-dot${
+                              isDraft
+                                ? " admin-status-dot--draft"
+                                : p.soldOut
+                                  ? " admin-status-dot--sold-out"
+                                  : " admin-status-dot--active"
+                            }`}
                             title={statusLabel}
                             aria-label={statusLabel}
                           />
@@ -1418,6 +1602,14 @@ export default function ListTablePage() {
                           <button type="button" className="btn btn--sm btn--edit" onClick={() => openEditProduct(p)}>
                             <EditPencilIcon />
                             Editar
+                          </button>
+                          <button
+                            type="button"
+                            className={`btn btn--sm ${p.active === false ? "btn--success" : "btn--outline"}`}
+                            onClick={() => toggleProductActive(p)}
+                          >
+                            {p.active === false ? <CheckActivateIcon /> : <BanIcon />}
+                            {p.active === false ? "Publicar" : "Desativar"}
                           </button>
                           <button
                             type="button"
@@ -2020,12 +2212,39 @@ export default function ListTablePage() {
           className="admin-modal"
           role="dialog"
           aria-modal="true"
-          onClick={() => setProductModal(false)}
+          onClick={() => closeProductModal()}
         >
           <div className="admin-modal__panel" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal__header">
-              <h2 className="admin-modal__title">{productForm.id ? "Editar produto" : "Novo produto"}</h2>
-              <button type="button" className="admin-modal__close" onClick={() => setProductModal(false)}>
+              <div>
+                <h2 className="admin-modal__title">
+                  {productForm.id
+                    ? productForm.active
+                      ? "Editar produto"
+                      : "Rascunho"
+                    : "Novo produto"}
+                </h2>
+                {productForm.id && !productForm.active && draftStatus !== "saving" && draftStatus !== "error" && (
+                  <p className="admin-draft-hint">Desativado na loja · salvando automaticamente</p>
+                )}
+                {!productForm.id && draftStatus === "idle" && (
+                  <p className="admin-draft-hint">Salva como rascunho ao preencher marca e nome</p>
+                )}
+                {draftStatus === "saving" && (
+                  <p className="admin-draft-hint">
+                    {productForm.active ? "Salvando…" : "Salvando rascunho…"}
+                  </p>
+                )}
+                {draftStatus === "saved" && productForm.id && (
+                  <p className="admin-draft-hint admin-draft-hint--ok">
+                    {productForm.active ? "Alterações salvas" : "Rascunho salvo"}
+                  </p>
+                )}
+                {draftStatus === "error" && (
+                  <p className="admin-draft-hint admin-draft-hint--err">Falha ao salvar</p>
+                )}
+              </div>
+              <button type="button" className="admin-modal__close" onClick={() => closeProductModal()}>
                 ×
               </button>
             </div>
@@ -2101,13 +2320,35 @@ export default function ListTablePage() {
                     placeholder="auto se vazio"
                   />
                 </label>
-                <label className="form-field form-field--full">
+                <div className="form-field form-field--full">
                   <span>Descrição</span>
+                  <div className="rich-text-toolbar">
+                    <button
+                      type="button"
+                      className="rich-text-toolbar__btn"
+                      title="Negrito (selecione o texto)"
+                      onClick={wrapDescriptionBold}
+                    >
+                      <strong>N</strong>
+                    </button>
+                    <span className="rich-text-toolbar__hint">
+                      Selecione o texto e clique em N, ou use **assim**
+                    </span>
+                  </div>
                   <textarea
+                    ref={descriptionRef}
                     value={productForm.description}
                     onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                    onKeyDown={(e) => {
+                      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+                        e.preventDefault();
+                        wrapDescriptionBold();
+                      }
+                    }}
+                    rows={5}
+                    placeholder="Descrição do produto. Use **negrito** para destacar."
                   />
-                </label>
+                </div>
                 <label className="form-field form-field--full">
                   <span>Texto promo</span>
                   <input
@@ -2141,6 +2382,14 @@ export default function ListTablePage() {
                     onChange={(e) => setProductForm({ ...productForm, soldOut: e.target.checked })}
                   />
                   Esgotado
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={productForm.active}
+                    onChange={(e) => setProductForm({ ...productForm, active: e.target.checked })}
+                  />
+                  Publicado na loja
                 </label>
               </div>
 
@@ -2322,11 +2571,15 @@ export default function ListTablePage() {
               )}
 
               <div className="admin-form-footer">
-                <button type="button" className="btn btn--outline" onClick={() => setProductModal(false)}>
-                  Cancelar
+                <button type="button" className="btn btn--outline" onClick={() => closeProductModal()}>
+                  Fechar
                 </button>
                 <button type="submit" className="btn btn--gold" disabled={saving}>
-                  {saving ? "Salvando…" : "Salvar"}
+                  {saving
+                    ? "Salvando…"
+                    : productForm.active
+                      ? "Salvar"
+                      : "Publicar"}
                 </button>
               </div>
             </form>

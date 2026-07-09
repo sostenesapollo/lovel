@@ -10,7 +10,7 @@ import { useCart } from "@/context/cart-context";
 import { trackViewItem } from "@/lib/analytics";
 import { flyToCart } from "@/lib/fly-to-cart";
 import type { Product } from "@/lib/types";
-import { formatPrice, getVariant, pixPrice } from "@/lib/utils";
+import { formatPrice, formatProductDescription, getVariant, pixPrice } from "@/lib/utils";
 
 export default function ProductPage() {
   const params = useParams<{ slug: string }>();
@@ -103,7 +103,14 @@ export default function ProductPage() {
               <p className="pdp__pix">ou {formatPrice(pixPrice(variant.price))} no PIX (−5%)</p>
             </div>
 
-            <p className="pdp__description">{product.description}</p>
+            {product.description ? (
+              <div
+                className="pdp__description"
+                dangerouslySetInnerHTML={{
+                  __html: formatProductDescription(product.description),
+                }}
+              />
+            ) : null}
 
             {product.notes && (
               <div className="pdp__notes">

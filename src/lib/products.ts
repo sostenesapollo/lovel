@@ -45,11 +45,15 @@ export function parseProduct(row: {
   soldOut: boolean;
   active: boolean;
   promoText?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }) {
   return {
     ...row,
     active: row.active !== false,
     promoText: row.promoText ?? null,
+    createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : undefined,
+    updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : undefined,
     images: row.images as string[],
     notes: row.notes as Record<string, string> | undefined,
     badges: row.badges as Array<{ type: string; text: string }>,

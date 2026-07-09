@@ -127,3 +127,15 @@ export function interpolateTemplate(
 ) {
   return body.replace(/\{\{(\w+)\}\}/g, (_, key: string) => vars[key] ?? "");
 }
+
+/** Escapa HTML e converte **negrito** / quebras de linha para exibição na PDP. */
+export function formatProductDescription(raw: string) {
+  if (!raw) return "";
+  const escaped = raw
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n/g, "<br />");
+}

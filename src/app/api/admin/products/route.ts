@@ -5,7 +5,7 @@ import { parseProduct } from "@/lib/products";
 
 export async function GET(request: Request) {
   if (!isAdminAuthorized(request)) return adminUnauthorized();
-  const products = await prisma.product.findMany({ orderBy: { name: "asc" } });
+  const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
   return NextResponse.json(products.map(parseProduct));
 }
 
