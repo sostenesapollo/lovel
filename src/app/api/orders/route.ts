@@ -84,15 +84,31 @@ export async function POST(request: Request) {
     },
   });
 
-  if (!user && email) {
-    void ensureCustomerFromOrder({
-      email,
-      name: customer.name,
-      orderId: order.id,
-    }).catch((err) => console.error("[orders] ensureCustomerFromOrder:", err));
-  }
+  void (async () => {
+    let accountUrl: string | undefined;
+    let userId = order.userId;
 
-  void sendOrderStatusEmail(order, "pending_payment");
+    if (!user && email) {
+      try {
+        const ensured = await ensureCustomerFromOrder({
+          email,
+          name: customer.name,
+          orderId: order.id,
+        });
+        accountUrl = ensured?.accountUrl ?? undefined;
+        userId = ensured?.user.id ?? userId;
+      } catch (err) {
+        console.error("[orders] ensureCustomerFromOrder:", err);
+      }
+    }
+
+    await sendOrderStatusEmail(
+      { ...order, userId },
+      "pending_payment",
+      accountUrl ? { accountUrl } : undefined,
+    );
+  })().catch((err) => console.error("[orders] post-create emails:", err));
+
   void notifyNewOrder(order);
 
   return NextResponse.json({

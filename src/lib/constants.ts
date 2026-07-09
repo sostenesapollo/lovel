@@ -69,7 +69,7 @@ export const EMAIL_TEMPLATES = [
     id: "order_pending",
     name: "Pedido recebido",
     subject: "Pedido {{orderId}} recebido — LOVEL",
-    body: "Olá {{name}},\n\nRecebemos seu pedido {{orderId}} no valor de {{total}}.\n\nAguardamos a confirmação do pagamento para iniciar a separação.\n\nEquipe LOVEL",
+    body: "Olá {{name}},\n\nRecebemos seu pedido {{orderId}} no valor de {{total}}.\n\n{{pixBlock}}\n{{accountBlock}}\nAguardamos a confirmação do pagamento para iniciar a separação.\n\nEquipe LOVEL",
   },
   {
     id: "order_paid",

@@ -15,7 +15,13 @@ function fromAddress() {
 export function renderEmailHtml(body: string) {
   const htmlBody = body
     .split("\n")
-    .map((line) => (line.trim() ? `<p style="margin:0 0 12px;line-height:1.6;color:#1a1a1a;">${line}</p>` : ""))
+    .map((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return "";
+      // Blocos HTML (PIX, botões) passam direto; texto puro vira parágrafo.
+      if (trimmed.startsWith("<")) return trimmed;
+      return `<p style="margin:0 0 12px;line-height:1.6;color:#1a1a1a;">${trimmed}</p>`;
+    })
     .join("");
 
   return `<!DOCTYPE html>
@@ -33,12 +39,20 @@ export function renderEmailHtml(body: string) {
 </html>`;
 }
 
+export type EmailAttachment = {
+  filename: string;
+  content: Buffer | string;
+  contentId?: string;
+  contentType?: string;
+};
+
 export async function sendTemplateEmail(input: {
   to: string;
   subject: string;
   body: string;
   template: string;
   userId?: string;
+  attachments?: EmailAttachment[];
 }) {
   const resend = getResend();
   const { data, error } = await resend.emails.send({
@@ -46,6 +60,12 @@ export async function sendTemplateEmail(input: {
     to: input.to,
     subject: input.subject,
     html: renderEmailHtml(input.body),
+    attachments: input.attachments?.map((a) => ({
+      filename: a.filename,
+      content: a.content,
+      contentId: a.contentId,
+      contentType: a.contentType,
+    })),
   });
 
   if (error) throw new Error(error.message);
@@ -69,6 +89,7 @@ export async function sendInterpolatedEmail(input: {
   bodyTemplate: string;
   vars: Record<string, string>;
   userId?: string;
+  attachments?: EmailAttachment[];
 }) {
   const subject = interpolateTemplate(input.subject, input.vars);
   const body = interpolateTemplate(input.bodyTemplate, input.vars);
@@ -78,6 +99,7 @@ export async function sendInterpolatedEmail(input: {
     body,
     template: input.template,
     userId: input.userId,
+    attachments: input.attachments,
   });
 }
 

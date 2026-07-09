@@ -81,20 +81,32 @@ export async function sendResetPasswordEmail(user: {
   return token;
 }
 
-/** Cria conta para comprador guest (se ainda não existir) e envia e-mail para definir senha. */
+/**
+ * Cria/vincula conta do comprador guest.
+ * Se `issueSetPasswordLink` for true (padrão), gera token e devolve a URL —
+ * o e-mail do pedido usa esse link (não envia e-mail separado).
+ */
 export async function ensureCustomerFromOrder(input: {
   email: string;
   name?: string;
   orderId: string;
-}) {
+  issueSetPasswordLink?: boolean;
+}): Promise<{
+  user: { id: string; email: string; name: string; status: string };
+  accountUrl: string | null;
+  created: boolean;
+} | null> {
   const email = input.email.toLowerCase().trim();
   if (!email) return null;
 
+  const issueLink = input.issueSetPasswordLink !== false;
   const name = (input.name?.trim() || email.split("@")[0] || "Cliente").slice(0, 80);
   const existing = await prisma.user.findUnique({ where: { email } });
 
   if (existing) {
-    if (existing.status === "REVOKED") return existing;
+    if (existing.status === "REVOKED") {
+      return { user: existing, accountUrl: null, created: false };
+    }
     await prisma.order.updateMany({
       where: { userEmail: email, userId: null },
       data: { userId: existing.id },
@@ -103,7 +115,13 @@ export async function ensureCustomerFromOrder(input: {
       where: { id: input.orderId },
       data: { userId: existing.id, userEmail: email },
     });
-    return existing;
+
+    // Conta já existia: link vai para /conta (login). Só gera set-password se pedir.
+    return {
+      user: existing,
+      accountUrl: absoluteUrl("/conta"),
+      created: false,
+    };
   }
 
   const passwordHash = await hashPassword(randomBytes(32).toString("hex"));
@@ -125,8 +143,13 @@ export async function ensureCustomerFromOrder(input: {
     data: { userId: user.id, userEmail: email },
   });
 
-  void sendSetPasswordEmail(user);
-  return user;
+  let accountUrl: string | null = absoluteUrl("/conta");
+  if (issueLink) {
+    const { token } = await createPasswordResetToken(user.id);
+    accountUrl = resetPasswordUrl(token);
+  }
+
+  return { user, accountUrl, created: true };
 }
 
 export async function findValidResetToken(rawToken: string) {
