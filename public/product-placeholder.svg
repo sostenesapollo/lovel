@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" fill="none">
+  <rect width="800" height="800" fill="#F5F1EB"/>
+  <rect x="280" y="220" width="240" height="360" rx="8" stroke="#C9A962" stroke-width="2" fill="#EDE6DC"/>
+  <rect x="340" y="180" width="120" height="50" rx="4" fill="#C9A962" opacity="0.5"/>
+  <text x="400" y="620" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#8A7A68" letter-spacing="0.2em">LOVEL</text>
+</svg>

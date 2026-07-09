@@ -70,16 +70,20 @@ export async function notifyNewOrder(order: {
   userEmail?: string | null;
   customer?: unknown;
   payment?: string;
+  status?: string;
 }) {
   const customer = order.customer as { name?: string; email?: string } | null | undefined;
   const name = customer?.name ?? "cliente";
   const email = order.userEmail ?? customer?.email ?? "—";
   const total = order.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const awaiting = !order.status || order.status === "pending_payment";
 
   await sendNtfyNotification({
-    title: "LOVEL — novo pedido",
-    message: `${order.id} · ${name} (${email}) · ${total}${order.payment ? ` · ${order.payment}` : ""}`,
-    tags: ["shopping_bags", "lovel"],
+    title: awaiting ? "LOVEL — pagamento gerado (ainda não pago)" : "LOVEL — novo pedido",
+    message: `${order.id} · ${name} (${email}) · ${total}${order.payment ? ` · ${order.payment}` : ""}${
+      awaiting ? "\nAguardando confirmação do pagamento." : ""
+    }`,
+    tags: awaiting ? ["hourglass", "money_with_wings", "lovel"] : ["shopping_bags", "lovel"],
     priority: 4,
     click: `${appUrl()}/list-table`,
   });

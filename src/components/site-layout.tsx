@@ -13,6 +13,7 @@ const NAV = [
   { href: categoryPath("cabelos"), label: "Cabelos", key: "cabelos" },
   { href: categoryPath("skincare"), label: "Skincare", key: "skincare" },
   { href: "/categoria?tipo=lancamentos", label: "Lançamentos", key: "lancamentos" },
+  { href: "/depoimentos", label: "Depoimentos", key: "depoimentos" },
   { href: "/#contato", label: "Contato", key: "contato" },
 ];
 
@@ -100,6 +101,9 @@ export function SiteHeader({ activeNav = "" }: { activeNav?: string }) {
   );
 }
 
+const WA = "5585989716043";
+const WA_DISPLAY = "+55 85 98971-6043";
+
 export function SiteFooter() {
   return (
     <footer className="footer" id="contato">
@@ -111,15 +115,31 @@ export function SiteFooter() {
           </div>
           <p className="footer__tagline">Boutique · Essence · Soin</p>
           <p className="footer__text">Perfumes, cabelos e skincare premium.</p>
+          <div className="footer__social">
+            <a href="https://www.instagram.com/lovel.essence/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              Instagram
+            </a>
+            <a href="https://www.tiktok.com/@lovel.essence" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+              TikTok
+            </a>
+          </div>
         </div>
         <div>
           <h4 className="footer__heading">Contato</h4>
+          <a
+            className="footer__whatsapp"
+            href={`https://wa.me/${WA}?text=${encodeURIComponent("Olá! Vim pelo site da LOVEL.")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WhatsApp {WA_DISPLAY}
+          </a>
           <p className="footer__text">contato@lovel.com.br</p>
-          <p className="footer__text">WhatsApp: (11) 99999-9999</p>
         </div>
         <div>
           <h4 className="footer__heading">Institucional</h4>
           <Link href="/conta" className="footer__link">Minha conta</Link>
+          <Link href="/depoimentos" className="footer__link">Depoimentos</Link>
           <Link href="/categoria?tipo=perfumes" className="footer__link">Perfumes</Link>
         </div>
       </div>

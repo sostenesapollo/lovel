@@ -1,5 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
+import { CurationSection } from "@/components/curation-section";
 import { ProductCard } from "@/components/product-card";
 import { prisma } from "@/lib/db";
 import { parseProduct } from "@/lib/products";
@@ -26,21 +28,40 @@ export default async function HomePage() {
     <>
       <SiteHeader activeNav="home" />
       <main>
-        <section className="hero">
-          <div className="container hero__inner">
-            <div className="hero__content">
-              <p className="hero__eyebrow">Boutique · Essence · Soin</p>
-              <h1 className="hero__title">Essências que contam histórias</h1>
+        <section className="hero hero--split">
+          <div className="hero__copy">
+            <div className="hero__copy-inner">
+              <h1 className="hero__title">
+                A essência da elegância, <em>em cada gota.</em>
+              </h1>
               <p className="hero__subtitle">
-                Decants exclusivos, frascos inteiros e skincare importado selecionado para você.
+                Perfumes árabes, grifes e nicho, haircare importado e skincare de alta performance.
+                Escolha entre <em>frascos inteiros</em> ou nossos <em>decants</em> a partir de 4ml —
+                a experiência de luxo, do seu jeito.
               </p>
               <div className="hero__actions">
-                <Link href={categoryPath("perfumes")} className="btn btn--gold">Explorar Perfumes</Link>
-                <Link href="/categoria?tipo=lancamentos" className="btn btn--outline">Lançamentos</Link>
+                <Link href={categoryPath("perfumes")} className="btn btn--dark">
+                  Explorar perfumes →
+                </Link>
+                <Link href="/categoria?tipo=lancamentos" className="btn btn--text">
+                  Ver lançamentos
+                </Link>
               </div>
             </div>
           </div>
+          <div className="hero__media">
+            <Image
+              src="/hero-perfume.png"
+              alt="Frasco de perfume LOVEL"
+              fill
+              priority
+              sizes="(max-width: 900px) 100vw, 50vw"
+              className="hero__img"
+            />
+          </div>
         </section>
+
+        <CurationSection />
 
         {categories.length > 0 && (
           <section className="section">
@@ -68,7 +89,12 @@ export default async function HomePage() {
         {launches.length > 0 && (
           <section className="section section--alt">
             <div className="container">
-              <h2 className="section__title">Lançamentos</h2>
+              <div className="section__head">
+                <h2 className="section__title">Lançamentos</h2>
+                <Link href="/categoria?tipo=lancamentos" className="curation__link">
+                  Ver todos →
+                </Link>
+              </div>
               <div className="product-grid">{launches.map((p) => <ProductCard key={p.id} product={p} />)}</div>
             </div>
           </section>
@@ -76,8 +102,25 @@ export default async function HomePage() {
 
         <section className="section">
           <div className="container">
-            <h2 className="section__title">Destaques</h2>
+            <div className="section__head">
+              <h2 className="section__title">Destaques</h2>
+              <Link href={categoryPath("perfumes")} className="curation__link">
+                Ver todos →
+              </Link>
+            </div>
             <div className="product-grid">{featured.map((p) => <ProductCard key={p.id} product={p} />)}</div>
+          </div>
+        </section>
+
+        <section className="section section--alt reviews-teaser">
+          <div className="container reviews-section__header">
+            <p className="reviews-section__eyebrow">Depoimentos</p>
+            <h2 className="reviews-section__title">
+              Amado por quem entende de <em>essência</em>
+            </h2>
+            <Link href="/depoimentos" className="btn btn--dark" style={{ marginTop: "1.5rem" }}>
+              Ler depoimentos
+            </Link>
           </div>
         </section>
       </main>

@@ -14,33 +14,41 @@ export default function ProductPage() {
   const { add } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [selected, setSelected] = useState(0);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     fetch(`/api/products/${params.slug}`)
       .then((r) => r.json())
       .then((p) => {
+        if (p?.error) {
+          setProduct(null);
+          return;
+        }
         setProduct(p);
         setSelected(p.defaultVariant ?? 0);
-      });
+      })
+      .catch(() => setProduct(null));
   }, [params.slug]);
 
   if (!product) {
     return (
       <>
         <SiteHeader />
-        <div className="container" style={{ padding: "4rem 0" }}>Carregando…</div>
+        <div className="container" style={{ padding: "4rem 0" }}>
+          Carregando…
+        </div>
       </>
     );
   }
 
   const variant = getVariant(product, selected);
-  const images = product.images?.length ? product.images : [product.image];
+  const images = product.images?.length ? product.images : product.image ? [product.image] : [];
 
   return (
     <>
       <SiteHeader />
       <main className="page page--pdp">
-        <div className="container pdp">
+        <div className="container pdp pdp__grid">
           <div className="pdp__gallery">
             <ImageCarousel images={images} alt={product.name} />
           </div>
@@ -48,37 +56,73 @@ export default function ProductPage() {
             <span className="pdp__brand">{product.brand}</span>
             <h1 className="pdp__title">{product.name}</h1>
             <span className="pdp__category">{product.category}</span>
+
             {product.variants.length > 1 && (
-              <div className="variant-selector">
-                {product.variants.map((v, i) => (
-                  <button
-                    key={v.sku}
-                    type="button"
-                    className={`variant-btn${i === selected ? " variant-btn--active" : ""}`}
-                    onClick={() => setSelected(i)}
-                  >
-                    {v.label}
-                  </button>
-                ))}
+              <div className="pdp__variants">
+                <p className="pdp__variants-label">Escolha o tamanho</p>
+                <div className="variant-selector variant-selector--pdp" role="group" aria-label="Tamanho">
+                  {product.variants.map((v, i) => (
+                    <button
+                      key={v.sku}
+                      type="button"
+                      className={`variant-btn${i === selected ? " variant-btn--active" : ""}`}
+                      disabled={v.disabled}
+                      onClick={() => setSelected(i)}
+                    >
+                      <span className="variant-btn__label">{v.label}</span>
+                      <span className="variant-btn__price">{formatPrice(v.price)}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
-            <div className="pdp__price-row">
-              <span className="pdp__price">{formatPrice(variant.price)}</span>
-              {variant.oldPrice && <span className="pdp__price-old">{formatPrice(variant.oldPrice)}</span>}
+
+            <div className="pdp__price-block">
+              <div className="pdp__price-row">
+                <span className="pdp__price">{formatPrice(variant.price)}</span>
+                {variant.oldPrice && <span className="pdp__price-old">{formatPrice(variant.oldPrice)}</span>}
+              </div>
+              <p className="pdp__pix">ou {formatPrice(pixPrice(variant.price))} no PIX (−5%)</p>
             </div>
-            <p className="pdp__pix">ou {formatPrice(pixPrice(variant.price))} no PIX (-5%)</p>
+
             <p className="pdp__description">{product.description}</p>
+
             {product.notes && (
               <div className="pdp__notes">
-                {product.notes.top && <p><strong>Topo:</strong> {product.notes.top}</p>}
-                {product.notes.heart && <p><strong>Coração:</strong> {product.notes.heart}</p>}
-                {product.notes.base && <p><strong>Fundo:</strong> {product.notes.base}</p>}
+                {product.notes.top && (
+                  <p>
+                    <strong>Topo:</strong> {product.notes.top}
+                  </p>
+                )}
+                {product.notes.heart && (
+                  <p>
+                    <strong>Coração:</strong> {product.notes.heart}
+                  </p>
+                )}
+                {product.notes.base && (
+                  <p>
+                    <strong>Fundo:</strong> {product.notes.base}
+                  </p>
+                )}
               </div>
             )}
-            <button type="button" className="btn btn--gold btn--lg" disabled={product.soldOut} onClick={() => add(product, selected)}>
-              {product.soldOut ? "Indisponível" : "Adicionar ao carrinho"}
-            </button>
-            <Link href="/carrinho" className="btn btn--outline btn--lg">Ver carrinho</Link>
+
+            <div className="pdp__actions">
+              <button
+                type="button"
+                className="btn btn--dark btn--lg"
+                disabled={product.soldOut}
+                onClick={() => {
+                  add(product, selected);
+                  setAdded(true);
+                }}
+              >
+                {product.soldOut ? "Indisponível" : added ? "Adicionado ✓" : "Adicionar ao carrinho"}
+              </button>
+              <Link href="/carrinho" className="btn btn--outline btn--lg">
+                Ver carrinho
+              </Link>
+            </div>
           </div>
         </div>
       </main>

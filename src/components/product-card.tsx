@@ -20,18 +20,20 @@ function Badges({ badges }: { badges: Product["badges"] }) {
 export function ProductCard({ product }: { product: Product }) {
   const { add } = useCart();
   const [selected, setSelected] = useState(product.defaultVariant ?? 0);
+  const [imgSrc, setImgSrc] = useState(product.image || "/product-placeholder.svg");
   const variant = getVariant(product, selected);
 
   return (
     <article className={`product-card${product.soldOut ? " product-card--sold-out" : ""}`}>
       <Link href={productPath(product)} className="product-card__image-wrap">
         <Image
-          src={product.image}
+          src={imgSrc}
           alt={product.name}
           width={400}
           height={400}
           className="product-card__image"
           unoptimized
+          onError={() => setImgSrc("/product-placeholder.svg")}
         />
         <div className="product-card__badges"><Badges badges={product.badges} /></div>
       </Link>
@@ -42,7 +44,7 @@ export function ProductCard({ product }: { product: Product }) {
         </h3>
         <span className="product-card__category">{product.category}</span>
         {product.variants.length > 1 && (
-          <div className="variant-selector" role="group" aria-label="Selecionar volumetria">
+          <div className="variant-selector" role="group" aria-label="Selecionar tamanho">
             {product.variants.map((v, i) => (
               <button
                 key={v.sku}
@@ -64,7 +66,7 @@ export function ProductCard({ product }: { product: Product }) {
           )}
         </div>
         {!product.soldOut && (
-          <span className="product-card__pix">ou {formatPrice(pixPrice(variant.price))} no PIX (-5%)</span>
+          <span className="product-card__pix">ou {formatPrice(pixPrice(variant.price))} no PIX (−5%)</span>
         )}
         <button
           type="button"
