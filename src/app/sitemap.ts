@@ -33,19 +33,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${base}/categoria?tipo=perfumes&sub=arabes`,
+      // & must be &amp; in sitemap XML (Next does not escape query strings)
+      url: `${base}/categoria?tipo=perfumes&amp;sub=arabes`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.7,
     },
     {
-      url: `${base}/categoria?tipo=perfumes&sub=grifes`,
+      url: `${base}/categoria?tipo=perfumes&amp;sub=grifes`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.7,
     },
     {
-      url: `${base}/categoria?tipo=perfumes&sub=nicho`,
+      url: `${base}/categoria?tipo=perfumes&amp;sub=nicho`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.7,

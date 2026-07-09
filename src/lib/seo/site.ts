@@ -1,6 +1,6 @@
 export const SITE_NAME = "LOVEL";
 export const SITE_TAGLINE = "Boutique · Essence · Soin";
-export const DEFAULT_SITE_URL = "https://lovel.giftsqr.com";
+export const DEFAULT_SITE_URL = "https://lovelessence.com";
 
 export function getSiteUrl() {
   return (

@@ -1,7 +1,7 @@
 # LOVEL — Boutique · Essence · Soin
 
 > Perfumes (árabes, grifes, nicho), decants, cabelos e skincare premium.
-> Site: https://lovel.giftsqr.com
+> Site: https://lovelessence.com
 
 ## Para LLMs e assistentes
 
@@ -12,12 +12,12 @@
 
 ## Páginas úteis
 
-- [Home](https://lovel.giftsqr.com/)
-- [Guias de perfume](https://lovel.giftsqr.com/guia)
-- [Comprar perfume no Paraguai](https://lovel.giftsqr.com/paraguai)
-- [Perfumes](https://lovel.giftsqr.com/categoria?tipo=perfumes)
-- [Depoimentos](https://lovel.giftsqr.com/depoimentos)
-- [Sitemap](https://lovel.giftsqr.com/sitemap.xml)
+- [Home](https://lovelessence.com/)
+- [Guias de perfume](https://lovelessence.com/guia)
+- [Comprar perfume no Paraguai](https://lovelessence.com/paraguai)
+- [Perfumes](https://lovelessence.com/categoria?tipo=perfumes)
+- [Depoimentos](https://lovelessence.com/depoimentos)
+- [Sitemap](https://lovelessence.com/sitemap.xml)
 
 ## Política
 

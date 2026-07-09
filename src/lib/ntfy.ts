@@ -38,7 +38,7 @@ export async function sendNtfyNotification(input: NtfyNotification): Promise<voi
 }
 
 function appUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://lovel.giftsqr.com").replace(
+  return (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://lovelessence.com").replace(
     /\/$/,
     "",
   );
