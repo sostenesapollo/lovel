@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createPixPayment, isMercadoPagoConfigured } from "@/lib/mercadopago";
 import { sendOrderStatusEmail } from "@/lib/order-emails";
+import { notifyNewOrder } from "@/lib/ntfy";
 
 const schema = z.object({
   customer: z.record(z.string(), z.unknown()),
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
   });
 
   void sendOrderStatusEmail(order, "pending_payment");
+  void notifyNewOrder(order);
 
   return NextResponse.json({
     success: true,

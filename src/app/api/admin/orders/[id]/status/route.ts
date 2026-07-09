@@ -3,6 +3,7 @@ import { z } from "zod";
 import { adminUnauthorized, isAdminAuthorized } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { sendOrderStatusEmail } from "@/lib/order-emails";
+import { notifyOrderStatus } from "@/lib/ntfy";
 
 const schema = z.object({ status: z.string() });
 
@@ -30,6 +31,7 @@ export async function PUT(
   });
 
   void sendOrderStatusEmail(order, status);
+  void notifyOrderStatus(order, status);
 
   return NextResponse.json({ success: true, order });
 }
