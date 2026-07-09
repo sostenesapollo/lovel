@@ -9,7 +9,7 @@ import {
   cartItemToAnalytics,
   trackAddPaymentInfo,
   trackAddShippingInfo,
-  trackPurchase,
+  watchOrderPaidAndTrack,
 } from "@/lib/analytics";
 import { CROSS_SELL_DISCOUNT } from "@/lib/constants";
 import { formatCep, onlyDigits, quoteShipping } from "@/lib/shipping";
@@ -89,7 +89,7 @@ export default function CheckoutPage() {
   } | null>(null);
   const [form, setForm] = useState<CheckoutForm>(EMPTY_FORM);
   const [pixCopied, setPixCopied] = useState(false);
-  const purchaseTracked = useRef(false);
+  const [pixPaid, setPixPaid] = useState(false);
   const shippingTracked = useRef(false);
 
   useEffect(() => {
@@ -138,16 +138,43 @@ export default function CheckoutPage() {
   const quote = quoteShipping({ state: form.state || shippingDest?.state, cep: form.cep || shippingDest?.cep });
 
   useEffect(() => {
-    if (success && !purchaseTracked.current) {
-      purchaseTracked.current = true;
-      trackPurchase({
-        transactionId: success.orderId,
-        value: success.total,
-        shipping: success.shipping,
-        items: success.items,
-        coupon: success.coupon,
-      });
-    }
+    if (!success?.pixCode) return;
+    // purchase só depois do webhook marcar paid (não no "PIX gerado")
+    return watchOrderPaidAndTrack({
+      orderId: success.orderId,
+      value: success.total,
+      shipping: success.shipping,
+      items: success.items,
+      coupon: success.coupon,
+      intervalMs: 3000,
+      maxAttempts: 120,
+    });
+  }, [success]);
+
+  useEffect(() => {
+    if (!success?.orderId || !success.pixCode) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/orders/${encodeURIComponent(success.orderId)}`);
+        if (!res.ok) return;
+        const data = (await res.json()) as { status?: string };
+        if (
+          !cancelled &&
+          (data.status === "paid" || data.status === "shipped" || data.status === "delivered")
+        ) {
+          setPixPaid(true);
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    const id = window.setInterval(poll, 3000);
+    void poll();
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
   }, [success]);
 
   function updateField<K extends keyof CheckoutForm>(key: K, value: string) {
@@ -257,14 +284,16 @@ export default function CheckoutPage() {
         <main className="page">
           <div className="container checkout-success">
             <div className="checkout-success__card">
-              <h1>Pedido recebido</h1>
+              <h1>{pixPaid ? "Pagamento confirmado" : "Pedido recebido"}</h1>
               <p>
                 Número: <strong>{success.orderId}</strong>
               </p>
               <p className="checkout-success__hint">
-                {success.pixCode
-                  ? "Pagamento gerado. Conclua o PIX abaixo para confirmarmos seu pedido."
-                  : "Recebemos seu pedido. Em breve você receberá atualizações por e-mail."}
+                {pixPaid
+                  ? "Recebemos o PIX. Em breve você recebe o e-mail de confirmação."
+                  : success.pixCode
+                    ? "Pagamento gerado. Conclua o PIX abaixo para confirmarmos seu pedido."
+                    : "Recebemos seu pedido. Em breve você receberá atualizações por e-mail."}
               </p>
               {success.pixCode && (
                 <div className="pix-box">

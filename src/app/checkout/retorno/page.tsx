@@ -2,13 +2,68 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
+import { orderItemsToAnalytics, trackPurchase } from "@/lib/analytics";
 
 function RetornoContent() {
   const params = useSearchParams();
   const status = params.get("status") ?? "pending";
   const orderId = params.get("orderId");
+  const tracked = useRef(false);
+
+  useEffect(() => {
+    if (status !== "success" || !orderId || tracked.current) return;
+
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+
+    const tryTrack = async () => {
+      if (cancelled || tracked.current) return;
+      attempts += 1;
+      try {
+        const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}`, {
+          credentials: "same-origin",
+        });
+        if (res.ok) {
+          const order = (await res.json()) as {
+            status?: string;
+            total?: number;
+            shipping?: number;
+            items?: unknown;
+            coupon?: string | null;
+          };
+          if (
+            order.status === "paid" ||
+            order.status === "shipped" ||
+            order.status === "delivered"
+          ) {
+            tracked.current = true;
+            trackPurchase({
+              transactionId: orderId,
+              value: Number(order.total ?? 0),
+              shipping: Number(order.shipping ?? 0),
+              items: orderItemsToAnalytics(order.items),
+              coupon: order.coupon ?? undefined,
+            });
+            return;
+          }
+        }
+      } catch {
+        /* retry */
+      }
+      if (!cancelled && attempts < 20) {
+        timer = setTimeout(tryTrack, 2000);
+      }
+    };
+
+    void tryTrack();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [status, orderId]);
 
   const copy =
     status === "success"

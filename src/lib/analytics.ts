@@ -1,6 +1,9 @@
 /**
  * GA4 + Google Ads via gtag.js
  * Eventos ecommerce padrão — importáveis no Ads / AdSense Attribution depois.
+ *
+ * IDs: build-time NEXT_PUBLIC_* preferred; runtime fallback via /api/tracking-config
+ * (Coolify env) so tags work without rebuilding the image.
  */
 
 import type { CartItem } from "./types";
@@ -9,6 +12,7 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    __lovelTracking?: TrackingConfig;
   }
 }
 
@@ -22,6 +26,14 @@ export type AnalyticsItem = {
   quantity: number;
 };
 
+export type TrackingConfig = {
+  ga4Id: string;
+  adsId: string;
+  purchaseConversionLabel: string;
+};
+
+const DEFAULT_GA4 = "G-G99YVC9PDX";
+
 function ensureGtagQueue() {
   if (typeof window === "undefined") return;
   window.dataLayer = window.dataLayer || [];
@@ -32,15 +44,80 @@ function ensureGtagQueue() {
   }
 }
 
+function readBuildTimeConfig(): TrackingConfig {
+  return {
+    ga4Id: process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID?.trim() || "",
+    adsId: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID?.trim() || "",
+    purchaseConversionLabel:
+      process.env.NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_CONVERSION_LABEL?.trim() || "",
+  };
+}
+
+let configPromise: Promise<TrackingConfig> | null = null;
+
+export function getTrackingConfig(): Promise<TrackingConfig> {
+  const build = readBuildTimeConfig();
+  if (typeof window !== "undefined" && window.__lovelTracking) {
+    return Promise.resolve(window.__lovelTracking);
+  }
+  if (build.ga4Id || build.adsId) {
+    const cfg = {
+      ga4Id: build.ga4Id || DEFAULT_GA4,
+      adsId: build.adsId,
+      purchaseConversionLabel: build.purchaseConversionLabel,
+    };
+    if (typeof window !== "undefined") window.__lovelTracking = cfg;
+    return Promise.resolve(cfg);
+  }
+  if (typeof window === "undefined") {
+    return Promise.resolve({ ga4Id: DEFAULT_GA4, adsId: "", purchaseConversionLabel: "" });
+  }
+  if (!configPromise) {
+    configPromise = fetch("/api/tracking-config", { credentials: "same-origin" })
+      .then(async (res) => {
+        if (!res.ok) {
+          return { ga4Id: DEFAULT_GA4, adsId: "", purchaseConversionLabel: "" };
+        }
+        const data = (await res.json()) as {
+          ga4Id?: string | null;
+          googleAdsId?: string | null;
+          googleAdsPurchaseConversionLabel?: string | null;
+        };
+        const cfg: TrackingConfig = {
+          ga4Id: data.ga4Id?.trim() || DEFAULT_GA4,
+          adsId: data.googleAdsId?.trim() || "",
+          purchaseConversionLabel: data.googleAdsPurchaseConversionLabel?.trim() || "",
+        };
+        window.__lovelTracking = cfg;
+        return cfg;
+      })
+      .catch(() => ({
+        ga4Id: DEFAULT_GA4,
+        adsId: "",
+        purchaseConversionLabel: "",
+      }));
+  }
+  return configPromise;
+}
+
 export function getGa4Id() {
-  return process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID?.trim() || "";
+  if (typeof window !== "undefined" && window.__lovelTracking?.ga4Id) {
+    return window.__lovelTracking.ga4Id;
+  }
+  return process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID?.trim() || DEFAULT_GA4;
 }
 
 export function getGoogleAdsId() {
+  if (typeof window !== "undefined" && window.__lovelTracking?.adsId) {
+    return window.__lovelTracking.adsId;
+  }
   return process.env.NEXT_PUBLIC_GOOGLE_ADS_ID?.trim() || "";
 }
 
 export function getPurchaseConversionLabel() {
+  if (typeof window !== "undefined" && window.__lovelTracking?.purchaseConversionLabel) {
+    return window.__lovelTracking.purchaseConversionLabel;
+  }
   return process.env.NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_CONVERSION_LABEL?.trim() || "";
 }
 
@@ -57,6 +134,26 @@ export function cartItemToAnalytics(item: CartItem): AnalyticsItem {
     price: item.price,
     quantity: item.quantity,
   };
+}
+
+/** Map order.items JSON (from API) into GA4 items. */
+export function orderItemsToAnalytics(items: unknown): AnalyticsItem[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((raw) => {
+    const item = raw as Record<string, unknown>;
+    return {
+      item_id: String(item.productId ?? item.item_id ?? ""),
+      item_name: String(item.name ?? item.item_name ?? "item"),
+      item_brand: item.brand ? String(item.brand) : undefined,
+      item_variant: item.variantLabel
+        ? String(item.variantLabel)
+        : item.item_variant
+          ? String(item.item_variant)
+          : undefined,
+      price: Number(item.price ?? 0),
+      quantity: Number(item.quantity ?? 1),
+    };
+  });
 }
 
 export function trackEvent(name: string, params: Record<string, unknown> = {}) {
@@ -108,6 +205,33 @@ export function trackAddPaymentInfo(items: AnalyticsItem[], value: number, payme
   });
 }
 
+const PURCHASE_DEDUP_KEY = "lovel_purchase_tracked";
+
+function alreadyTrackedPurchase(transactionId: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = sessionStorage.getItem(PURCHASE_DEDUP_KEY);
+    const ids: string[] = raw ? (JSON.parse(raw) as string[]) : [];
+    return ids.includes(transactionId);
+  } catch {
+    return false;
+  }
+}
+
+function markTrackedPurchase(transactionId: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = sessionStorage.getItem(PURCHASE_DEDUP_KEY);
+    const ids: string[] = raw ? (JSON.parse(raw) as string[]) : [];
+    if (!ids.includes(transactionId)) {
+      ids.push(transactionId);
+      sessionStorage.setItem(PURCHASE_DEDUP_KEY, JSON.stringify(ids.slice(-50)));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 export function trackPurchase(opts: {
   transactionId: string;
   value: number;
@@ -116,6 +240,9 @@ export function trackPurchase(opts: {
   items: AnalyticsItem[];
   coupon?: string;
 }) {
+  if (alreadyTrackedPurchase(opts.transactionId)) return;
+  markTrackedPurchase(opts.transactionId);
+
   trackEvent("purchase", {
     transaction_id: opts.transactionId,
     currency: "BRL",
@@ -136,4 +263,55 @@ export function trackPurchase(opts: {
       transaction_id: opts.transactionId,
     });
   }
+}
+
+/** Poll order until paid, then fire purchase (PIX success screen). */
+export function watchOrderPaidAndTrack(opts: {
+  orderId: string;
+  value: number;
+  shipping: number;
+  items: AnalyticsItem[];
+  coupon?: string;
+  intervalMs?: number;
+  maxAttempts?: number;
+}): () => void {
+  let attempts = 0;
+  const max = opts.maxAttempts ?? 120;
+  const interval = opts.intervalMs ?? 3000;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let cancelled = false;
+
+  const tick = async () => {
+    if (cancelled) return;
+    attempts += 1;
+    try {
+      const res = await fetch(`/api/orders/${encodeURIComponent(opts.orderId)}`, {
+        credentials: "same-origin",
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { status?: string };
+        if (data.status === "paid" || data.status === "shipped" || data.status === "delivered") {
+          trackPurchase({
+            transactionId: opts.orderId,
+            value: opts.value,
+            shipping: opts.shipping,
+            items: opts.items,
+            coupon: opts.coupon,
+          });
+          return;
+        }
+      }
+    } catch {
+      /* retry */
+    }
+    if (!cancelled && attempts < max) {
+      timer = setTimeout(tick, interval);
+    }
+  };
+
+  timer = setTimeout(tick, 1500);
+  return () => {
+    cancelled = true;
+    if (timer) clearTimeout(timer);
+  };
 }

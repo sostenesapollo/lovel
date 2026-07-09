@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { EMAIL_TEMPLATES } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { sendInterpolatedEmail, isEmailConfigured } from "@/lib/email";
+import { sendGa4PurchaseFromServer } from "@/lib/ga4-mp.server";
 import { notifyOrderStatus } from "@/lib/ntfy";
 import { verifyStripeWebhookSignature } from "@/lib/stripe";
 import { formatPrice } from "@/lib/utils";
@@ -51,6 +52,21 @@ async function markOrderPaid(paymentId: string, orderIdFromMeta?: string) {
   });
 
   void notifyOrderStatus(updated, "paid");
+
+  const items = Array.isArray(updated.items)
+    ? (updated.items as Array<Record<string, unknown>>).map((item) => ({
+        item_id: String(item.productId ?? ""),
+        item_name: String(item.name ?? "item"),
+        price: Number(item.price ?? 0),
+        quantity: Number(item.quantity ?? 1),
+      }))
+    : [];
+  sendGa4PurchaseFromServer({
+    transactionId: updated.id,
+    value: updated.total,
+    shipping: updated.shipping,
+    items,
+  });
 
   if (isEmailConfigured()) {
     const template = EMAIL_TEMPLATES.find((t) => t.id === "order_paid");
