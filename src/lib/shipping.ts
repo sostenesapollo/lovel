@@ -1,11 +1,11 @@
 /**
- * Frete estimado saindo de Foz do Iguaçu (PR).
+ * Frete estimado saindo do Paraná.
  * Valores médios para pacote leve (decant/perfume ~0,3–0,8 kg) via PAC/econômico.
  * Não é cotação em tempo real — base para o cliente no site.
  */
 
 export const SHIPPING_ORIGIN = {
-  city: "Foz do Iguaçu",
+  city: "Paraná",
   state: "PR",
   cep: "85851-000",
 } as const;
@@ -26,7 +26,7 @@ export type ShippingQuote = {
   state?: string;
 };
 
-/** Preço médio por região (origem: Foz do Iguaçu / PR) */
+/** Preço médio por região (origem: Paraná) */
 export const SHIPPING_BY_REGION: Record<
   ShippingRegion,
   { price: number; etaDays: string; label: string }

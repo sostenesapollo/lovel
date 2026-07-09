@@ -1,25 +1,21 @@
-import Image from "next/image";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { CurationSection } from "@/components/curation-section";
+import { ReviewsSection } from "@/components/reviews-section";
 import { ProductCard } from "@/components/product-card";
+import { HeroMedia } from "@/components/hero-media";
 import { prisma } from "@/lib/db";
+import { getHeroSlides } from "@/lib/hero";
 import { parseProduct } from "@/lib/products";
 import { categoryPath } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const rows = await prisma.product.findMany();
-  let categories: Awaited<ReturnType<typeof prisma.category.findMany>> = [];
-  try {
-    categories = await prisma.category.findMany({
-      where: { showOnHome: true },
-      orderBy: { sortOrder: "asc" },
-    });
-  } catch {
-    categories = [];
-  }
+  const [rows, heroSlides] = await Promise.all([
+    prisma.product.findMany(),
+    getHeroSlides(),
+  ]);
   const products = rows.map(parseProduct);
   const featured = products.filter((p) => p.featured).slice(0, 8);
   const launches = products.filter((p) => p.isLaunch).slice(0, 4);
@@ -49,45 +45,13 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
-          <div className="hero__media">
-            <Image
-              src="/hero-perfume.png"
-              alt="Frasco de perfume LOVEL"
-              fill
-              priority
-              sizes="(max-width: 900px) 100vw, 50vw"
-              className="hero__img"
-            />
-          </div>
+          <HeroMedia slides={heroSlides} />
         </section>
 
         <CurationSection />
 
-        {categories.length > 0 && (
-          <section className="section">
-            <div className="container">
-              <h2 className="section__title">Categorias</h2>
-              <div className="category-grid">
-                {categories.map((cat) => (
-                  <Link key={cat.id} className="category-card" href={categoryPath(cat.slug)}>
-                    <div
-                      className="category-card__visual"
-                      style={cat.image ? { backgroundImage: `url(${cat.image})` } : undefined}
-                    />
-                    <div className="category-card__bg" />
-                    <div className="category-card__content">
-                      <h3 className="category-card__title">{cat.title}</h3>
-                      <p className="category-card__sub">{cat.subtitle}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
         {launches.length > 0 && (
-          <section className="section section--alt">
+          <section className="section">
             <div className="container">
               <div className="section__head">
                 <h2 className="section__title">Lançamentos</h2>
@@ -100,7 +64,7 @@ export default async function HomePage() {
           </section>
         )}
 
-        <section className="section">
+        <section className="section section--alt">
           <div className="container">
             <div className="section__head">
               <h2 className="section__title">Destaques</h2>
@@ -112,17 +76,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="section section--alt reviews-teaser">
-          <div className="container reviews-section__header">
-            <p className="reviews-section__eyebrow">Depoimentos</p>
-            <h2 className="reviews-section__title">
-              Amado por quem entende de <em>essência</em>
-            </h2>
-            <Link href="/depoimentos" className="btn btn--dark" style={{ marginTop: "1.5rem" }}>
-              Ler depoimentos
-            </Link>
-          </div>
-        </section>
+        <ReviewsSection />
       </main>
       <SiteFooter />
     </>

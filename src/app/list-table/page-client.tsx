@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AutocompleteSelect } from "@/components/autocomplete-select";
 import { ADMIN_TOKEN_KEY, EMAIL_TEMPLATES } from "@/lib/constants";
 import { adminAuthHeaders } from "@/lib/admin-auth";
 import type { Product, ProductVariant, SafeUser } from "@/lib/types";
@@ -16,6 +17,7 @@ type Tab =
   | "users"
   | "coupons"
   | "promotions"
+  | "hero"
   | "emails";
 
 type Stats = { orders: number; products: number; users: number; revenue: number };
@@ -116,10 +118,15 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "users", label: "Usuários" },
   { id: "coupons", label: "Cupons" },
   { id: "promotions", label: "Promoções" },
+  { id: "hero", label: "Carrossel home" },
   { id: "emails", label: "E-mails" },
 ];
 
+const HERO_MAX_SLIDES = 8;
+
 const ORDER_STATUSES = ["pending_payment", "paid", "shipped", "delivered", "cancelled"] as const;
+
+const PAGE_SIZE = 8;
 
 function emptyProductForm(type = ""): ProductForm {
   return {
@@ -230,18 +237,109 @@ function parseLabels(text: string): string[] {
     .filter(Boolean);
 }
 
+function defaultVariantPrice(p: AdminProduct): number {
+  const idx = p.defaultVariant ?? 0;
+  return p.variants?.[idx]?.price ?? p.variants?.[0]?.price ?? 0;
+}
+
+function EditPencilIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M19 6l-1 14H6L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  );
+}
+
+function BanIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M5.5 5.5l13 13" />
+    </svg>
+  );
+}
+
+function CheckActivateIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  );
+}
+
+function AdminPagination({
+  page,
+  totalPages,
+  onPrev,
+  onNext,
+}: {
+  page: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="admin-pagination">
+      <button type="button" className="btn btn--sm btn--outline" disabled={page === 0} onClick={onPrev}>
+        Anterior
+      </button>
+      <span>
+        Página {page + 1} de {totalPages}
+      </span>
+      <button type="button" className="btn btn--sm btn--outline" disabled={page >= totalPages - 1} onClick={onNext}>
+        Próxima
+      </button>
+    </div>
+  );
+}
+
 function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showKey, setShowKey] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch("/api/admin/stats", { headers: adminAuthHeaders(token) });
-    if (res.ok) {
-      localStorage.setItem(ADMIN_TOKEN_KEY, token);
-      onLogin(token);
-    } else {
-      setError("Chave de admin inválida.");
+    const value = token.trim();
+    if (!value) {
+      setError("Informe a chave de acesso.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: value }),
+      });
+      if (res.ok) {
+        localStorage.setItem(ADMIN_TOKEN_KEY, value);
+        onLogin(value);
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      setError(data?.error ?? "Chave de admin inválida.");
+    } catch {
+      setError("Não foi possível entrar. Tente de novo.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -249,18 +347,38 @@ function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
     <div className="admin-login">
       <Image src="/icone.jpg" alt="LOVEL" width={64} height={64} className="admin-login__icon" />
       <h1>LOVEL Admin</h1>
-      <p>/list-table</p>
-      <form onSubmit={submit}>
-        <input
-          type="password"
-          placeholder="CRON_SECRET"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          autoComplete="off"
-        />
+      <p className="admin-login__hint">Acesso restrito à equipe</p>
+      <form onSubmit={submit} className="admin-login__form">
+        <label className="form-field form-field--full">
+          <span>Chave de acesso</span>
+          <div className="admin-login__input-row">
+            <input
+              type={showKey ? "text" : "password"}
+              placeholder="Cole a chave aqui"
+              value={token}
+              onChange={(e) => {
+                setToken(e.target.value);
+                if (error) setError("");
+              }}
+              autoComplete="current-password"
+              autoFocus
+              spellCheck={false}
+              disabled={loading}
+            />
+            <button
+              type="button"
+              className="admin-login__toggle"
+              onClick={() => setShowKey((v) => !v)}
+              aria-label={showKey ? "Ocultar chave" : "Mostrar chave"}
+              tabIndex={-1}
+            >
+              {showKey ? "Ocultar" : "Mostrar"}
+            </button>
+          </div>
+        </label>
         {error && <p className="form-error">{error}</p>}
-        <button type="submit" className="btn btn--gold btn--full">
-          Entrar
+        <button type="submit" className="btn btn--gold btn--full" disabled={loading || !token.trim()}>
+          {loading ? "Entrando…" : "Entrar"}
         </button>
       </form>
       <Link href="/" className="btn btn--link">
@@ -272,11 +390,14 @@ function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
 
 export default function ListTablePage() {
   const [token, setToken] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("dashboard");
+  const [authReady, setAuthReady] = useState(false);
+  const [tab, setTab] = useState<Tab>("products");
   const [msg, setMsg] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [r2Configured, setR2Configured] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [productCategoryFilter, setProductCategoryFilter] = useState("");
 
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -286,6 +407,8 @@ export default function ListTablePage() {
   const [coupons, setCoupons] = useState<CouponRow[]>([]);
   const [promotions, setPromotions] = useState<Promotions | null>(null);
   const [bannersJson, setBannersJson] = useState("[]");
+  const [heroProductIds, setHeroProductIds] = useState<string[]>([]);
+  const [heroPickId, setHeroPickId] = useState("");
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
 
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -300,13 +423,55 @@ export default function ListTablePage() {
   const [categoryForm, setCategoryForm] = useState<CategoryForm>(emptyCategoryForm());
 
   const [couponForm, setCouponForm] = useState<CouponForm>(emptyCouponForm());
+  const [inlineEdit, setInlineEdit] = useState<{ id: string; field: "name" | "price" } | null>(null);
+  const [inlineValue, setInlineValue] = useState("");
+  const [inlineSaving, setInlineSaving] = useState(false);
+  const skipInlineBlur = useRef(false);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
-    const saved = localStorage.getItem(ADMIN_TOKEN_KEY);
-    if (saved) setToken(saved);
+    let cancelled = false;
+
+    async function restoreSession() {
+      try {
+        const sessionRes = await fetch("/api/admin/session", { credentials: "same-origin" });
+        if (sessionRes.ok) {
+          const saved = localStorage.getItem(ADMIN_TOKEN_KEY);
+          if (!cancelled) setToken(saved ?? "session");
+          return;
+        }
+
+        const saved = localStorage.getItem(ADMIN_TOKEN_KEY);
+        if (!saved) return;
+
+        const migrate = await fetch("/api/admin/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: saved }),
+        });
+        if (migrate.ok && !cancelled) {
+          setToken(saved);
+          return;
+        }
+
+        localStorage.removeItem(ADMIN_TOKEN_KEY);
+      } catch {
+        /* keep guest */
+      } finally {
+        if (!cancelled) setAuthReady(true);
+      }
+    }
+
+    restoreSession();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const headers = useCallback(() => adminAuthHeaders(token ?? ""), [token]);
+  const headers = useCallback(() => {
+    if (token && token !== "session") return adminAuthHeaders(token);
+    return {} as Record<string, string>;
+  }, [token]);
 
   const toast = useCallback((text: string) => {
     setMsg(text);
@@ -316,17 +481,30 @@ export default function ListTablePage() {
     if (!token) return;
     const h = headers();
     try {
-      const [s, u, o, p, cats, coups, promo, r2, logs] = await Promise.all([
-        fetch("/api/admin/stats", { headers: h }).then((r) => r.json()),
-        fetch("/api/admin/users", { headers: h }).then((r) => r.json()),
-        fetch("/api/admin/orders", { headers: h }).then((r) => r.json()),
-        fetch("/api/admin/products", { headers: h }).then((r) => r.json()),
-        fetch("/api/admin/categories", { headers: h }).then((r) => r.json()),
-        fetch("/api/admin/coupons", { headers: h }).then((r) => r.json()),
-        fetch("/api/admin/promotions", { headers: h }).then((r) => r.json()),
-        fetch("/api/r2/presign-upload", { headers: h }).then((r) => r.json()),
-        fetch("/api/admin/emails", { method: "PUT", headers: h }).then((r) => r.json()),
+      const responses = await Promise.all([
+        fetch("/api/admin/stats", { headers: h, credentials: "same-origin" }),
+        fetch("/api/admin/users", { headers: h, credentials: "same-origin" }),
+        fetch("/api/admin/orders", { headers: h, credentials: "same-origin" }),
+        fetch("/api/admin/products", { headers: h, credentials: "same-origin" }),
+        fetch("/api/admin/categories", { headers: h, credentials: "same-origin" }),
+        fetch("/api/admin/coupons", { headers: h, credentials: "same-origin" }),
+        fetch("/api/admin/promotions", { headers: h, credentials: "same-origin" }),
+        fetch("/api/admin/hero", { headers: h, credentials: "same-origin" }),
+        fetch("/api/r2/presign-upload", { headers: h, credentials: "same-origin" }),
+        fetch("/api/admin/emails", { method: "PUT", headers: h, credentials: "same-origin" }),
       ]);
+
+      if (responses.some((r) => r.status === 401)) {
+        localStorage.removeItem(ADMIN_TOKEN_KEY);
+        await fetch("/api/admin/session", { method: "DELETE", credentials: "same-origin" }).catch(() => null);
+        setToken(null);
+        toast("Sessão expirada. Entre novamente.");
+        return;
+      }
+
+      const [s, u, o, p, cats, coups, promo, hero, r2, logs] = await Promise.all(
+        responses.map((r) => r.json()),
+      );
       setStats(s);
       setUsers(Array.isArray(u) ? u : []);
       setOrders(Array.isArray(o) ? o : []);
@@ -342,6 +520,7 @@ export default function ListTablePage() {
         setPromotions(next);
         setBannersJson(JSON.stringify(next.banners, null, 2));
       }
+      setHeroProductIds(Array.isArray(hero?.productIds) ? hero.productIds : []);
       setR2Configured(Boolean(r2?.configured));
       setEmailLogs(Array.isArray(logs) ? logs : []);
     } catch {
@@ -353,6 +532,84 @@ export default function ListTablePage() {
     if (token) loadAll();
   }, [token, loadAll]);
 
+  useEffect(() => {
+    setPage(0);
+  }, [tab, productSearch, productCategoryFilter]);
+
+  const filteredProducts = useMemo(() => {
+    const q = productSearch.trim().toLowerCase();
+    return products.filter((p) => {
+      const matchesName = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
+      const matchesCategory = !productCategoryFilter || p.type === productCategoryFilter;
+      return matchesName && matchesCategory;
+    });
+  }, [products, productSearch, productCategoryFilter]);
+
+  const tabItemCount =
+    tab === "products"
+      ? filteredProducts.length
+      : tab === "categories"
+        ? categories.length
+        : tab === "orders"
+          ? orders.length
+          : tab === "users"
+            ? users.length
+            : tab === "coupons"
+              ? coupons.length
+              : 0;
+
+  const totalPages = Math.max(1, Math.ceil(tabItemCount / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage((p) => Math.min(p, Math.max(0, totalPages - 1)));
+  }, [totalPages]);
+
+  const pagedProducts = useMemo(
+    () => filteredProducts.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [filteredProducts, page],
+  );
+  const pagedCategories = useMemo(
+    () => categories.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [categories, page],
+  );
+  const pagedOrders = useMemo(
+    () => orders.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [orders, page],
+  );
+  const pagedUsers = useMemo(
+    () => users.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [users, page],
+  );
+  const pagedCoupons = useMemo(
+    () => coupons.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [coupons, page],
+  );
+
+  const productById = useMemo(() => {
+    const map = new Map<string, AdminProduct>();
+    for (const p of products) map.set(p.id, p);
+    return map;
+  }, [products]);
+
+  const heroSlides = useMemo(
+    () =>
+      heroProductIds
+        .map((id) => productById.get(id))
+        .filter((p): p is AdminProduct => Boolean(p)),
+    [heroProductIds, productById],
+  );
+
+  const heroProductOptions = useMemo(
+    () =>
+      products
+        .filter((p) => p.image && !heroProductIds.includes(p.id))
+        .map((p) => ({
+          value: p.id,
+          label: `${p.brand} — ${p.name}`,
+        })),
+    [products, heroProductIds],
+  );
+
   const categoryBySlug = useMemo(() => {
     const map = new Map<string, Category>();
     for (const c of categories) map.set(c.slug, c);
@@ -361,6 +618,25 @@ export default function ListTablePage() {
 
   const selectedCategory = productForm.type ? categoryBySlug.get(productForm.type) : undefined;
   const categoryVariantLabels = selectedCategory?.variantLabels ?? [];
+
+  const categoryOptions = useMemo(
+    () => categories.map((c) => ({ value: c.slug, label: `${c.title} (${c.slug})` })),
+    [categories],
+  );
+
+  const subcategoryOptions = useMemo(
+    () =>
+      (selectedCategory?.subcategories ?? []).map((s) => ({
+        value: s.slug,
+        label: s.label,
+      })),
+    [selectedCategory],
+  );
+
+  const variantLabelOptions = useMemo(
+    () => categoryVariantLabels.map((label) => ({ value: label, label })),
+    [categoryVariantLabels],
+  );
 
   async function uploadToR2(file: File): Promise<string | null> {
     if (!r2Configured) {
@@ -601,6 +877,94 @@ export default function ListTablePage() {
     loadAll();
   }
 
+  function startInlineEdit(p: AdminProduct, field: "name" | "price") {
+    if (inlineSaving) return;
+    setInlineEdit({ id: p.id, field });
+    setInlineValue(field === "name" ? p.name : String(defaultVariantPrice(p)));
+  }
+
+  function cancelInlineEdit() {
+    if (inlineSaving) return;
+    skipInlineBlur.current = true;
+    setInlineEdit(null);
+    setInlineValue("");
+  }
+
+  async function commitInlineEdit(p: AdminProduct) {
+    if (skipInlineBlur.current) {
+      skipInlineBlur.current = false;
+      return;
+    }
+    if (!inlineEdit || inlineEdit.id !== p.id || inlineSaving) return;
+
+    const field = inlineEdit.field;
+    if (field === "name") {
+      const name = inlineValue.trim();
+      if (!name) {
+        toast("Nome não pode ficar vazio.");
+        return;
+      }
+      if (name === p.name) {
+        cancelInlineEdit();
+        return;
+      }
+      setInlineSaving(true);
+      try {
+        const res = await fetch(`/api/admin/products/${p.id}`, {
+          method: "PUT",
+          headers: { ...headers(), "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          toast(data.message ?? "Erro ao atualizar nome.");
+          return;
+        }
+        setProducts((list) => list.map((item) => (item.id === p.id ? { ...item, name } : item)));
+        toast("Nome atualizado.");
+        setInlineEdit(null);
+        setInlineValue("");
+      } finally {
+        setInlineSaving(false);
+      }
+      return;
+    }
+
+    const price = Number(inlineValue.replace(",", "."));
+    if (!Number.isFinite(price) || price < 0) {
+      toast("Preço inválido.");
+      return;
+    }
+    const idx = p.defaultVariant ?? 0;
+    const current = defaultVariantPrice(p);
+    if (price === current) {
+      cancelInlineEdit();
+      return;
+    }
+    const variants = (p.variants?.length ? p.variants : [{ label: "Único", price: 0, sku: "" }]).map(
+      (v, i) => (i === idx ? { ...v, price } : v),
+    );
+    setInlineSaving(true);
+    try {
+      const res = await fetch(`/api/admin/products/${p.id}`, {
+        method: "PUT",
+        headers: { ...headers(), "Content-Type": "application/json" },
+        body: JSON.stringify({ variants }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast(data.message ?? "Erro ao atualizar preço.");
+        return;
+      }
+      setProducts((list) => list.map((item) => (item.id === p.id ? { ...item, variants } : item)));
+      toast("Preço atualizado.");
+      setInlineEdit(null);
+      setInlineValue("");
+    } finally {
+      setInlineSaving(false);
+    }
+  }
+
   function openNewCategory() {
     setCategoryForm(emptyCategoryForm());
     setCategoryModal(true);
@@ -751,7 +1115,72 @@ export default function ListTablePage() {
     }
   }
 
+  async function saveHeroCarousel(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/hero", {
+        method: "PUT",
+        headers: { ...headers(), "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ productIds: heroProductIds }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast(data.message ?? "Erro ao salvar carrossel.");
+        return;
+      }
+      setHeroProductIds(Array.isArray(data.productIds) ? data.productIds : heroProductIds);
+      toast(
+        heroProductIds.length === 0
+          ? "Carrossel limpo — home usa featured + lançamentos."
+          : "Carrossel da home salvo.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function addHeroProduct(id: string) {
+    if (!id || heroProductIds.includes(id) || heroProductIds.length >= HERO_MAX_SLIDES) return;
+    setHeroProductIds((prev) => [...prev, id]);
+    setHeroPickId("");
+  }
+
+  function moveHeroProduct(index: number, dir: -1 | 1) {
+    setHeroProductIds((prev) => {
+      const next = [...prev];
+      const j = index + dir;
+      if (j < 0 || j >= next.length) return prev;
+      [next[index], next[j]] = [next[j], next[index]];
+      return next;
+    });
+  }
+
+  function removeHeroProduct(id: string) {
+    setHeroProductIds((prev) => prev.filter((x) => x !== id));
+  }
+
+  if (!authReady) {
+    return (
+      <div className="admin-login admin-login--loading">
+        <Image src="/icone.jpg" alt="LOVEL" width={48} height={48} className="admin-login__icon" />
+        <p>Verificando sessão…</p>
+      </div>
+    );
+  }
+
   if (!token) return <AdminLogin onLogin={setToken} />;
+
+  async function logout() {
+    try {
+      await fetch("/api/admin/session", { method: "DELETE", credentials: "same-origin" });
+    } catch {
+      /* ignore */
+    }
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    setToken(null);
+  }
 
   return (
     <div className="admin-app">
@@ -776,14 +1205,7 @@ export default function ListTablePage() {
           <Link href="/" className="btn btn--outline btn--sm">
             Loja
           </Link>
-          <button
-            type="button"
-            className="btn btn--outline btn--sm"
-            onClick={() => {
-              localStorage.removeItem(ADMIN_TOKEN_KEY);
-              setToken(null);
-            }}
-          >
+          <button type="button" className="btn btn--outline btn--sm" onClick={logout}>
             Sair
           </button>
         </div>
@@ -836,72 +1258,198 @@ export default function ListTablePage() {
           <div>
             <div className="admin-form-footer" style={{ border: 0, marginTop: 0, paddingTop: 0, justifyContent: "space-between" }}>
               <h2 className="admin-section-title" style={{ margin: 0 }}>
-                Produtos ({products.length})
+                Produtos ({filteredProducts.length}
+                {filteredProducts.length !== products.length ? ` de ${products.length}` : ""})
               </h2>
               <button type="button" className="btn btn--gold btn--sm" onClick={openNewProduct}>
                 Novo produto
               </button>
             </div>
+            <div className="admin-product-filters">
+              <label className="form-field admin-product-filters__search">
+                <span>Buscar</span>
+                <input
+                  type="search"
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  placeholder="Buscar por nome ou marca…"
+                />
+              </label>
+              <label className="form-field admin-product-filters__category">
+                <span>Categoria</span>
+                <select
+                  value={productCategoryFilter}
+                  onChange={(e) => setProductCategoryFilter(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.slug}>
+                      {c.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
                   <tr>
+                    <th className="admin-table__status-col" aria-label="Status" />
                     <th></th>
                     <th>Marca</th>
                     <th>Nome</th>
                     <th>Tipo</th>
                     <th>Preço</th>
-                    <th>Status</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((p) => {
+                  {pagedProducts.map((p) => {
                     const thumb = p.images?.[0] || p.image;
+                    const editingName = inlineEdit?.id === p.id && inlineEdit.field === "name";
+                    const editingPrice = inlineEdit?.id === p.id && inlineEdit.field === "price";
+                    const statusLabel = p.soldOut ? "Esgotado" : "Ativo";
                     return (
                       <tr key={p.id}>
+                        <td className="admin-table__status-col">
+                          <span
+                            className={`admin-status-dot${p.soldOut ? " admin-status-dot--sold-out" : " admin-status-dot--active"}`}
+                            title={statusLabel}
+                            aria-label={statusLabel}
+                          />
+                        </td>
                         <td>
-                          {thumb ? (
-                            <Image src={thumb} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
-                          ) : (
-                            <span style={{ color: "var(--color-muted)" }}>—</span>
-                          )}
+                          <button
+                            type="button"
+                            className="admin-thumb-edit"
+                            onClick={() => openEditProduct(p)}
+                            title="Editar produto"
+                            aria-label={`Editar ${p.name}`}
+                          >
+                            {thumb ? (
+                              <Image src={thumb} alt="" width={48} height={48} unoptimized style={{ objectFit: "cover" }} />
+                            ) : (
+                              <span className="admin-thumb-edit__empty">+</span>
+                            )}
+                            <span className="admin-thumb-edit__icon" aria-hidden>
+                              <EditPencilIcon />
+                            </span>
+                          </button>
                         </td>
                         <td>{p.brand}</td>
-                        <td>{p.name}</td>
-                        <td>{p.type}</td>
-                        <td>{priceRange(p.variants)}</td>
                         <td>
-                          {p.soldOut ? (
-                            <span className="badge badge--urgent">Esgotado</span>
+                          {editingName ? (
+                            <input
+                              className="admin-inline-input"
+                              autoFocus
+                              value={inlineValue}
+                              disabled={inlineSaving}
+                              onChange={(e) => setInlineValue(e.target.value)}
+                              onBlur={() => commitInlineEdit(p)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  commitInlineEdit(p);
+                                }
+                                if (e.key === "Escape") {
+                                  e.preventDefault();
+                                  cancelInlineEdit();
+                                }
+                              }}
+                            />
                           ) : (
-                            <span className="badge badge--promo">Ativo</span>
+                            <button
+                              type="button"
+                              className="admin-inline-edit"
+                              onClick={() => startInlineEdit(p, "name")}
+                              title="Editar nome"
+                            >
+                              <span>{p.name}</span>
+                              <span className="admin-inline-edit__icon" aria-hidden>
+                                <EditPencilIcon />
+                              </span>
+                            </button>
+                          )}
+                        </td>
+                        <td>{p.type}</td>
+                        <td>
+                          {editingPrice ? (
+                            <input
+                              className="admin-inline-input admin-inline-input--price"
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              autoFocus
+                              value={inlineValue}
+                              disabled={inlineSaving}
+                              onChange={(e) => setInlineValue(e.target.value)}
+                              onBlur={() => commitInlineEdit(p)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  commitInlineEdit(p);
+                                }
+                                if (e.key === "Escape") {
+                                  e.preventDefault();
+                                  cancelInlineEdit();
+                                }
+                              }}
+                            />
+                          ) : (
+                            <button
+                              type="button"
+                              className="admin-inline-edit"
+                              onClick={() => startInlineEdit(p, "price")}
+                              title={
+                                (p.variants?.length ?? 0) > 1
+                                  ? "Editar preço da variante padrão"
+                                  : "Editar preço"
+                              }
+                            >
+                              <span>{priceRange(p.variants)}</span>
+                              <span className="admin-inline-edit__icon" aria-hidden>
+                                <EditPencilIcon />
+                              </span>
+                            </button>
                           )}
                         </td>
                         <td className="admin-actions">
-                          <button type="button" className="btn btn--sm btn--outline" onClick={() => openEditProduct(p)}>
+                          <button type="button" className="btn btn--sm btn--edit" onClick={() => openEditProduct(p)}>
+                            <EditPencilIcon />
                             Editar
                           </button>
-                          <button type="button" className="btn btn--sm btn--outline" onClick={() => toggleSoldOut(p)}>
+                          <button
+                            type="button"
+                            className={`btn btn--sm ${p.soldOut ? "btn--success" : "btn--warn"}`}
+                            onClick={() => toggleSoldOut(p)}
+                          >
+                            {p.soldOut ? <CheckActivateIcon /> : <BanIcon />}
                             {p.soldOut ? "Ativar" : "Esgotar"}
                           </button>
-                          <button type="button" className="btn btn--sm btn--dark" onClick={() => deleteProduct(p.id, p.name)}>
+                          <button type="button" className="btn btn--sm btn--danger" onClick={() => deleteProduct(p.id, p.name)}>
+                            <TrashIcon />
                             Excluir
                           </button>
                         </td>
                       </tr>
                     );
                   })}
-                  {products.length === 0 && (
+                  {filteredProducts.length === 0 && (
                     <tr>
                       <td colSpan={7} className="empty-state">
-                        Nenhum produto.
+                        {products.length === 0 ? "Nenhum produto." : "Nenhum produto encontrado."}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
+            <AdminPagination
+              page={page}
+              totalPages={Math.ceil(filteredProducts.length / PAGE_SIZE)}
+              onPrev={() => setPage((p) => p - 1)}
+              onNext={() => setPage((p) => p + 1)}
+            />
           </div>
         )}
 
@@ -929,7 +1477,7 @@ export default function ListTablePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {categories.map((c) => (
+                  {pagedCategories.map((c) => (
                     <tr key={c.id}>
                       <td>
                         {c.image ? (
@@ -956,10 +1504,12 @@ export default function ListTablePage() {
                         </div>
                       </td>
                       <td className="admin-actions">
-                        <button type="button" className="btn btn--sm btn--outline" onClick={() => openEditCategory(c)}>
+                        <button type="button" className="btn btn--sm btn--edit" onClick={() => openEditCategory(c)}>
+                          <EditPencilIcon />
                           Editar
                         </button>
-                        <button type="button" className="btn btn--sm btn--dark" onClick={() => deleteCategory(c.id, c.title)}>
+                        <button type="button" className="btn btn--sm btn--danger" onClick={() => deleteCategory(c.id, c.title)}>
+                          <TrashIcon />
                           Excluir
                         </button>
                       </td>
@@ -975,11 +1525,18 @@ export default function ListTablePage() {
                 </tbody>
               </table>
             </div>
+            <AdminPagination
+              page={page}
+              totalPages={Math.ceil(categories.length / PAGE_SIZE)}
+              onPrev={() => setPage((p) => p - 1)}
+              onNext={() => setPage((p) => p + 1)}
+            />
           </div>
         )}
 
         {tab === "orders" && (
-          <div className="admin-table-wrap">
+          <div>
+            <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
                 <tr>
@@ -993,7 +1550,7 @@ export default function ListTablePage() {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((o) => (
+                {pagedOrders.map((o) => (
                   <tr key={o.id}>
                     <td>{o.id}</td>
                     <td>{o.user?.name ?? o.userEmail ?? "—"}</td>
@@ -1036,11 +1593,19 @@ export default function ListTablePage() {
                 )}
               </tbody>
             </table>
+            </div>
+            <AdminPagination
+              page={page}
+              totalPages={Math.ceil(orders.length / PAGE_SIZE)}
+              onPrev={() => setPage((p) => p - 1)}
+              onNext={() => setPage((p) => p + 1)}
+            />
           </div>
         )}
 
         {tab === "users" && (
           <div className="admin-grid">
+            <div>
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
@@ -1054,7 +1619,7 @@ export default function ListTablePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
+                  {pagedUsers.map((u) => (
                     <tr key={u.id} className={selectedUser === u.id ? "admin-table__row--active" : ""}>
                       <td>{u.name}</td>
                       <td>{u.email}</td>
@@ -1084,6 +1649,13 @@ export default function ListTablePage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <AdminPagination
+              page={page}
+              totalPages={Math.ceil(users.length / PAGE_SIZE)}
+              onPrev={() => setPage((p) => p - 1)}
+              onNext={() => setPage((p) => p + 1)}
+            />
             </div>
 
             {selectedUser && userDetail && (
@@ -1200,7 +1772,7 @@ export default function ListTablePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {coupons.map((c) => (
+                  {pagedCoupons.map((c) => (
                     <tr key={c.code}>
                       <td>{c.code}</td>
                       <td>{c.type}</td>
@@ -1223,6 +1795,12 @@ export default function ListTablePage() {
                   )}
                 </tbody>
               </table>
+              <AdminPagination
+                page={page}
+                totalPages={Math.ceil(coupons.length / PAGE_SIZE)}
+                onPrev={() => setPage((p) => p - 1)}
+                onNext={() => setPage((p) => p + 1)}
+              />
             </div>
           </div>
         )}
@@ -1266,6 +1844,106 @@ export default function ListTablePage() {
             <div className="admin-form-footer">
               <button type="submit" className="btn btn--gold" disabled={saving}>
                 {saving ? "Salvando…" : "Salvar promoções"}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {tab === "hero" && (
+          <form className="admin-email-form" onSubmit={saveHeroCarousel} style={{ maxWidth: 720 }}>
+            <h3>Carrossel da home</h3>
+            <p className="admin-hint">
+              Produtos ao lado de “A essência da elegância…”. Ordem = ordem do carrossel.
+              Vazio = fallback automático (featured + lançamentos).
+            </p>
+
+            <div className="admin-form-row" style={{ alignItems: "flex-end", gap: "0.75rem", flexWrap: "wrap" }}>
+              <label className="form-field" style={{ flex: 1, minWidth: 220 }}>
+                <span>Adicionar produto</span>
+                <AutocompleteSelect
+                  value={heroPickId}
+                  options={heroProductOptions}
+                  onChange={(id) => {
+                    setHeroPickId(id);
+                    if (id) addHeroProduct(id);
+                  }}
+                  placeholder={
+                    heroProductIds.length >= HERO_MAX_SLIDES
+                      ? `Máximo de ${HERO_MAX_SLIDES}`
+                      : "Buscar produto…"
+                  }
+                  disabled={heroProductIds.length >= HERO_MAX_SLIDES}
+                  allowClear={false}
+                />
+              </label>
+            </div>
+
+            {heroSlides.length === 0 ? (
+              <p className="admin-hint">Nenhum produto selecionado — a home usa o fallback.</p>
+            ) : (
+              <ul className="admin-hero-list">
+                {heroSlides.map((p, i) => (
+                  <li key={p.id} className="admin-hero-list__item">
+                    <span className="admin-hero-list__order">{i + 1}</span>
+                    {p.image ? (
+                      <Image
+                        src={p.image}
+                        alt=""
+                        width={48}
+                        height={48}
+                        className="admin-hero-list__thumb"
+                        unoptimized
+                      />
+                    ) : (
+                      <span className="admin-hero-list__thumb admin-hero-list__thumb--empty" />
+                    )}
+                    <div className="admin-hero-list__meta">
+                      <strong>{p.brand}</strong>
+                      <span>{p.name}</span>
+                    </div>
+                    <div className="admin-hero-list__actions">
+                      <button
+                        type="button"
+                        className="btn btn--sm"
+                        disabled={i === 0}
+                        onClick={() => moveHeroProduct(i, -1)}
+                        aria-label="Subir"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--sm"
+                        disabled={i === heroSlides.length - 1}
+                        onClick={() => moveHeroProduct(i, 1)}
+                        aria-label="Descer"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--sm"
+                        onClick={() => removeHeroProduct(p.id)}
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="admin-form-footer">
+              <button
+                type="button"
+                className="btn btn--text"
+                disabled={heroProductIds.length === 0 || saving}
+                onClick={() => setHeroProductIds([])}
+              >
+                Limpar lista
+              </button>
+              <button type="submit" className="btn btn--gold" disabled={saving}>
+                {saving ? "Salvando…" : "Salvar carrossel"}
               </button>
             </div>
           </form>
@@ -1337,8 +2015,13 @@ export default function ListTablePage() {
       </main>
 
       {productModal && (
-        <div className="admin-modal" role="dialog" aria-modal="true">
-          <div className="admin-modal__panel">
+        <div
+          className="admin-modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setProductModal(false)}
+        >
+          <div className="admin-modal__panel" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal__header">
               <h2 className="admin-modal__title">{productForm.id ? "Editar produto" : "Novo produto"}</h2>
               <button type="button" className="admin-modal__close" onClick={() => setProductModal(false)}>
@@ -1365,11 +2048,12 @@ export default function ListTablePage() {
                 </label>
                 <label className="form-field">
                   <span>Tipo (categoria)</span>
-                  <select
+                  <AutocompleteSelect
                     required
                     value={productForm.type}
-                    onChange={(e) => {
-                      const slug = e.target.value;
+                    options={categoryOptions}
+                    placeholder="Buscar categoria…"
+                    onChange={(slug) => {
                       const cat = categoryBySlug.get(slug);
                       setProductForm((f) => ({
                         ...f,
@@ -1379,29 +2063,20 @@ export default function ListTablePage() {
                       }));
                       setVariantLabelMode(cat?.variantLabels?.length ? "pick" : "free");
                     }}
-                  >
-                    <option value="">Selecione…</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.slug}>
-                        {c.title} ({c.slug})
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </label>
                 <label className="form-field">
                   <span>Subcategoria</span>
                   {selectedCategory?.subcategories?.length ? (
-                    <select
+                    <AutocompleteSelect
                       value={productForm.subcategory}
-                      onChange={(e) => setProductForm({ ...productForm, subcategory: e.target.value })}
-                    >
-                      <option value="">—</option>
-                      {selectedCategory.subcategories.map((s) => (
-                        <option key={s.slug} value={s.slug}>
-                          {s.label}
-                        </option>
-                      ))}
-                    </select>
+                      options={subcategoryOptions}
+                      placeholder="Buscar subcategoria…"
+                      allowClear
+                      onChange={(slug) =>
+                        setProductForm({ ...productForm, subcategory: slug })
+                      }
+                    />
                   ) : (
                     <input
                       value={productForm.subcategory}
@@ -1523,17 +2198,16 @@ export default function ListTablePage() {
                   <label className="form-field">
                     <span>Label</span>
                     {variantLabelMode === "pick" && categoryVariantLabels.length ? (
-                      <select value={v.label} onChange={(e) => updateVariant(i, { label: e.target.value })}>
-                        <option value="">Selecione…</option>
-                        {categoryVariantLabels.map((label) => (
-                          <option key={label} value={label}>
-                            {label}
-                          </option>
-                        ))}
-                        {v.label && !categoryVariantLabels.includes(v.label) && (
-                          <option value={v.label}>{v.label} (atual)</option>
-                        )}
-                      </select>
+                      <AutocompleteSelect
+                        value={v.label}
+                        options={
+                          v.label && !categoryVariantLabels.includes(v.label)
+                            ? [...variantLabelOptions, { value: v.label, label: `${v.label} (atual)` }]
+                            : variantLabelOptions
+                        }
+                        placeholder="Buscar label…"
+                        onChange={(label) => updateVariant(i, { label })}
+                      />
                     ) : (
                       <input value={v.label} onChange={(e) => updateVariant(i, { label: e.target.value })} />
                     )}
@@ -1660,8 +2334,13 @@ export default function ListTablePage() {
       )}
 
       {categoryModal && (
-        <div className="admin-modal" role="dialog" aria-modal="true">
-          <div className="admin-modal__panel">
+        <div
+          className="admin-modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setCategoryModal(false)}
+        >
+          <div className="admin-modal__panel" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal__header">
               <h2 className="admin-modal__title">{categoryForm.id ? "Editar categoria" : "Nova categoria"}</h2>
               <button type="button" className="admin-modal__close" onClick={() => setCategoryModal(false)}>

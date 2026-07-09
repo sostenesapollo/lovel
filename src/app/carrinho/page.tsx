@@ -137,7 +137,7 @@ export default function CartPage() {
                 )}
                 {quote && t.shipping > 0 && (
                   <p className="cart-summary__hint">
-                    Prazo estimado: {quote.etaDays} dias úteis · saída de Foz do Iguaçu
+                    Prazo estimado: {quote.etaDays} dias úteis · saída do Paraná
                   </p>
                 )}
                 {!quote && t.shipping > 0 && (

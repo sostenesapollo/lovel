@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Product } from "@/lib/types";
 import { formatPrice, pixPrice, productPath, getVariant } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
+import { flyToCart } from "@/lib/fly-to-cart";
 
 function Badges({ badges }: { badges: Product["badges"] }) {
   return (
@@ -19,12 +20,17 @@ function Badges({ badges }: { badges: Product["badges"] }) {
 
 export function ProductCard({ product }: { product: Product }) {
   const { add } = useCart();
+  const cardRef = useRef<HTMLElement>(null);
   const [selected, setSelected] = useState(product.defaultVariant ?? 0);
   const [imgSrc, setImgSrc] = useState(product.image || "/product-placeholder.svg");
+  const [justAdded, setJustAdded] = useState(false);
   const variant = getVariant(product, selected);
 
   return (
-    <article className={`product-card${product.soldOut ? " product-card--sold-out" : ""}`}>
+    <article
+      ref={cardRef}
+      className={`product-card${product.soldOut ? " product-card--sold-out" : ""}`}
+    >
       <Link href={productPath(product)} className="product-card__image-wrap">
         <Image
           src={imgSrc}
@@ -72,9 +78,14 @@ export function ProductCard({ product }: { product: Product }) {
           type="button"
           className="btn btn--dark"
           disabled={product.soldOut}
-          onClick={() => add(product, selected)}
+          onClick={() => {
+            if (!add(product, selected)) return;
+            flyToCart(cardRef.current, imgSrc);
+            setJustAdded(true);
+            window.setTimeout(() => setJustAdded(false), 1400);
+          }}
         >
-          {product.soldOut ? "Indisponível" : "Comprar"}
+          {product.soldOut ? "Indisponível" : justAdded ? "Adicionado ✓" : "Comprar"}
         </button>
       </div>
     </article>

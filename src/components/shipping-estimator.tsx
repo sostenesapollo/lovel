@@ -6,7 +6,6 @@ import {
   formatCep,
   onlyDigits,
   quoteShipping,
-  SHIPPING_ORIGIN,
   SHIPPING_TABLE,
   type ShippingQuote,
 } from "@/lib/shipping";
@@ -53,8 +52,8 @@ export function ShippingEstimator({ compact = false, onQuote, initialCep = "" }:
         <>
           <h3 className="shipping-est__title">Frete estimado</h3>
           <p className="shipping-est__lead">
-            Enviamos de {SHIPPING_ORIGIN.city} ({SHIPPING_ORIGIN.state}). Valores médios — o frete
-            final pode variar conforme peso e transportadora.
+            Enviamos do Paraná. Valores médios — o frete final pode variar conforme peso e
+            transportadora.
           </p>
         </>
       )}

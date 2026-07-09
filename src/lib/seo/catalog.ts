@@ -11475,13 +11475,14 @@ export function getSeoPagesByKind(kind: SeoPageKind) {
 }
 
 export function getRelatedSeoPages(page: SeoPage, limit = 8) {
-  const pool = SEO_PAGES.filter((p) => p.slug !== page.slug);
+  const pool = SEO_PAGES.filter(
+    (p) => p.slug !== page.slug && p.kind !== "paraguai",
+  );
   const sameBrand = page.brand
     ? pool.filter((p) => p.brand === page.brand && p.kind === "perfume")
     : [];
   const sameKind = pool.filter((p) => p.kind === page.kind);
-  const py = pool.filter((p) => p.kind === "paraguai");
-  const merged = [...sameBrand, ...sameKind, ...py, ...pool];
+  const merged = [...sameBrand, ...sameKind, ...pool];
   const seen = new Set<string>();
   const out: SeoPage[] = [];
   for (const p of merged) {

@@ -374,7 +374,7 @@ export default function CheckoutPage() {
                 <p className="form-hint">
                   Frete estimado para {quote.regionLabel}
                   {quote.state ? ` (${quote.state})` : ""}: {formatPrice(quote.price)} · {quote.etaDays} dias úteis
-                  (saída de Foz do Iguaçu)
+                  (saída do Paraná)
                 </p>
               )}
             </fieldset>
@@ -496,7 +496,7 @@ export default function CheckoutPage() {
             </div>
             {quote && t.shipping > 0 && (
               <p className="cart-summary__hint">
-                {quote.etaDays} dias úteis · Foz do Iguaçu → {quote.regionLabel}
+                {quote.etaDays} dias úteis · Paraná → {quote.regionLabel}
               </p>
             )}
             <div className="cart-summary__row cart-summary__total">

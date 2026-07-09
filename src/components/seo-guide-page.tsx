@@ -29,11 +29,16 @@ export function SeoGuidePage({
   activeNav?: string;
 }) {
   const path = pagePath(page);
-  const related = getRelatedSeoPages(page, 8);
-  const relatedFromSlugs = (page.relatedPerfumes ?? [])
-    .map((s) => SEO_PAGE_BY_SLUG[s])
-    .filter(Boolean)
-    .slice(0, 6);
+  // Páginas de Paraguai ficam no sitemap, sem listagem cruzada na UI.
+  const related =
+    page.kind === "paraguai" ? [] : getRelatedSeoPages(page, 8);
+  const relatedFromSlugs =
+    page.kind === "paraguai"
+      ? []
+      : (page.relatedPerfumes ?? [])
+          .map((s) => SEO_PAGE_BY_SLUG[s])
+          .filter(Boolean)
+          .slice(0, 6);
 
   const crumbs = [
     { name: "Home", path: "/" },
@@ -163,9 +168,6 @@ export function SeoGuidePage({
                   </li>
                   <li>
                     <Link href="/paraguai">Comprar no Paraguai</Link>
-                  </li>
-                  <li>
-                    <Link href="/guia">Todos os guias</Link>
                   </li>
                 </ul>
               </div>

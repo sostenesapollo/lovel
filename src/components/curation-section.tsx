@@ -5,21 +5,21 @@ import { categoryPath } from "@/lib/utils";
 const CARDS = [
   {
     href: categoryPath("perfumes"),
-    image: "/hero-perfume.png",
+    image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800&h=800&fit=crop",
     title: "Perfumes",
     subtitle: "Decants e Inteiros",
-    local: true,
+    local: false,
   },
   {
     href: categoryPath("cabelos"),
-    image: "https://images.unsplash.com/photo-1522338242992-e1ba549ccc1c?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1522338140262-f46f5913618a?w=800&q=80",
     title: "Cabelos",
     subtitle: "Óleos e Tratamentos",
     local: false,
   },
   {
     href: categoryPath("skincare"),
-    image: "https://images.unsplash.com/photo-1570172619644-dfd93d367665?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800&q=80",
     title: "Skincare",
     subtitle: "Rotina Facial Premium",
     local: false,

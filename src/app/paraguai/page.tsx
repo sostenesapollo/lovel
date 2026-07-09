@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
-import { getSeoPagesByKind } from "@/lib/seo/catalog";
 import { absoluteUrl } from "@/lib/seo/site";
 import { categoryPath } from "@/lib/utils";
 
@@ -15,10 +14,6 @@ export const metadata: Metadata = {
 };
 
 export default function ParaguaiIndexPage() {
-  const pages = getSeoPagesByKind("paraguai");
-  const cities = pages.filter((p) => p.slug.startsWith("perfume-paraguai-"));
-  const guides = pages.filter((p) => !p.slug.startsWith("perfume-paraguai-"));
-
   return (
     <>
       <SiteHeader activeNav="paraguai" />
@@ -37,12 +32,6 @@ export default function ParaguaiIndexPage() {
               <Link href={categoryPath("perfumes")} className="btn btn--dark">
                 Ver perfumes LOVEL →
               </Link>
-              <Link
-                href="/paraguai/comprar-perfume-no-paraguai"
-                className="btn btn--text"
-              >
-                Guia completo
-              </Link>
             </div>
           </div>
         </section>
@@ -52,35 +41,13 @@ export default function ParaguaiIndexPage() {
             <p>
               Buscas por “perfume barato no Paraguai” e “Ciudad del Este
               perfumes” explodem no Brasil. A economia pode existir — o risco
-              de réplica e o custo da viagem também. Estes guias ajudam a
-              decidir com clareza.
+              de réplica e o custo da viagem também.
             </p>
-          </div>
-        </section>
-
-        <section className="section section--alt">
-          <div className="container">
-            <h2 className="section__title">Guias essenciais</h2>
-            <ul className="seo-index-grid">
-              {guides.map((p) => (
-                <li key={p.slug}>
-                  <Link href={`/paraguai/${p.slug}`}>{p.h1}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="container">
-            <h2 className="section__title">Por cidade</h2>
-            <ul className="seo-index-grid seo-index-grid--dense">
-              {cities.map((p) => (
-                <li key={p.slug}>
-                  <Link href={`/paraguai/${p.slug}`}>{p.h1}</Link>
-                </li>
-              ))}
-            </ul>
+            <p>
+              Na LOVEL, a proposta é testar com decant, comprar original com
+              orientação e evitar a loteria da fronteira quando o objetivo é
+              só sentir a fragrância com segurança.
+            </p>
           </div>
         </section>
       </main>

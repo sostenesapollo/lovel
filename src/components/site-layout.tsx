@@ -13,7 +13,6 @@ const NAV = [
   { href: categoryPath("cabelos"), label: "Cabelos", key: "cabelos" },
   { href: categoryPath("skincare"), label: "Skincare", key: "skincare" },
   { href: "/guia", label: "Guias", key: "guia" },
-  { href: "/paraguai", label: "Paraguai", key: "paraguai" },
   { href: "/depoimentos", label: "Depoimentos", key: "depoimentos" },
   { href: "/#contato", label: "Contato", key: "contato" },
 ];
@@ -30,12 +29,26 @@ export function SiteHeader({ activeNav = "" }: { activeNav?: string }) {
       .catch(() => setUser(null));
   }, []);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
   return (
     <>
       <div className="top-banner" role="region" aria-label="Promoções">
         <div className="container">
           <div className="top-banner__track">
-            <span className="top-banner__item"><strong>Frete Grátis</strong> acima de R$199 · envio de Foz do Iguaçu</span>
+            <span className="top-banner__item"><strong>Frete Grátis</strong> acima de R$199 · envio do Paraná</span>
             <span className="top-banner__divider">|</span>
             <span className="top-banner__item"><strong>5% OFF</strong> no PIX</span>
             <span className="top-banner__divider">|</span>
@@ -46,7 +59,14 @@ export function SiteHeader({ activeNav = "" }: { activeNav?: string }) {
 
       <header className="header">
         <div className="container header__inner">
-          <button className="menu-toggle" aria-label="Menu" onClick={() => setMenuOpen(true)}>
+          <button
+            type="button"
+            className={`menu-toggle${menuOpen ? " menu-toggle--open" : ""}`}
+            aria-label={menuOpen ? "Fechar menu" : "Menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
             <span /><span /><span />
           </button>
 
@@ -73,31 +93,56 @@ export function SiteHeader({ activeNav = "" }: { activeNav?: string }) {
                 <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
               </svg>
             </Link>
-            <Link href="/carrinho" className="header__icon-btn header__cart" aria-label="Carrinho">
+            <Link
+              href="/carrinho"
+              className="header__icon-btn header__cart"
+              aria-label="Carrinho"
+              data-cart-target
+            >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M6 6h15l-1.5 9h-12z" /><circle cx="9" cy="20" r="1" /><circle cx="18" cy="20" r="1" /><path d="M6 6L5 3H2" />
               </svg>
-              {count > 0 && <span className="cart-badge">{count}</span>}
+              {count > 0 && <span className="cart-badge">{count > 99 ? "99+" : count}</span>}
             </Link>
           </div>
         </div>
       </header>
 
-      {menuOpen && (
-        <div className="mobile-nav-overlay" onClick={() => setMenuOpen(false)}>
-          <nav className="mobile-nav" onClick={(e) => e.stopPropagation()}>
-            <button className="mobile-nav__close" onClick={() => setMenuOpen(false)} aria-label="Fechar">×</button>
-            {NAV.map((n) => (
-              <Link key={n.key} href={n.href} className="mobile-nav__link" onClick={() => setMenuOpen(false)}>
-                {n.label}
-              </Link>
-            ))}
-            {user && (
-              <p className="mobile-nav__user">Olá, {user.name}</p>
-            )}
-          </nav>
+      <div
+        className={`mobile-nav-overlay${menuOpen ? " mobile-nav-overlay--open" : ""}`}
+        onClick={() => setMenuOpen(false)}
+        aria-hidden={!menuOpen}
+      />
+      <nav
+        id="mobile-nav"
+        className={`mobile-nav${menuOpen ? " mobile-nav--open" : ""}`}
+        aria-label="Menu mobile"
+        aria-hidden={!menuOpen}
+      >
+        <div className="mobile-nav__header">
+          <span>Menu</span>
+          <button
+            type="button"
+            className="mobile-nav__close"
+            onClick={() => setMenuOpen(false)}
+            aria-label="Fechar"
+          >
+            ×
+          </button>
         </div>
-      )}
+        {NAV.map((n) => (
+          <Link
+            key={n.key}
+            href={n.href}
+            className={`mobile-nav__link${activeNav === n.key ? " mobile-nav__link--active" : ""}`}
+            onClick={() => setMenuOpen(false)}
+            tabIndex={menuOpen ? 0 : -1}
+          >
+            {n.label}
+          </Link>
+        ))}
+        {user && <p className="mobile-nav__user">Olá, {user.name}</p>}
+      </nav>
     </>
   );
 }
@@ -117,11 +162,27 @@ export function SiteFooter() {
           <p className="footer__tagline">Boutique · Essence · Soin</p>
           <p className="footer__text">Perfumes, cabelos e skincare premium.</p>
           <div className="footer__social">
-            <a href="https://www.instagram.com/lovel.essence/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              Instagram
+            <a
+              href="https://www.instagram.com/lovel.essence/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+              </svg>
             </a>
-            <a href="https://www.tiktok.com/@lovel.essence" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-              TikTok
+            <a
+              href="https://www.tiktok.com/@lovel.essence"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.73a8.19 8.19 0 0 0 4.76 1.52V6.84a4.84 4.84 0 0 1-1-.15z" />
+              </svg>
             </a>
           </div>
         </div>
@@ -135,18 +196,30 @@ export function SiteFooter() {
           >
             WhatsApp {WA_DISPLAY}
           </a>
-          <p className="footer__text">contato@lovel.com.br</p>
+          <p className="footer__text">contato@lovel.com</p>
         </div>
         <div>
           <h4 className="footer__heading">Institucional</h4>
-          <Link href="/conta" className="footer__link">Minha conta</Link>
-          <Link href="/depoimentos" className="footer__link">Depoimentos</Link>
-          <Link href="/categoria?tipo=perfumes" className="footer__link">Perfumes</Link>
-          <Link href="/guia" className="footer__link">Guias de perfume</Link>
-          <Link href="/paraguai" className="footer__link">Comprar no Paraguai</Link>
-          <Link href="/paraguai/comprar-perfume-no-paraguai" className="footer__link">
-            Guia Ciudad del Este
-          </Link>
+          <nav className="footer__nav" aria-label="Institucional">
+            <Link href="/conta" className="footer__link">
+              Minha conta
+            </Link>
+            <Link href="/depoimentos" className="footer__link">
+              Depoimentos
+            </Link>
+            <Link href="/categoria?tipo=perfumes" className="footer__link">
+              Perfumes
+            </Link>
+            <Link href="/paraguai" className="footer__link">
+              Comprar no Paraguai
+            </Link>
+            <Link
+              href="/paraguai/ciudad-del-este-perfumes"
+              className="footer__link"
+            >
+              Guia Ciudad del Este
+            </Link>
+          </nav>
         </div>
       </div>
       <div className="footer__bottom">

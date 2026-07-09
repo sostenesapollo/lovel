@@ -50,15 +50,15 @@ function CategoryContent() {
       <main className="page page--category">
         <div className="container">
           <header className="page-header">
-            <h1>{title}</h1>
-            <p>{subtitle}</p>
+            <h1 className="page-header__title">{title}</h1>
+            {subtitle ? <p className="page-header__subtitle">{subtitle}</p> : null}
           </header>
 
           {category && !isLaunch && category.subcategories?.length > 0 && (
-            <div className="subcategory-tabs">
+            <div className="filter-bar" role="tablist" aria-label="Subcategorias">
               <Link
                 href={`/categoria?tipo=${tipo}`}
-                className={`subcategory-tab${!sub ? " subcategory-tab--active" : ""}`}
+                className={`filter-chip${!sub ? " filter-chip--active" : ""}`}
               >
                 Todos
               </Link>
@@ -66,7 +66,7 @@ function CategoryContent() {
                 <Link
                   key={s.slug}
                   href={`/categoria?tipo=${tipo}&sub=${s.slug}`}
-                  className={`subcategory-tab${sub === s.slug ? " subcategory-tab--active" : ""}`}
+                  className={`filter-chip${sub === s.slug ? " filter-chip--active" : ""}`}
                 >
                   {s.label}
                 </Link>

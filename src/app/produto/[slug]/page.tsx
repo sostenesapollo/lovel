@@ -8,6 +8,7 @@ import { ShippingEstimator } from "@/components/shipping-estimator";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { useCart } from "@/context/cart-context";
 import { trackViewItem } from "@/lib/analytics";
+import { flyToCart } from "@/lib/fly-to-cart";
 import type { Product } from "@/lib/types";
 import { formatPrice, getVariant, pixPrice } from "@/lib/utils";
 
@@ -129,9 +130,11 @@ export default function ProductPage() {
                 type="button"
                 className="btn btn--dark btn--lg"
                 disabled={product.soldOut}
-                onClick={() => {
-                  add(product, selected);
+                onClick={(e) => {
+                  if (!add(product, selected)) return;
+                  flyToCart(e.currentTarget, product.image || images[0]);
                   setAdded(true);
+                  window.setTimeout(() => setAdded(false), 1600);
                 }}
               >
                 {product.soldOut ? "Indisponível" : added ? "Adicionado ✓" : "Adicionar ao carrinho"}

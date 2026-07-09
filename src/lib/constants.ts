@@ -1,10 +1,12 @@
 export const SESSION_COOKIE = "lovel_session";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 export const ADMIN_TOKEN_KEY = "lovel:admin-token";
+export const ADMIN_SESSION_COOKIE = "lovel_admin";
+export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 
 export const PIX_DISCOUNT = 0.05;
 export const FREE_SHIPPING_THRESHOLD = 199;
-/** Fallback quando o CEP ainda não foi informado (média Sudeste, origem Foz do Iguaçu) */
+/** Fallback quando o CEP ainda não foi informado (média Sudeste, origem Paraná) */
 export const SHIPPING_FLAT = 29.9;
 export const CROSS_SELL_DISCOUNT = 0.1;
 export const FRACTIONAL_LABELS = ["4ml", "10ml", "30g", "50g"];
