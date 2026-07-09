@@ -1,0 +1,9 @@
+{
+  "freeShippingThreshold": 199,
+  "pixDiscountPercent": 5,
+  "banners": [
+    { "highlight": "Frete Grátis", "text": "acima de R$199" },
+    { "highlight": "5% OFF", "text": "no PIX" },
+    { "highlight": "Cupom", "text": "PRIMEIRACOMPRA na 1ª compra", "code": "PRIMEIRACOMPRA" }
+  ]
+}

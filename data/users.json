@@ -1,0 +1,16 @@
+[
+  {
+    "id": "u-admin",
+    "email": "admin@lovel.com",
+    "password": "admin123",
+    "name": "Admin LOVEL",
+    "role": "admin"
+  },
+  {
+    "id": "u-demo",
+    "email": "cliente@email.com",
+    "password": "123456",
+    "name": "Maria Silva",
+    "role": "customer"
+  }
+]

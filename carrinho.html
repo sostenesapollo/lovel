@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrinho — LOVEL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="layout-banner"></div>
+  <div id="layout-header"></div>
+
+  <main>
+    <section class="page-hero page-hero--compact">
+      <div class="container">
+        <h1 class="page-hero__title">Seu Carrinho</h1>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div id="cart-empty" class="empty-state" style="display:none">
+          <p>Seu carrinho está vazio.</p>
+          <a href="index.html" class="btn btn--primary" style="margin-top:1rem">Continuar Comprando</a>
+        </div>
+
+        <div id="cart-content">
+          <div class="cart-layout">
+            <div class="cart-layout__main">
+              <div id="cart-items"></div>
+
+              <section id="cross-sell-section" class="cross-sell-section" style="display:none">
+                <h2 class="cross-sell-section__title">Ofertas especiais para você</h2>
+                <p class="cross-sell-section__desc">Aproveite 10% de desconto ao levar o frasco inteiro</p>
+                <div id="cross-sell-list"></div>
+              </section>
+            </div>
+
+            <aside class="cart-summary">
+              <h2 class="cart-summary__title">Resumo</h2>
+              <div class="cart-summary__row">
+                <span>Subtotal</span>
+                <span id="summary-subtotal">R$ 0,00</span>
+              </div>
+              <div class="cart-summary__row">
+                <span>Frete</span>
+                <span id="summary-shipping">—</span>
+              </div>
+              <div class="cart-summary__row cart-summary__row--total">
+                <span>Total</span>
+                <span id="summary-total">R$ 0,00</span>
+              </div>
+              <p class="cart-summary__pix">No PIX: <strong id="summary-pix">R$ 0,00</strong> (-5%)</p>
+              <button class="btn btn--primary btn--lg" id="btn-checkout" style="width:100%;margin-top:1rem">Finalizar Compra</button>
+              <a href="index.html" class="btn btn--outline" style="width:100%;margin-top:0.5rem;text-align:center">Continuar Comprando</a>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="layout-footer"></div>
+  <div id="layout-modal"></div>
+
+  <script type="module" src="js/pages/cart-page.js"></script>
+</body>
+</html>

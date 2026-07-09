@@ -1,0 +1,10 @@
+{
+  "name": "lovel-ecommerce",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve . -p 8080",
+    "api": "cd server && npm install && npm start",
+    "dev": "npx --yes concurrently \"npm run start\" \"npm run api\""
+  }
+}

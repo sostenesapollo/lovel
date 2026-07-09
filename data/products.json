@@ -1,0 +1,197 @@
+[
+  {
+    "id": "p1",
+    "slug": "amouage-interlude-man",
+    "brand": "Amouage",
+    "name": "Interlude Man",
+    "type": "perfumes",
+    "subcategory": "nicho",
+    "category": "Perfumes · Nicho",
+    "image": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800&h=800&fit=crop"
+    ],
+    "description": "Interlude Man é uma fragrância oriental amadeirada intensa da casa Amouage. Notas de orégano, pimenta e bergamota abrem para um coração de âmbar, incenso e ópio, finalizando em couro, madeira e patchouli.",
+    "notes": { "top": "Orégano, Pimenta, Bergamota", "heart": "Âmbar, Incenso, Ópio", "base": "Couro, Madeira, Patchouli" },
+    "badges": [{ "type": "promo", "text": "Compre 5 Leve 4" }],
+    "variants": [
+      { "label": "4ml", "price": 89.9, "sku": "P1-D4" },
+      { "label": "10ml", "price": 189.9, "sku": "P1-D10" },
+      { "label": "Frasco Inteiro", "price": 1890.0, "oldPrice": 2100.0, "sku": "P1-FI" }
+    ],
+    "defaultVariant": 0,
+    "featured": true
+  },
+  {
+    "id": "p2",
+    "slug": "lattafa-khamrah",
+    "brand": "Lattafa",
+    "name": "Khamrah",
+    "type": "perfumes",
+    "subcategory": "arabes",
+    "category": "Perfumes · Árabes",
+    "image": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800&h=800&fit=crop"
+    ],
+    "description": "Khamrah é um perfume árabe gourmand luxuoso com notas de canela, tâmaras e praliné. Um dos mais desejados do momento, perfeito para noites especiais.",
+    "notes": { "top": "Canela, Noz-moscada", "heart": "Tâmaras, Praliné", "base": "Baunilha, Âmbar, Madeira" },
+    "badges": [{ "type": "urgent", "text": "Poucas unidades" }],
+    "variants": [
+      { "label": "4ml", "price": 39.9, "sku": "P2-D4" },
+      { "label": "10ml", "price": 79.9, "sku": "P2-D10" },
+      { "label": "Frasco Inteiro", "price": 349.9, "sku": "P2-FI" }
+    ],
+    "defaultVariant": 1,
+    "featured": true,
+    "isLaunch": true
+  },
+  {
+    "id": "p3",
+    "slug": "dior-sauvage-elixir",
+    "brand": "Dior",
+    "name": "Sauvage Elixir",
+    "type": "perfumes",
+    "subcategory": "grifes",
+    "category": "Perfumes · Grifes",
+    "image": "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800&h=800&fit=crop"
+    ],
+    "description": "A versão mais intensa e sofisticada do icônico Sauvage. Concentração extrait com lavanda, licor e madeira de âmbar para uma assinatura inconfundível.",
+    "notes": { "top": "Toranja, Bergamota, Noz-moscada", "heart": "Lavanda, Licor, Ameixa", "base": "Madeira de Âmbar, Cedro, Baunilha" },
+    "badges": [],
+    "variants": [
+      { "label": "4ml", "price": 69.9, "sku": "P3-D4" },
+      { "label": "10ml", "price": 149.9, "sku": "P3-D10" },
+      { "label": "Frasco Inteiro", "price": 1290.0, "sku": "P3-FI" }
+    ],
+    "defaultVariant": 0
+  },
+  {
+    "id": "p4",
+    "slug": "xerjoff-naxos",
+    "brand": "Xerjoff",
+    "name": "Naxos",
+    "type": "perfumes",
+    "subcategory": "nicho",
+    "category": "Perfumes · Nicho",
+    "image": "https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800&h=800&fit=crop"
+    ],
+    "description": "Naxos celebra a herança siciliana com mel, lavanda e tabaco. Uma obra-prima gourmand do nicho italiano.",
+    "notes": { "top": "Lavanda, Bergamota, Limão", "heart": "Mel, Canela, Cashmeran", "base": "Tabaco, Tonka, Baunilha" },
+    "badges": [{ "type": "sold-out", "text": "Esgotado" }],
+    "soldOut": true,
+    "variants": [
+      { "label": "4ml", "price": 99.9, "disabled": true, "sku": "P4-D4" },
+      { "label": "10ml", "price": 219.9, "disabled": true, "sku": "P4-D10" },
+      { "label": "Frasco Inteiro", "price": 2450.0, "disabled": true, "sku": "P4-FI" }
+    ],
+    "defaultVariant": 0
+  },
+  {
+    "id": "p5",
+    "slug": "creed-aventus",
+    "brand": "Creed",
+    "name": "Aventus",
+    "type": "perfumes",
+    "subcategory": "grifes",
+    "category": "Perfumes · Grifes",
+    "image": "https://images.unsplash.com/photo-1595425970387-17e4c00e8b8b?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1595425970387-17e4c00e8b8b?w=800&h=800&fit=crop"
+    ],
+    "description": "O lendário Aventus da Creed. Frutado amadeirado com abacaxi, musgo de carvalho e baunilha. O perfume masculino mais icônico do século.",
+    "notes": { "top": "Abacaxi, Bergamota, Maçã", "heart": "Bétula, Patchouli, Rosa", "base": "Musgo de Carvalho, Baunilha, Almíscar" },
+    "badges": [],
+    "variants": [
+      { "label": "4ml", "price": 119.9, "sku": "P5-D4" },
+      { "label": "10ml", "price": 259.9, "sku": "P5-D10" },
+      { "label": "Frasco Inteiro", "price": 2890.0, "sku": "P5-FI" }
+    ],
+    "defaultVariant": 0
+  },
+  {
+    "id": "h1",
+    "slug": "olaplex-no3",
+    "brand": "Olaplex",
+    "name": "Nº3 Hair Perfector",
+    "type": "cabelos",
+    "subcategory": "tratamento",
+    "category": "Cabelos · Tratamento",
+    "image": "https://images.unsplash.com/photo-1527799820374-dcf8d9a4e3f0?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1527799820374-dcf8d9a4e3f0?w=800&h=800&fit=crop"
+    ],
+    "description": "Tratamento reparador Nº3 da Olaplex que reconecta as ligações quebradas do cabelo. Use antes do shampoo para cabelos danificados por química ou calor.",
+    "badges": [{ "type": "promo", "text": "Compre 5 Leve 4" }],
+    "variants": [
+      { "label": "30g", "price": 49.9, "sku": "H1-F30" },
+      { "label": "50g", "price": 79.9, "sku": "H1-F50" },
+      { "label": "Frasco Inteiro", "price": 289.9, "sku": "H1-FI" }
+    ],
+    "defaultVariant": 0
+  },
+  {
+    "id": "h2",
+    "slug": "kerastase-masque-chronologiste",
+    "brand": "Kérastase",
+    "name": "Masque Chronologiste",
+    "type": "cabelos",
+    "subcategory": "mascaras",
+    "category": "Cabelos · Máscaras",
+    "image": "https://images.unsplash.com/photo-1608248543801-ba977f391900?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1608248543801-ba977f391900?w=800&h=800&fit=crop"
+    ],
+    "description": "Máscara de tratamento premium anti-idade para cabelos. Textura rica que devolve vitalidade, brilho e maciez extrema.",
+    "badges": [{ "type": "urgent", "text": "Poucas unidades" }],
+    "variants": [
+      { "label": "30g", "price": 89.9, "sku": "H2-F30" },
+      { "label": "50g", "price": 139.9, "sku": "H2-F50" },
+      { "label": "Frasco Inteiro", "price": 689.0, "sku": "H2-FI" }
+    ],
+    "defaultVariant": 1,
+    "isLaunch": true
+  },
+  {
+    "id": "s1",
+    "slug": "laroche-anthelios-uv",
+    "brand": "La Roche-Posay",
+    "name": "Anthelios UV Mune 400",
+    "type": "skincare",
+    "subcategory": "protetor",
+    "category": "Skincare · Protetor Solar",
+    "image": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&h=800&fit=crop"
+    ],
+    "description": "Protetor solar facial com tecnologia UV Mune 400, a mais avançada proteção contra raios UVA. Textura fluida, toque seco.",
+    "badges": [],
+    "variants": [{ "label": "Frasco Inteiro", "price": 189.9, "sku": "S1-FI" }],
+    "defaultVariant": 0,
+    "singleVariant": true,
+    "isLaunch": true
+  },
+  {
+    "id": "s2",
+    "slug": "ordinary-niacinamide",
+    "brand": "The Ordinary",
+    "name": "Niacinamide 10% + Zinc 1%",
+    "type": "skincare",
+    "subcategory": "serum",
+    "category": "Skincare · Sérum",
+    "image": "https://images.unsplash.com/photo-1620916564558-54fa8f9d6a2e?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1620916564558-54fa8f9d6a2e?w=800&h=800&fit=crop"
+    ],
+    "description": "Sérum concentrado com niacinamida e zinco para controlar oleosidade, minimizar poros e uniformizar o tom da pele.",
+    "badges": [],
+    "variants": [{ "label": "Frasco Inteiro", "price": 69.9, "sku": "S2-FI" }],
+    "defaultVariant": 0,
+    "singleVariant": true
+  }
+]

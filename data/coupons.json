@@ -1,0 +1,24 @@
+[
+  {
+    "code": "PRIMEIRACOMPRA",
+    "type": "percent",
+    "value": 10,
+    "minOrder": 0,
+    "firstPurchaseOnly": true,
+    "description": "10% de desconto na primeira compra"
+  },
+  {
+    "code": "LOVEL10",
+    "type": "percent",
+    "value": 10,
+    "minOrder": 150,
+    "description": "10% off em pedidos acima de R$150"
+  },
+  {
+    "code": "FRETEGRATIS",
+    "type": "free_shipping",
+    "value": 0,
+    "minOrder": 0,
+    "description": "Frete grátis em qualquer pedido"
+  }
+]

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Conta — LOVEL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="layout-banner"></div>
+  <div id="layout-header"></div>
+
+  <main>
+    <section class="page-hero page-hero--compact">
+      <div class="container">
+        <h1 class="page-hero__title">Minha Conta</h1>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container account-layout">
+        <!-- Login / Register -->
+        <div id="auth-forms" class="auth-card">
+          <div class="auth-tabs">
+            <button class="auth-tab auth-tab--active" data-tab="login">Entrar</button>
+            <button class="auth-tab" data-tab="register">Criar Conta</button>
+          </div>
+
+          <form id="login-form" class="auth-form">
+            <label class="form-field form-field--full">
+              <span>E-mail</span>
+              <input type="email" name="email" required placeholder="seu@email.com">
+            </label>
+            <label class="form-field form-field--full">
+              <span>Senha</span>
+              <input type="password" name="password" required>
+            </label>
+            <p class="form-hint">Demo: cliente@email.com / 123456</p>
+            <button type="submit" class="btn btn--primary btn--lg">Entrar</button>
+            <p class="auth-message" id="login-message"></p>
+          </form>
+
+          <form id="register-form" class="auth-form" style="display:none">
+            <label class="form-field form-field--full">
+              <span>Nome</span>
+              <input type="text" name="name" required>
+            </label>
+            <label class="form-field form-field--full">
+              <span>E-mail</span>
+              <input type="email" name="email" required>
+            </label>
+            <label class="form-field form-field--full">
+              <span>Senha</span>
+              <input type="password" name="password" required minlength="6">
+            </label>
+            <button type="submit" class="btn btn--primary btn--lg">Criar Conta</button>
+            <p class="auth-message" id="register-message"></p>
+          </form>
+        </div>
+
+        <!-- Logged in -->
+        <div id="account-dashboard" style="display:none">
+          <div class="account-header">
+            <div>
+              <h2 class="account-welcome">Olá, <span id="user-name"></span></h2>
+              <p class="account-email" id="user-email"></p>
+            </div>
+            <div class="account-actions">
+              <a href="admin.html" id="admin-link" class="btn btn--outline" style="display:none">Painel Admin</a>
+              <button class="btn btn--outline" id="btn-logout">Sair</button>
+            </div>
+          </div>
+
+          <div class="account-section">
+            <h3 class="account-section__title">Meus Pedidos</h3>
+            <div id="orders-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="layout-footer"></div>
+  <div id="layout-modal"></div>
+
+  <script type="module" src="js/pages/account.js"></script>
+</body>
+</html>

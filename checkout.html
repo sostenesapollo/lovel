@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — LOVEL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="layout-banner"></div>
+  <div id="layout-header"></div>
+
+  <main id="checkout-main">
+    <section class="page-hero page-hero--compact">
+      <div class="container">
+        <h1 class="page-hero__title">Checkout</h1>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container checkout-layout">
+        <form class="checkout-form" id="checkout-form">
+          <fieldset class="form-section">
+            <legend>Dados Pessoais</legend>
+            <div class="form-grid">
+              <label class="form-field form-field--full">
+                <span>Nome completo</span>
+                <input type="text" name="name" required>
+              </label>
+              <label class="form-field">
+                <span>E-mail</span>
+                <input type="email" name="email" required>
+              </label>
+              <label class="form-field">
+                <span>Telefone</span>
+                <input type="tel" name="phone" required placeholder="(11) 99999-9999">
+              </label>
+              <label class="form-field">
+                <span>CPF</span>
+                <input type="text" name="cpf" required placeholder="000.000.000-00">
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Endereço de Entrega</legend>
+            <div class="form-grid">
+              <label class="form-field">
+                <span>CEP</span>
+                <input type="text" name="cep" required placeholder="00000-000">
+              </label>
+              <label class="form-field form-field--full">
+                <span>Rua</span>
+                <input type="text" name="street" required>
+              </label>
+              <label class="form-field">
+                <span>Número</span>
+                <input type="text" name="number" required>
+              </label>
+              <label class="form-field">
+                <span>Cidade</span>
+                <input type="text" name="city" required>
+              </label>
+              <label class="form-field">
+                <span>Estado</span>
+                <input type="text" name="state" required maxlength="2" placeholder="SP">
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Cupom de Desconto</legend>
+            <div class="coupon-row">
+              <input type="text" id="coupon-input" placeholder="Ex: PRIMEIRACOMPRA" class="coupon-input">
+              <button type="button" class="btn btn--outline" id="btn-apply-coupon">Aplicar</button>
+            </div>
+            <p class="coupon-message" id="coupon-message"></p>
+            <p class="form-hint">Cupons disponíveis: PRIMEIRACOMPRA (10% 1ª compra), LOVEL10 (10% acima R$150), FRETEGRATIS</p>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Forma de Pagamento</legend>
+            <div class="payment-options">
+              <button type="button" class="payment-option payment-option--active" data-payment="pix">
+                <span class="payment-option__icon">◆</span>
+                <span class="payment-option__label">PIX</span>
+                <span class="payment-option__desc">5% de desconto automático</span>
+              </button>
+              <button type="button" class="payment-option" data-payment="card">
+                <span class="payment-option__icon">▭</span>
+                <span class="payment-option__label">Cartão de Crédito</span>
+                <span class="payment-option__desc">Visa, Master, Elo, Amex</span>
+              </button>
+            </div>
+          </fieldset>
+
+          <button type="submit" class="btn btn--primary btn--lg" id="btn-place-order" style="width:100%">Finalizar Pedido</button>
+        </form>
+
+        <aside class="checkout-summary">
+          <h2 class="cart-summary__title">Seu Pedido</h2>
+          <div id="co-items" class="co-items"></div>
+          <div class="cart-summary__row"><span>Subtotal</span><span id="co-subtotal">R$ 0,00</span></div>
+          <div class="cart-summary__row"><span>Desconto</span><span id="co-discount">R$ 0,00</span></div>
+          <div class="cart-summary__row"><span>Frete</span><span id="co-shipping">—</span></div>
+          <div class="cart-summary__row cart-summary__row--total"><span>Total</span><span id="co-total">R$ 0,00</span></div>
+          <div class="cart-summary__row" id="co-pix-total">
+            <span>Total no PIX</span>
+            <span id="co-pix-value" style="color:var(--color-success);font-weight:600">R$ 0,00</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <section class="section checkout-success" id="checkout-success" style="display:none">
+    <div class="container" style="text-align:center;max-width:560px">
+      <div style="font-size:3rem;margin-bottom:1rem">✓</div>
+      <h1 class="section__title">Pedido Confirmado!</h1>
+      <p>Número do pedido: <strong id="order-id"></strong></p>
+      <div id="pix-section" style="display:none;margin-top:2rem;text-align:left">
+        <h3 style="margin-bottom:0.5rem">Pague com PIX</h3>
+        <p style="font-size:0.85rem;color:var(--color-muted);margin-bottom:1rem">Copie o código abaixo e cole no app do seu banco:</p>
+        <div class="pix-code-box" id="pix-code"></div>
+        <button class="btn btn--primary" id="btn-copy-pix" style="margin-top:1rem">Copiar código PIX</button>
+      </div>
+      <a href="index.html" class="btn btn--outline" style="margin-top:2rem">Voltar à Loja</a>
+    </div>
+  </section>
+
+  <div id="layout-footer"></div>
+  <div id="layout-modal"></div>
+
+  <script type="module" src="js/pages/checkout.js"></script>
+</body>
+</html>
