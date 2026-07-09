@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { useCart } from "@/context/cart-context";
-import type { Product } from "@/lib/types";
+import {
+  cartItemToAnalytics,
+  trackAddPaymentInfo,
+  trackAddShippingInfo,
+  trackPurchase,
+} from "@/lib/analytics";
 import { CROSS_SELL_DISCOUNT } from "@/lib/constants";
+import { formatCep, onlyDigits, quoteShipping } from "@/lib/shipping";
+import type { Product } from "@/lib/types";
 import { formatPrice, getVariant } from "@/lib/utils";
 
 const CHECKOUT_FORM_KEY = "lovel_checkout_form";
@@ -54,23 +61,59 @@ const EMPTY_FORM: CheckoutForm = {
 };
 
 export default function CheckoutPage() {
-  const { items, totals, clear, markPurchased, coupon, add, crossSellOffers } = useCart();
+  const {
+    items,
+    totals,
+    clear,
+    markPurchased,
+    coupon,
+    add,
+    crossSellOffers,
+    shippingDest,
+    setShippingDest,
+  } = useCart();
   const [payment, setPayment] = useState<"pix" | "card">("pix");
   const [loading, setLoading] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
   const [error, setError] = useState("");
   const [formReady, setFormReady] = useState(false);
   const [bumpProducts, setBumpProducts] = useState<Product[]>([]);
   const [success, setSuccess] = useState<{
     orderId: string;
+    total: number;
+    shipping: number;
+    items: ReturnType<typeof cartItemToAnalytics>[];
+    coupon?: string;
     pixCode?: string | null;
     pixQrCodeBase64?: string | null;
   } | null>(null);
   const [form, setForm] = useState<CheckoutForm>(EMPTY_FORM);
+  const purchaseTracked = useRef(false);
+  const shippingTracked = useRef(false);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(CHECKOUT_FORM_KEY);
-      if (saved) setForm({ ...EMPTY_FORM, ...JSON.parse(saved) });
+      const dest = (() => {
+        try {
+          return JSON.parse(localStorage.getItem("lovel_shipping_dest") || "null") as {
+            cep?: string;
+            state?: string;
+          } | null;
+        } catch {
+          return null;
+        }
+      })();
+      if (saved) {
+        const parsed = { ...EMPTY_FORM, ...JSON.parse(saved) } as CheckoutForm;
+        if (dest?.cep && !parsed.cep) {
+          parsed.cep = dest.cep;
+          if (dest.state && !parsed.state) parsed.state = dest.state;
+        }
+        setForm(parsed);
+      } else if (dest?.cep) {
+        setForm({ ...EMPTY_FORM, cep: dest.cep, state: dest.state ?? "" });
+      }
     } catch {
       /* ignore */
     }
@@ -91,9 +134,67 @@ export default function CheckoutPage() {
 
   const t = totals(payment);
   const offers = useMemo(() => crossSellOffers(bumpProducts).slice(0, 2), [bumpProducts, crossSellOffers]);
+  const quote = quoteShipping({ state: form.state || shippingDest?.state, cep: form.cep || shippingDest?.cep });
+
+  useEffect(() => {
+    if (success && !purchaseTracked.current) {
+      purchaseTracked.current = true;
+      trackPurchase({
+        transactionId: success.orderId,
+        value: success.total,
+        shipping: success.shipping,
+        items: success.items,
+        coupon: success.coupon,
+      });
+    }
+  }, [success]);
 
   function updateField<K extends keyof CheckoutForm>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function lookupCep(raw: string) {
+    const digits = onlyDigits(raw);
+    if (digits.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = (await res.json()) as {
+        erro?: boolean;
+        logradouro?: string;
+        bairro?: string;
+        localidade?: string;
+        uf?: string;
+      };
+      if (data.erro) return;
+
+      const next: CheckoutForm = {
+        ...form,
+        cep: formatCep(digits),
+        street: data.logradouro || form.street,
+        neighborhood: data.bairro || form.neighborhood,
+        city: data.localidade || form.city,
+        state: data.uf || form.state,
+      };
+      setForm(next);
+      setShippingDest({ state: next.state, cep: next.cep });
+
+      if (!shippingTracked.current) {
+        shippingTracked.current = true;
+        const q = quoteShipping({ state: next.state, cep: next.cep });
+        trackAddShippingInfo(
+          items.map(cartItemToAnalytics),
+          totals(payment).total,
+          q?.regionLabel,
+        );
+      }
+    } catch {
+      /* ViaCEP offline — CEP ainda serve para frete regional */
+      const q = quoteShipping({ cep: digits });
+      if (q) setShippingDest({ state: q.state, cep: formatCep(digits) });
+    } finally {
+      setCepLoading(false);
+    }
   }
 
   async function submit(e: React.FormEvent) {
@@ -101,6 +202,13 @@ export default function CheckoutPage() {
     if (items.length === 0) return;
     setLoading(true);
     setError("");
+
+    trackAddPaymentInfo(items.map(cartItemToAnalytics), t.total, payment);
+
+    const analyticsItems = items.map(cartItemToAnalytics);
+    const orderTotal = t.total;
+    const orderShipping = t.shipping;
+    const orderCoupon = coupon?.code;
 
     const res = await fetch("/api/orders", {
       method: "POST",
@@ -124,6 +232,10 @@ export default function CheckoutPage() {
       clear();
       setSuccess({
         orderId: data.orderId,
+        total: orderTotal,
+        shipping: orderShipping,
+        items: analyticsItems,
+        coupon: orderCoupon,
         pixCode: data.pixCode,
         pixQrCodeBase64: data.pixQrCodeBase64,
       });
@@ -208,7 +320,27 @@ export default function CheckoutPage() {
             <fieldset className="form-section">
               <legend>Endereço de entrega</legend>
               <div className="form-grid">
-                {(["cep", "street", "number", "complement", "neighborhood", "city", "state"] as const).map((field) => (
+                <label className="form-field">
+                  <span>{FIELD_LABELS.cep}{cepLoading ? " · buscando…" : ""}</span>
+                  <input
+                    required
+                    autoComplete="postal-code"
+                    inputMode="numeric"
+                    value={form.cep}
+                    onChange={(e) => {
+                      const next = formatCep(e.target.value);
+                      updateField("cep", next);
+                      const digits = onlyDigits(next);
+                      if (digits.length === 8) {
+                        const q = quoteShipping({ cep: digits });
+                        if (q) setShippingDest({ state: q.state, cep: next });
+                        void lookupCep(next);
+                      }
+                    }}
+                    onBlur={() => void lookupCep(form.cep)}
+                  />
+                </label>
+                {(["street", "number", "complement", "neighborhood", "city", "state"] as const).map((field) => (
                   <label
                     key={field}
                     className={`form-field${field === "street" || field === "neighborhood" ? " form-field--full" : ""}`}
@@ -216,23 +348,35 @@ export default function CheckoutPage() {
                     <span>{FIELD_LABELS[field]}</span>
                     <input
                       required={field !== "complement"}
+                      maxLength={field === "state" ? 2 : undefined}
                       autoComplete={
-                        field === "cep"
-                          ? "postal-code"
-                          : field === "street"
-                            ? "street-address"
-                            : field === "city"
-                              ? "address-level2"
-                              : field === "state"
-                                ? "address-level1"
-                                : "off"
+                        field === "street"
+                          ? "street-address"
+                          : field === "city"
+                            ? "address-level2"
+                            : field === "state"
+                              ? "address-level1"
+                              : "off"
                       }
                       value={form[field]}
-                      onChange={(e) => updateField(field, e.target.value)}
+                      onChange={(e) => {
+                        const value = field === "state" ? e.target.value.toUpperCase() : e.target.value;
+                        updateField(field, value);
+                        if (field === "state" && value.length === 2) {
+                          setShippingDest({ state: value, cep: form.cep });
+                        }
+                      }}
                     />
                   </label>
                 ))}
               </div>
+              {quote && t.shipping > 0 && (
+                <p className="form-hint">
+                  Frete estimado para {quote.regionLabel}
+                  {quote.state ? ` (${quote.state})` : ""}: {formatPrice(quote.price)} · {quote.etaDays} dias úteis
+                  (saída de Foz do Iguaçu)
+                </p>
+              )}
             </fieldset>
 
             <fieldset className="form-section">
@@ -347,9 +491,14 @@ export default function CheckoutPage() {
               </div>
             )}
             <div className="cart-summary__row">
-              <span>Frete</span>
+              <span>Frete{quote?.state ? ` (${quote.state})` : ""}</span>
               <span>{t.shipping === 0 ? "Grátis" : formatPrice(t.shipping)}</span>
             </div>
+            {quote && t.shipping > 0 && (
+              <p className="cart-summary__hint">
+                {quote.etaDays} dias úteis · Foz do Iguaçu → {quote.regionLabel}
+              </p>
+            )}
             <div className="cart-summary__row cart-summary__total">
               <span>Total</span>
               <span>{formatPrice(t.total)}</span>

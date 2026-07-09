@@ -12,7 +12,8 @@ const NAV = [
   { href: categoryPath("perfumes"), label: "Perfumes", key: "perfumes" },
   { href: categoryPath("cabelos"), label: "Cabelos", key: "cabelos" },
   { href: categoryPath("skincare"), label: "Skincare", key: "skincare" },
-  { href: "/categoria?tipo=lancamentos", label: "Lançamentos", key: "lancamentos" },
+  { href: "/guia", label: "Guias", key: "guia" },
+  { href: "/paraguai", label: "Paraguai", key: "paraguai" },
   { href: "/depoimentos", label: "Depoimentos", key: "depoimentos" },
   { href: "/#contato", label: "Contato", key: "contato" },
 ];
@@ -34,7 +35,7 @@ export function SiteHeader({ activeNav = "" }: { activeNav?: string }) {
       <div className="top-banner" role="region" aria-label="Promoções">
         <div className="container">
           <div className="top-banner__track">
-            <span className="top-banner__item"><strong>Frete Grátis</strong> acima de R$199</span>
+            <span className="top-banner__item"><strong>Frete Grátis</strong> acima de R$199 · envio de Foz do Iguaçu</span>
             <span className="top-banner__divider">|</span>
             <span className="top-banner__item"><strong>5% OFF</strong> no PIX</span>
             <span className="top-banner__divider">|</span>
@@ -141,6 +142,11 @@ export function SiteFooter() {
           <Link href="/conta" className="footer__link">Minha conta</Link>
           <Link href="/depoimentos" className="footer__link">Depoimentos</Link>
           <Link href="/categoria?tipo=perfumes" className="footer__link">Perfumes</Link>
+          <Link href="/guia" className="footer__link">Guias de perfume</Link>
+          <Link href="/paraguai" className="footer__link">Comprar no Paraguai</Link>
+          <Link href="/paraguai/comprar-perfume-no-paraguai" className="footer__link">
+            Guia Ciudad del Este
+          </Link>
         </div>
       </div>
       <div className="footer__bottom">

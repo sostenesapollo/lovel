@@ -6,7 +6,13 @@ import {
   PIX_DISCOUNT,
   SHIPPING_FLAT,
 } from "./constants";
+import { quoteShipping } from "./shipping";
 import type { CartItem, Coupon, Product } from "./types";
+
+export type ShippingDestination = {
+  state?: string | null;
+  cep?: string | null;
+};
 
 export function formatPrice(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -40,10 +46,19 @@ export function calcSubtotal(items: CartItem[]) {
   return items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 }
 
-export function calcShipping(subtotal: number, coupon: Coupon | null, freeThreshold = FREE_SHIPPING_THRESHOLD) {
+export function calcShipping(
+  subtotal: number,
+  coupon: Coupon | null,
+  freeThreshold = FREE_SHIPPING_THRESHOLD,
+  destination?: ShippingDestination | null,
+) {
   if (coupon?.type === "free_shipping") return 0;
   if (subtotal >= freeThreshold) return 0;
-  return SHIPPING_FLAT;
+  const quote = quoteShipping({
+    state: destination?.state,
+    cep: destination?.cep,
+  });
+  return quote?.price ?? SHIPPING_FLAT;
 }
 
 export function calcCouponDiscount(subtotal: number, coupon: Coupon | null) {
@@ -56,6 +71,7 @@ export function calcTotals(
   coupon: Coupon | null,
   payment: "pix" | "card" = "pix",
   isFirstPurchase = false,
+  destination?: ShippingDestination | null,
 ) {
   const subtotal = calcSubtotal(items);
   let discount = calcCouponDiscount(subtotal, coupon);
@@ -65,7 +81,7 @@ export function calcTotals(
   }
 
   const afterCoupon = Math.max(0, subtotal - discount);
-  const shipping = calcShipping(afterCoupon, coupon);
+  const shipping = calcShipping(afterCoupon, coupon, FREE_SHIPPING_THRESHOLD, destination);
   let total = afterCoupon + shipping;
 
   if (payment === "pix") {

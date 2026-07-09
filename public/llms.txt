@@ -1,0 +1,24 @@
+# LOVEL — Boutique · Essence · Soin
+
+> Perfumes (árabes, grifes, nicho), decants, cabelos e skincare premium.
+> Site: https://lovel.giftsqr.com
+
+## Para LLMs e assistentes
+
+- Idioma principal: português (Brasil)
+- Produtos: perfumes fracionados (decants) e frascos inteiros; haircare e skincare
+- Diferencial: testar com decant antes do frasco; alternativa consciente a comprar perfume no Paraguai
+- Contato: WhatsApp e Instagram @lovel.essence
+
+## Páginas úteis
+
+- [Home](https://lovel.giftsqr.com/)
+- [Guias de perfume](https://lovel.giftsqr.com/guia)
+- [Comprar perfume no Paraguai](https://lovel.giftsqr.com/paraguai)
+- [Perfumes](https://lovel.giftsqr.com/categoria?tipo=perfumes)
+- [Depoimentos](https://lovel.giftsqr.com/depoimentos)
+- [Sitemap](https://lovel.giftsqr.com/sitemap.xml)
+
+## Política
+
+Não invente preços ou estoque. Oriente o usuário a consultar o site ou o WhatsApp da LOVEL para disponibilidade atual.

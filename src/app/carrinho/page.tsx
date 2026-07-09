@@ -3,17 +3,34 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ShippingEstimator } from "@/components/shipping-estimator";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { useCart } from "@/context/cart-context";
+import { cartItemToAnalytics, trackBeginCheckout } from "@/lib/analytics";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
+import { quoteShipping } from "@/lib/shipping";
 import type { Product } from "@/lib/types";
 import { formatPrice } from "@/lib/utils";
 
 export default function CartPage() {
-  const { items, remove, updateQuantity, coupon, setCoupon, totals, crossSellOffers, add } = useCart();
+  const {
+    items,
+    remove,
+    updateQuantity,
+    coupon,
+    setCoupon,
+    totals,
+    crossSellOffers,
+    add,
+    shippingDest,
+    setShippingDest,
+  } = useCart();
   const [code, setCode] = useState("");
   const [couponMsg, setCouponMsg] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const t = totals("pix");
+  const quote = quoteShipping({ state: shippingDest?.state, cep: shippingDest?.cep });
+  const freeRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - (t.subtotal - t.discount));
 
   useEffect(() => {
     fetch("/api/products").then((r) => r.json()).then(setProducts);
@@ -35,6 +52,13 @@ export default function CartPage() {
       setCoupon(null);
       setCouponMsg(data.message);
     }
+  }
+
+  function goCheckout() {
+    trackBeginCheckout(
+      items.map(cartItemToAnalytics),
+      t.total,
+    );
   }
 
   return (
@@ -87,13 +111,40 @@ export default function CartPage() {
                     ))}
                   </div>
                 )}
+
+                <ShippingEstimator
+                  initialCep={shippingDest?.cep ?? ""}
+                  onQuote={(result) => {
+                    if (result) {
+                      setShippingDest({ state: result.quote.state, cep: result.cep });
+                    }
+                  }}
+                />
               </div>
 
               <aside className="cart-summary">
                 <h3>Resumo</h3>
                 <div className="cart-summary__row"><span>Subtotal</span><span>{formatPrice(t.subtotal)}</span></div>
                 {t.discount > 0 && <div className="cart-summary__row"><span>Desconto</span><span>-{formatPrice(t.discount)}</span></div>}
-                <div className="cart-summary__row"><span>Frete</span><span>{t.shipping === 0 ? "Grátis" : formatPrice(t.shipping)}</span></div>
+                <div className="cart-summary__row">
+                  <span>Frete{quote?.state ? ` (${quote.state})` : ""}</span>
+                  <span>{t.shipping === 0 ? "Grátis" : formatPrice(t.shipping)}</span>
+                </div>
+                {t.shipping > 0 && freeRemaining > 0 && (
+                  <p className="cart-summary__hint">
+                    Faltam {formatPrice(freeRemaining)} para frete grátis
+                  </p>
+                )}
+                {quote && t.shipping > 0 && (
+                  <p className="cart-summary__hint">
+                    Prazo estimado: {quote.etaDays} dias úteis · saída de Foz do Iguaçu
+                  </p>
+                )}
+                {!quote && t.shipping > 0 && (
+                  <p className="cart-summary__hint">
+                    Frete médio (informe o CEP para ajustar)
+                  </p>
+                )}
                 <div className="cart-summary__row cart-summary__total"><span>Total PIX</span><span>{formatPrice(t.total)}</span></div>
                 <div className="coupon-form">
                   <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Cupom" />
@@ -101,7 +152,9 @@ export default function CartPage() {
                 </div>
                 {couponMsg && <p className="coupon-msg">{couponMsg}</p>}
                 {coupon && <p className="coupon-applied">Cupom {coupon.code} aplicado</p>}
-                <Link href="/checkout" className="btn btn--gold btn--full">Finalizar compra</Link>
+                <Link href="/checkout" className="btn btn--gold btn--full" onClick={goCheckout}>
+                  Finalizar compra
+                </Link>
               </aside>
             </div>
           )}

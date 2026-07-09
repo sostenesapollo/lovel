@@ -4,14 +4,16 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ImageCarousel } from "@/components/image-carousel";
+import { ShippingEstimator } from "@/components/shipping-estimator";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { useCart } from "@/context/cart-context";
+import { trackViewItem } from "@/lib/analytics";
 import type { Product } from "@/lib/types";
 import { formatPrice, getVariant, pixPrice } from "@/lib/utils";
 
 export default function ProductPage() {
   const params = useParams<{ slug: string }>();
-  const { add } = useCart();
+  const { add, setShippingDest, shippingDest } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [selected, setSelected] = useState(0);
   const [added, setAdded] = useState(false);
@@ -29,6 +31,21 @@ export default function ProductPage() {
       })
       .catch(() => setProduct(null));
   }, [params.slug]);
+
+  useEffect(() => {
+    if (!product) return;
+    const v = getVariant(product, selected);
+    if (!v) return;
+    trackViewItem({
+      item_id: product.id,
+      item_name: product.name,
+      item_brand: product.brand,
+      item_variant: v.label,
+      item_category: product.category,
+      price: v.price,
+      quantity: 1,
+    });
+  }, [product, selected]);
 
   if (!product) {
     return (
@@ -122,6 +139,18 @@ export default function ProductPage() {
               <Link href="/carrinho" className="btn btn--outline btn--lg">
                 Ver carrinho
               </Link>
+            </div>
+
+            <div className="pdp__shipping">
+              <ShippingEstimator
+                compact
+                initialCep={shippingDest?.cep ?? ""}
+                onQuote={(result) => {
+                  if (result) {
+                    setShippingDest({ state: result.quote.state, cep: result.cep });
+                  }
+                }}
+              />
             </div>
           </div>
         </div>

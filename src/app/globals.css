@@ -2986,3 +2986,344 @@ ul {
   }
 }
 
+/* ── SEO programmatic pages ── */
+
+.seo-page {
+  min-height: 60vh;
+}
+
+.seo-hero {
+  padding: var(--space-xl) 0 var(--space-lg);
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%, rgba(201, 169, 98, 0.12), transparent 55%),
+    linear-gradient(180deg, var(--color-cream) 0%, var(--color-sand) 100%);
+  border-bottom: 1px solid rgba(10, 10, 10, 0.06);
+}
+
+.seo-hero__eyebrow {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: var(--space-sm);
+}
+
+.seo-hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--color-black);
+  max-width: 18ch;
+  margin-bottom: var(--space-sm);
+}
+
+.seo-hero__lead {
+  font-size: 1.05rem;
+  color: var(--color-muted);
+  max-width: 42rem;
+  margin-bottom: var(--space-md);
+}
+
+.seo-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.seo-breadcrumb {
+  font-size: 0.75rem;
+  color: var(--color-stone);
+  margin-bottom: var(--space-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.seo-breadcrumb a:hover {
+  color: var(--color-gold);
+}
+
+.seo-breadcrumb__sep {
+  margin-inline: 0.15rem;
+  opacity: 0.5;
+}
+
+.seo-body__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.seo-body__prose {
+  max-width: 42rem;
+  color: var(--color-muted);
+  font-size: 1.05rem;
+}
+
+.seo-article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.seo-article > p {
+  font-size: 1.05rem;
+  color: var(--color-charcoal);
+  max-width: 42rem;
+}
+
+.seo-callout {
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-white);
+  border-left: 3px solid var(--color-gold);
+  box-shadow: var(--shadow-soft);
+}
+
+.seo-callout h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.seo-callout p {
+  color: var(--color-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.seo-faq h2,
+.seo-aside__block h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 500;
+  margin-bottom: var(--space-sm);
+}
+
+.seo-faq__item {
+  border-top: 1px solid var(--color-sand);
+  padding: 0.85rem 0;
+}
+
+.seo-faq__item summary {
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+}
+
+.seo-faq__item summary::-webkit-details-marker {
+  display: none;
+}
+
+.seo-faq__item p {
+  margin-top: 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+.seo-aside__block {
+  margin-bottom: var(--space-lg);
+}
+
+.seo-aside__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.seo-aside__list a {
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+  border-bottom: 1px solid transparent;
+}
+
+.seo-aside__list a:hover {
+  border-bottom-color: var(--color-gold);
+}
+
+.seo-index-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem 1.25rem;
+  list-style: none;
+}
+
+.seo-index-grid--dense {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.seo-index-grid a {
+  font-size: 0.95rem;
+  color: var(--color-charcoal);
+  display: inline;
+  border-bottom: 1px solid rgba(201, 169, 98, 0.35);
+}
+
+.seo-index-grid a:hover {
+  color: var(--color-gold);
+}
+
+.seo-index-more {
+  margin-top: var(--space-md);
+  font-size: 0.85rem;
+  color: var(--color-stone);
+}
+
+.section--alt {
+  background: var(--color-white);
+}
+
+@media (max-width: 900px) {
+  .seo-body__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .seo-hero {
+    padding: var(--space-lg) 0;
+  }
+}
+
+/* ── Shipping estimator ── */
+
+.shipping-est {
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-sand);
+  background: var(--color-cream);
+}
+
+.shipping-est--compact {
+  margin-top: var(--space-lg);
+  padding: var(--space-sm) 0 0;
+  border: none;
+  border-top: 1px solid var(--color-sand);
+  background: transparent;
+}
+
+.shipping-est__title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  margin: 0 0 0.35rem;
+}
+
+.shipping-est__lead {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin: 0 0 var(--space-sm);
+  line-height: 1.45;
+}
+
+.shipping-est__label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: 0.35rem;
+}
+
+.shipping-est__row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.shipping-est__row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-sand);
+  background: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+}
+
+.shipping-est__error {
+  font-size: 0.75rem;
+  color: #a33;
+  margin: 0.5rem 0 0;
+}
+
+.shipping-est__result {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.shipping-est__result strong {
+  font-size: 1rem;
+}
+
+.shipping-est__note {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  margin: 0.25rem 0 0;
+}
+
+.shipping-est__table {
+  margin-top: var(--space-md);
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--color-sand);
+}
+
+.shipping-est__table-head,
+.shipping-est__table-row {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr 0.9fr;
+  gap: 0.5rem;
+  padding: 0.55rem 0;
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(10, 10, 10, 0.06);
+  align-items: baseline;
+}
+
+.shipping-est__table-head {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.shipping-est__table-row strong {
+  display: block;
+  font-weight: 500;
+}
+
+.shipping-est__table-row small {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--color-muted);
+  margin-top: 0.1rem;
+}
+
+.shipping-est__table-row span:last-child {
+  font-weight: 600;
+  text-align: right;
+}
+
+.cart-summary__hint {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  margin: -0.15rem 0 0.4rem;
+  line-height: 1.35;
+}
+
+.pdp__shipping {
+  margin-top: var(--space-md);
+}
+
+@media (max-width: 600px) {
+  .shipping-est__table-head,
+  .shipping-est__table-row {
+    grid-template-columns: 1.2fr 0.7fr 0.8fr;
+    font-size: 0.75rem;
+  }
+}
+

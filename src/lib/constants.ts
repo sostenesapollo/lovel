@@ -4,7 +4,8 @@ export const ADMIN_TOKEN_KEY = "lovel:admin-token";
 
 export const PIX_DISCOUNT = 0.05;
 export const FREE_SHIPPING_THRESHOLD = 199;
-export const SHIPPING_FLAT = 19.9;
+/** Fallback quando o CEP ainda não foi informado (média Sudeste, origem Foz do Iguaçu) */
+export const SHIPPING_FLAT = 29.9;
 export const CROSS_SELL_DISCOUNT = 0.1;
 export const FRACTIONAL_LABELS = ["4ml", "10ml", "30g", "50g"];
 export const FULL_BOTTLE_LABEL = "Frasco Inteiro";

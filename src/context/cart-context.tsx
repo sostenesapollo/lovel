@@ -16,18 +16,23 @@ import {
   getCrossSellOffers,
   getVariant,
   isFractionalVariant,
+  type ShippingDestination,
 } from "@/lib/utils";
 import { CROSS_SELL_DISCOUNT, FULL_BOTTLE_LABEL } from "@/lib/constants";
+import { cartItemToAnalytics, trackAddToCart } from "@/lib/analytics";
 
 const CART_KEY = "lovel_cart";
 const COUPON_KEY = "lovel_coupon";
 const FIRST_PURCHASE_KEY = "lovel_has_purchased";
+const SHIPPING_DEST_KEY = "lovel_shipping_dest";
 
 type CartContextValue = {
   items: CartItem[];
   coupon: Coupon | null;
   count: number;
   subtotal: number;
+  shippingDest: ShippingDestination | null;
+  setShippingDest: (dest: ShippingDestination | null) => void;
   add: (product: Product, variantIndex: number, options?: { crossSell?: boolean; crossSellPrice?: number }) => boolean;
   remove: (key: string) => void;
   updateQuantity: (key: string, quantity: number) => void;
@@ -54,10 +59,20 @@ function loadCart(): CartItem[] {
   }
 }
 
+function loadShippingDest(): ShippingDestination | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return JSON.parse(localStorage.getItem(SHIPPING_DEST_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [coupon, setCouponState] = useState<Coupon | null>(null);
   const [isFirstPurchase, setIsFirstPurchase] = useState(true);
+  const [shippingDest, setShippingDestState] = useState<ShippingDestination | null>(null);
 
   useEffect(() => {
     setItems(loadCart());
@@ -67,11 +82,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setCouponState(null);
     }
     setIsFirstPurchase(!localStorage.getItem(FIRST_PURCHASE_KEY));
+    setShippingDestState(loadShippingDest());
   }, []);
 
   const persist = useCallback((next: CartItem[]) => {
     setItems(next);
     localStorage.setItem(CART_KEY, JSON.stringify(next));
+  }, []);
+
+  const setShippingDest = useCallback((dest: ShippingDestination | null) => {
+    setShippingDestState(dest);
+    if (dest?.cep || dest?.state) {
+      localStorage.setItem(SHIPPING_DEST_KEY, JSON.stringify(dest));
+    } else {
+      localStorage.removeItem(SHIPPING_DEST_KEY);
+    }
   }, []);
 
   const add = useCallback(
@@ -100,8 +125,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (existing && !options?.crossSell) {
         existing.quantity += 1;
         persist([...current]);
+        trackAddToCart(cartItemToAnalytics({ ...existing }));
       } else {
         persist([...current, item]);
+        trackAddToCart(cartItemToAnalytics(item));
       }
       return true;
     },
@@ -154,6 +181,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       coupon,
       count,
       subtotal,
+      shippingDest,
+      setShippingDest,
       add,
       remove,
       updateQuantity,
@@ -161,10 +190,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setCoupon,
       isFirstPurchase,
       markPurchased,
-      totals: (payment = "pix") => calcTotals(items, coupon, payment, isFirstPurchase),
+      totals: (payment = "pix") => calcTotals(items, coupon, payment, isFirstPurchase, shippingDest),
       crossSellOffers: (products) => getCrossSellOffers(items, products),
     }),
-    [items, coupon, count, subtotal, add, remove, updateQuantity, clear, setCoupon, isFirstPurchase, markPurchased],
+    [
+      items,
+      coupon,
+      count,
+      subtotal,
+      shippingDest,
+      setShippingDest,
+      add,
+      remove,
+      updateQuantity,
+      clear,
+      setCoupon,
+      isFirstPurchase,
+      markPurchased,
+    ],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
