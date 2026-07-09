@@ -6,9 +6,9 @@ export type NtfyNotification = {
   click?: string;
 };
 
-/** ntfy.sh rejects dots in topic names — lovelessence.com → lovelessence-com */
+/** ntfy.sh rejects dots in topic names */
 export function getNtfyTopic(): string {
-  const raw = process.env.NTFY_TOPIC?.trim() || "lovelessence-com";
+  const raw = process.env.NTFY_TOPIC?.trim() || "lovelessence";
   return raw.replace(/\./g, "-");
 }
 
