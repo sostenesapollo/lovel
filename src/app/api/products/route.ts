@@ -13,6 +13,7 @@ function buildWhere(searchParams: URLSearchParams): Prisma.ProductWhereInput {
   const launch = searchParams.get("launch");
   const featured = searchParams.get("featured");
   const idsParam = searchParams.get("ids");
+  const q = (searchParams.get("q") ?? searchParams.get("search") ?? "").trim();
 
   const where: Prisma.ProductWhereInput = { active: true };
 
@@ -28,6 +29,13 @@ function buildWhere(searchParams: URLSearchParams): Prisma.ProductWhereInput {
   }
   if (sub) where.subcategory = sub;
   if (featured === "true") where.featured = true;
+
+  if (q) {
+    where.OR = [
+      { name: { contains: q } },
+      { brand: { contains: q } },
+    ];
+  }
 
   return where;
 }
