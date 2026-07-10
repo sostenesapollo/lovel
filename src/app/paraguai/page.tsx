@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     absolute: "Comprar perfume no Paraguai — guia completo | LOVEL",
   },
   description:
-    "Guia LOVEL: comprar perfume no Paraguai, Ciudad del Este, riscos de réplica, preços e alternativa com decants originais no Brasil.",
+    "Guia LOVEL: comprar perfume no Paraguai, Ciudad del Este, riscos de procedência duvidosa, preços e alternativa com decants originais no Brasil.",
   alternates: { canonical: absoluteUrl("/paraguai") },
 };
 
@@ -41,7 +41,7 @@ export default function ParaguaiIndexPage() {
             <p>
               Buscas por “perfume barato no Paraguai” e “Ciudad del Este
               perfumes” explodem no Brasil. A economia pode existir — o risco
-              de réplica e o custo da viagem também.
+              de procedência duvidosa e o custo da viagem também.
             </p>
             <p>
               Na LOVEL, a proposta é testar com decant, comprar original com

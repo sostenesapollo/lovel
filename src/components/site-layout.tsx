@@ -225,6 +225,13 @@ export function SiteFooter() {
       <div className="footer__bottom">
         <div className="container">
           <p>© {new Date().getFullYear()} LOVEL. Todos os direitos reservados.</p>
+          <p className="footer__disclaimer">
+            A LOVEL é uma loja independente e não possui afiliação, patrocínio
+            ou endosso das marcas comercializadas. Os produtos de grife
+            listados são vendidos em frasco original lacrado de fábrica,
+            adquiridos de distribuidor autorizado. Nomes e marcas são de
+            propriedade de seus respectivos titulares.
+          </p>
         </div>
       </div>
     </footer>
