@@ -111,7 +111,10 @@ export function SeoGuidePage({
                   </p>
                   <Link
                     href={
-                      ["arabes", "grifes", "nicho"].includes(page.subcategory)
+                      page.subcategory === "arabes" ||
+                      page.subcategory === "grifes" ||
+                      page.subcategory === "nicho" ||
+                      page.subcategory.startsWith("nicho-")
                         ? categoryPath("perfumes", page.subcategory)
                         : categoryPath("perfumes")
                     }
@@ -164,7 +167,14 @@ export function SeoGuidePage({
                     </Link>
                   </li>
                   <li>
-                    <Link href={categoryPath("perfumes", "nicho")}>Nicho</Link>
+                    <Link href={categoryPath("perfumes", "nicho-masculino")}>
+                      Nicho Masculino
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={categoryPath("perfumes", "nicho-feminino")}>
+                      Nicho Feminino
+                    </Link>
                   </li>
                   <li>
                     <Link href="/paraguai">Comprar no Paraguai</Link>

@@ -16,6 +16,7 @@ function buildWhere(searchParams: URLSearchParams): Prisma.ProductWhereInput {
   const q = (searchParams.get("q") ?? searchParams.get("search") ?? "").trim();
 
   const where: Prisma.ProductWhereInput = { active: true };
+  const and: Prisma.ProductWhereInput[] = [];
 
   if (idsParam) {
     const ids = idsParam.split(",").map((id) => id.trim()).filter(Boolean);
@@ -27,15 +28,22 @@ function buildWhere(searchParams: URLSearchParams): Prisma.ProductWhereInput {
   } else if (tipo) {
     where.type = tipo;
   }
-  if (sub) where.subcategory = sub;
   if (featured === "true") where.featured = true;
 
-  if (q) {
-    where.OR = [
-      { name: { contains: q } },
-      { brand: { contains: q } },
-    ];
+  // Exact match or child slugs (e.g. nicho → nicho-masculino / nicho-feminino)
+  if (sub) {
+    and.push({
+      OR: [{ subcategory: sub }, { subcategory: { startsWith: `${sub}-` } }],
+    });
   }
+
+  if (q) {
+    and.push({
+      OR: [{ name: { contains: q } }, { brand: { contains: q } }],
+    });
+  }
+
+  if (and.length) where.AND = and;
 
   return where;
 }

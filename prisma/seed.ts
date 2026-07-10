@@ -30,7 +30,8 @@ const DEFAULT_CATEGORIES = [
     subcategories: [
       { slug: "arabes", label: "Árabes" },
       { slug: "grifes", label: "Grifes" },
-      { slug: "nicho", label: "Nicho" },
+      { slug: "nicho-masculino", label: "Nicho Masculino" },
+      { slug: "nicho-feminino", label: "Nicho Feminino" },
     ],
   },
   {
