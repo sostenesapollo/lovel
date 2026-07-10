@@ -4,6 +4,9 @@ import { SEO_PAGES } from "@/lib/seo/catalog";
 import { getSiteUrl } from "@/lib/seo/site";
 import { productPath } from "@/lib/utils";
 
+/** Products live in SQLite at runtime — do not prerender against the build image. */
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
   const now = new Date();
@@ -88,17 +91,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     };
   });
 
-  const products = await prisma.product.findMany({
-    where: { active: true },
-    select: { slug: true, updatedAt: true },
-  });
-
-  const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
-    url: `${base}${productPath(p)}`,
-    lastModified: p.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
+  let productRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const products = await prisma.product.findMany({
+      where: { active: true },
+      select: { slug: true, updatedAt: true },
+    });
+    productRoutes = products.map((p) => ({
+      url: `${base}${productPath(p)}`,
+      lastModified: p.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
+  } catch {
+    // Build/CI may not have a populated DB; static + SEO routes still ship.
+  }
 
   return [...staticRoutes, ...seoRoutes, ...productRoutes];
 }

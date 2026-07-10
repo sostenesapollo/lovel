@@ -13,6 +13,11 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
 
 FROM base AS builder
+# Real Node is required for better-sqlite3 during `next build` prerender.
+# oven/bun ships a `node` shim that points at Bun (ERR_DLOPEN_FAILED).
+RUN apk add --no-cache nodejs
+ENV PATH="/usr/bin:$PATH"
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 COPY .env.production* ./
