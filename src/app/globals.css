@@ -811,6 +811,19 @@ ul {
   gap: var(--space-md);
 }
 
+.product-grid__sentinel {
+  min-height: 1px;
+  padding: var(--space-lg) 0 var(--space-xl);
+  text-align: center;
+}
+
+.product-grid__loading,
+.product-grid__end {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
 .product-card {
   background: var(--color-white);
   border: 1px solid var(--color-sand);
@@ -1509,6 +1522,12 @@ ul {
 .page-header__subtitle {
   color: var(--color-muted);
   margin-top: 0.5rem;
+}
+
+.page-header__meta {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--color-muted);
 }
 
 .filter-bar {

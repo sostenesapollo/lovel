@@ -33,8 +33,18 @@ export default function CartPage() {
   const freeRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - (t.subtotal - t.discount));
 
   useEffect(() => {
-    fetch("/api/products").then((r) => r.json()).then(setProducts);
-  }, []);
+    const ids = [...new Set(items.map((i) => i.productId))];
+    if (ids.length === 0) {
+      setProducts([]);
+      return;
+    }
+    fetch(`/api/products?ids=${ids.map(encodeURIComponent).join(",")}`)
+      .then((r) => r.json())
+      .then((data: Product[] | { items: Product[] }) =>
+        setProducts(Array.isArray(data) ? data : data.items ?? []),
+      )
+      .catch(() => setProducts([]));
+  }, [items]);
 
   const offers = crossSellOffers(products);
 

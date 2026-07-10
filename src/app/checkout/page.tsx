@@ -127,11 +127,18 @@ export default function CheckoutPage() {
   }, [form, formReady]);
 
   useEffect(() => {
-    fetch("/api/products")
+    const ids = [...new Set(items.map((i) => i.productId))];
+    if (ids.length === 0) {
+      setBumpProducts([]);
+      return;
+    }
+    fetch(`/api/products?ids=${ids.map(encodeURIComponent).join(",")}`)
       .then((r) => r.json())
-      .then((list: Product[]) => setBumpProducts(Array.isArray(list) ? list : []))
+      .then((data: Product[] | { items: Product[] }) =>
+        setBumpProducts(Array.isArray(data) ? data : data.items ?? []),
+      )
       .catch(() => setBumpProducts([]));
-  }, []);
+  }, [items]);
 
   const t = totals(payment);
   const offers = useMemo(() => crossSellOffers(bumpProducts).slice(0, 2), [bumpProducts, crossSellOffers]);
