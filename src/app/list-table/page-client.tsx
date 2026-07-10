@@ -482,7 +482,9 @@ export default function ListTablePage() {
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const draftInFlight = useRef(false);
   const draftQueued = useRef(false);
+  const draftIdleWaiters = useRef<Array<() => void>>([]);
   const productFormRef = useRef(productForm);
+  const productNameRef = useRef<HTMLInputElement>(null);
   const skipDraftAutosave = useRef(false);
 
   const [categoryModal, setCategoryModal] = useState(false);
@@ -617,10 +619,17 @@ export default function ListTablePage() {
 
   const filteredProducts = useMemo(() => {
     const q = productSearch.trim().toLowerCase();
-    return products.filter((p) => {
+    const filtered = products.filter((p) => {
       const matchesName = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
       const matchesCategory = !productCategoryFilter || p.type === productCategoryFilter;
       return matchesName && matchesCategory;
+    });
+    // Rascunhos sempre no topo da lista admin.
+    return [...filtered].sort((a, b) => {
+      const aDraft = a.active === false ? 0 : 1;
+      const bDraft = b.active === false ? 0 : 1;
+      if (aDraft !== bDraft) return aDraft - bDraft;
+      return 0;
     });
   }, [products, productSearch, productCategoryFilter]);
 
@@ -815,22 +824,8 @@ export default function ListTablePage() {
       return;
     }
 
-    const draftId = typeof window !== "undefined" ? localStorage.getItem(PRODUCT_DRAFT_KEY) : null;
-    if (draftId) {
-      const draft = products.find((p) => p.id === draftId && p.active === false);
-      if (draft) {
-        skipDraftAutosave.current = true;
-        setProductForm(productToForm(draft));
-        const cat = categoryBySlug.get(draft.type);
-        setVariantLabelMode(cat?.variantLabels?.length ? "pick" : "free");
-        setDraftStatus("saved");
-        setProductModal(true);
-        return;
-      }
-      // Só limpa se a lista já carregou e o rascunho sumiu (publicado/excluído).
-      if (products.length > 0) localStorage.removeItem(PRODUCT_DRAFT_KEY);
-    }
-
+    // Sempre começa um produto novo — rascunhos anteriores ficam na lista para editar.
+    localStorage.removeItem(PRODUCT_DRAFT_KEY);
     const first = categories[0];
     const form = emptyProductForm(first.slug);
     form.category = first.title;
@@ -851,24 +846,54 @@ export default function ListTablePage() {
     setProductModal(true);
   }
 
-  function closeProductModal(opts?: { skipDraftFlush?: boolean }) {
+  function canPersistDraft(form: ProductForm) {
+    // Nome + categoria bastam para rascunho; marca vazia vira "Sem marca".
+    return Boolean(form.name.trim() && form.type) && (!form.id || !form.active);
+  }
+
+  async function closeProductModal(opts?: { skipDraftFlush?: boolean }) {
     if (draftTimer.current) {
       clearTimeout(draftTimer.current);
       draftTimer.current = null;
     }
+    let savedDraft = false;
     if (!opts?.skipDraftFlush) {
       const form = productFormRef.current;
-      if ((!form.id || !form.active) && form.brand.trim() && form.name.trim() && form.type) {
-        void persistProductDraft(form);
+      if (canPersistDraft(form)) {
+        savedDraft = (await persistProductDraft(form)) === true;
+        setProductSearch("");
+        setProductCategoryFilter("");
+        setPage(0);
+        setTab("products");
       }
     }
     setProductModal(false);
     setDraftStatus("idle");
+    if (savedDraft) toast("Rascunho na lista.");
+  }
+
+  function waitForDraftIdle(): Promise<void> {
+    if (!draftInFlight.current) return Promise.resolve();
+    return new Promise((resolve) => {
+      draftIdleWaiters.current.push(resolve);
+    });
+  }
+
+  function notifyDraftIdle() {
+    const waiters = draftIdleWaiters.current.splice(0);
+    for (const resolve of waiters) resolve();
   }
 
   useEffect(() => {
     productFormRef.current = productForm;
   }, [productForm]);
+
+  // Foco no nome ao abrir o modal (criação ou edição).
+  useEffect(() => {
+    if (!productModal) return;
+    const t = window.setTimeout(() => productNameRef.current?.focus(), 40);
+    return () => clearTimeout(t);
+  }, [productModal]);
 
   // Se o modal abriu antes das categorias (loadAll lento), preenche o tipo depois.
   useEffect(() => {
@@ -889,7 +914,7 @@ export default function ListTablePage() {
     }
     // Autosave só em criação / rascunho desativado — produto publicado salva no botão.
     if (productForm.id && productForm.active) return;
-    if (!productForm.brand.trim() || !productForm.name.trim() || !productForm.type) return;
+    if (!productForm.name.trim() || !productForm.type) return;
 
     if (draftTimer.current) clearTimeout(draftTimer.current);
     draftTimer.current = setTimeout(() => {
@@ -1087,18 +1112,25 @@ export default function ListTablePage() {
     }
   }
 
-  async function persistProductDraft(form: ProductForm) {
-    if (!form.brand.trim() || !form.name.trim() || !form.type) return;
+  /** @returns true se gravou rascunho com sucesso */
+  async function persistProductDraft(form: ProductForm): Promise<boolean> {
+    if (!form.name.trim() || !form.type) return false;
+    if (form.id && form.active) return false;
     if (draftInFlight.current) {
       draftQueued.current = true;
-      return;
+      await waitForDraftIdle();
+      return Boolean(productFormRef.current.id) && productFormRef.current.active === false;
     }
 
     draftInFlight.current = true;
     setDraftStatus("saving");
+    let ok = false;
     try {
-      // Autosave sempre deixa desativado; publicar é só pelo botão.
-      const payload = buildProductPayload(form, { active: false });
+      const draftForm: ProductForm = {
+        ...form,
+        brand: form.brand.trim() || "Sem marca",
+      };
+      const payload = buildProductPayload(draftForm, { active: false });
       const isEdit = Boolean(form.id);
       const res = await fetch(isEdit ? `/api/admin/products/${form.id}` : "/api/admin/products", {
         method: isEdit ? "PUT" : "POST",
@@ -1109,45 +1141,50 @@ export default function ListTablePage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setDraftStatus("error");
-        return;
-      }
-
-      const saved = data.product as AdminProduct | undefined;
-      if (saved?.id) {
-        const isDraft = saved.active === false;
-        if (isDraft) localStorage.setItem(PRODUCT_DRAFT_KEY, saved.id);
-        skipDraftAutosave.current = true;
-        setProductForm((f) => ({
-          ...f,
-          id: saved.id,
-          slug: f.slug || saved.slug,
-          active: saved.active !== false,
-        }));
-        setProducts((list) => {
+      } else {
+        const saved = data.product as AdminProduct | undefined;
+        if (saved?.id) {
+          localStorage.setItem(PRODUCT_DRAFT_KEY, saved.id);
+          skipDraftAutosave.current = true;
+          const patchedForm: ProductForm = {
+            ...productFormRef.current,
+            id: saved.id,
+            brand: productFormRef.current.brand.trim() || saved.brand,
+            slug: productFormRef.current.slug || saved.slug,
+            active: false,
+          };
+          productFormRef.current = patchedForm;
+          setProductForm((f) => ({
+            ...f,
+            id: saved.id,
+            brand: f.brand.trim() || saved.brand,
+            slug: f.slug || saved.slug,
+            active: false,
+          }));
           const next: AdminProduct = {
             ...saved,
-            active: saved.active !== false,
+            active: false,
             promoText: saved.promoText ?? null,
           };
-          const idx = list.findIndex((p) => p.id === saved.id);
-          if (idx >= 0) {
-            const copy = [...list];
-            copy[idx] = { ...list[idx], ...next };
-            return copy;
-          }
-          return [next, ...list];
-        });
+          setProducts((list) => [next, ...list.filter((p) => p.id !== saved.id)]);
+          setPage(0);
+          ok = true;
+        }
+        setDraftStatus("saved");
       }
-      setDraftStatus("saved");
     } catch {
       setDraftStatus("error");
+      ok = false;
     } finally {
       draftInFlight.current = false;
       if (draftQueued.current) {
         draftQueued.current = false;
-        void persistProductDraft(productFormRef.current);
+        ok = (await persistProductDraft(productFormRef.current)) || ok;
+      } else {
+        notifyDraftIdle();
       }
     }
+    return ok;
   }
 
   async function deleteProduct(id: string, name: string) {
@@ -1739,7 +1776,10 @@ export default function ListTablePage() {
                               onClick={() => startInlineEdit(p, "name")}
                               title="Editar nome"
                             >
-                              <span>{p.name}</span>
+                              <span>
+                                {p.name}
+                                {isDraft ? <span className="admin-draft-badge">Rascunho</span> : null}
+                              </span>
                               <span className="admin-inline-edit__icon" aria-hidden>
                                 <EditPencilIcon />
                               </span>
@@ -2455,7 +2495,7 @@ export default function ListTablePage() {
                 {!productForm.id && draftStatus === "idle" && (
                   <p className="admin-draft-hint">
                     {productForm.type
-                      ? "Salva como rascunho ao preencher marca e nome"
+                      ? "Salva como rascunho ao preencher o nome"
                       : "Selecione a categoria para salvar o rascunho"}
                   </p>
                 )}
@@ -2482,14 +2522,15 @@ export default function ListTablePage() {
                 <label className="form-field">
                   <span>Marca</span>
                   <input
-                    required
                     value={productForm.brand}
                     onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
+                    placeholder="Opcional no rascunho"
                   />
                 </label>
                 <label className="form-field">
                   <span>Nome</span>
                   <input
+                    ref={productNameRef}
                     required
                     value={productForm.name}
                     onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}

@@ -3658,6 +3658,20 @@ ul {
   box-shadow: 0 0 0 2px rgba(168, 155, 124, 0.25);
 }
 
+.admin-draft-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #6b5f4a;
+  background: rgba(168, 155, 124, 0.22);
+  vertical-align: middle;
+}
+
 .admin-draft-hint {
   margin: 0.2rem 0 0;
   font-size: 0.78rem;
