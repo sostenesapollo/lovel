@@ -132,7 +132,7 @@ export function AutocompleteSelect({
           onChange={(e) => {
             setQuery(e.target.value);
             setOpen(true);
-            if (value && e.target.value !== selected?.label) onChange("");
+            if (allowClear && value && e.target.value !== selected?.label) onChange("");
           }}
           onFocus={() => {
             setOpen(true);

@@ -77,7 +77,7 @@ export default function ProductPage() {
               <span className="pdp__category">{product.category}</span>
             ) : null}
 
-            {product.variants.length > 1 && (
+            {product.variants.length > 1 ? (
               <div className="pdp__variants">
                 <p className="pdp__variants-label">Escolha o tamanho</p>
                 <div className="variant-selector variant-selector--pdp" role="group" aria-label="Tamanho">
@@ -95,6 +95,8 @@ export default function ProductPage() {
                   ))}
                 </div>
               </div>
+            ) : (
+              <p className="pdp__size">{product.variants[0]?.label}</p>
             )}
 
             <div className="pdp__price-block">

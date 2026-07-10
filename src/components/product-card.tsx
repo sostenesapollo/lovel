@@ -51,7 +51,7 @@ export function ProductCard({ product }: { product: Product }) {
         {product.category ? (
           <span className="product-card__category">{product.category}</span>
         ) : null}
-        {product.variants.length > 1 && (
+        {product.variants.length > 1 ? (
           <div className="variant-selector" role="group" aria-label="Selecionar tamanho">
             {product.variants.map((v, i) => (
               <button
@@ -66,6 +66,8 @@ export function ProductCard({ product }: { product: Product }) {
               </button>
             ))}
           </div>
+        ) : (
+          <span className="product-card__size">{variant.label}</span>
         )}
         <div className="product-card__price-row">
           <span className="product-card__price">{formatPrice(variant.price)}</span>

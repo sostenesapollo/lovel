@@ -10,6 +10,7 @@
     "lint": "eslint",
     "db:push": "prisma db push",
     "db:seed": "node --import tsx prisma/seed.ts",
+    "db:pull": "node scripts/clone-prod-db.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

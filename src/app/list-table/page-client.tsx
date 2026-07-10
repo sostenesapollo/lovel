@@ -324,6 +324,16 @@ function CheckActivateIcon() {
   );
 }
 
+function ViewProductIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+      <path d="M15 3h6v6" />
+      <path d="M10 14L21 3" />
+    </svg>
+  );
+}
+
 function AdminPagination({
   page,
   totalPages,
@@ -800,6 +810,11 @@ export default function ListTablePage() {
   }
 
   function openNewProduct() {
+    if (!categories.length) {
+      toast("Aguarde carregar as categorias…");
+      return;
+    }
+
     const draftId = typeof window !== "undefined" ? localStorage.getItem(PRODUCT_DRAFT_KEY) : null;
     if (draftId) {
       const draft = products.find((p) => p.id === draftId && p.active === false);
@@ -816,15 +831,13 @@ export default function ListTablePage() {
       if (products.length > 0) localStorage.removeItem(PRODUCT_DRAFT_KEY);
     }
 
-    const firstType = categories[0]?.slug ?? "";
-    const form = emptyProductForm(firstType);
-    if (categories[0]) {
-      form.category = categories[0].title;
-      form.type = categories[0].slug;
-    }
+    const first = categories[0];
+    const form = emptyProductForm(first.slug);
+    form.category = first.title;
+    form.type = first.slug;
     skipDraftAutosave.current = true;
     setProductForm(form);
-    setVariantLabelMode(categories[0]?.variantLabels?.length ? "pick" : "free");
+    setVariantLabelMode(first.variantLabels?.length ? "pick" : "free");
     setDraftStatus("idle");
     setProductModal(true);
   }
@@ -838,10 +851,12 @@ export default function ListTablePage() {
     setProductModal(true);
   }
 
-  function closeProductModal() {
+  function closeProductModal(opts?: { skipDraftFlush?: boolean }) {
     if (draftTimer.current) {
       clearTimeout(draftTimer.current);
       draftTimer.current = null;
+    }
+    if (!opts?.skipDraftFlush) {
       const form = productFormRef.current;
       if ((!form.id || !form.active) && form.brand.trim() && form.name.trim() && form.type) {
         void persistProductDraft(form);
@@ -854,6 +869,17 @@ export default function ListTablePage() {
   useEffect(() => {
     productFormRef.current = productForm;
   }, [productForm]);
+
+  // Se o modal abriu antes das categorias (loadAll lento), preenche o tipo depois.
+  useEffect(() => {
+    if (!productModal || productForm.type || !categories[0]) return;
+    const first = categories[0];
+    setProductForm((f) => {
+      if (f.type) return f;
+      return { ...f, type: first.slug, category: first.title || first.slug };
+    });
+    setVariantLabelMode(first.variantLabels?.length ? "pick" : "free");
+  }, [categories, productModal, productForm.type]);
 
   useEffect(() => {
     if (!productModal) return;
@@ -1044,6 +1070,7 @@ export default function ListTablePage() {
       const res = await fetch(isEdit ? `/api/admin/products/${productForm.id}` : "/api/admin/products", {
         method: isEdit ? "PUT" : "POST",
         headers: { ...headers(), "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify(payload),
       });
       const data = await res.json();
@@ -1053,7 +1080,7 @@ export default function ListTablePage() {
       }
       localStorage.removeItem(PRODUCT_DRAFT_KEY);
       toast(isEdit ? "Produto atualizado." : "Produto publicado.");
-      closeProductModal();
+      closeProductModal({ skipDraftFlush: true });
       loadAll();
     } finally {
       setSaving(false);
@@ -1076,6 +1103,7 @@ export default function ListTablePage() {
       const res = await fetch(isEdit ? `/api/admin/products/${form.id}` : "/api/admin/products", {
         method: isEdit ? "PUT" : "POST",
         headers: { ...headers(), "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
@@ -1599,7 +1627,13 @@ export default function ListTablePage() {
                 Produtos ({filteredProducts.length}
                 {filteredProducts.length !== products.length ? ` de ${products.length}` : ""})
               </h2>
-              <button type="button" className="btn btn--gold btn--sm" onClick={openNewProduct}>
+              <button
+                type="button"
+                className="btn btn--gold btn--sm"
+                onClick={openNewProduct}
+                disabled={!categories.length}
+                title={!categories.length ? "Carregando categorias…" : undefined}
+              >
                 Novo produto
               </button>
             </div>
@@ -1755,6 +1789,18 @@ export default function ListTablePage() {
                           )}
                         </td>
                         <td className="admin-actions">
+                          {p.slug ? (
+                            <Link
+                              href={`/produto/${p.slug}`}
+                              className="btn btn--sm btn--outline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Ver página do produto"
+                            >
+                              <ViewProductIcon />
+                              Ver
+                            </Link>
+                          ) : null}
                           <button type="button" className="btn btn--sm btn--edit" onClick={() => openEditProduct(p)}>
                             <EditPencilIcon />
                             Editar
@@ -2407,7 +2453,11 @@ export default function ListTablePage() {
                   <p className="admin-draft-hint">Desativado na loja · salvando automaticamente</p>
                 )}
                 {!productForm.id && draftStatus === "idle" && (
-                  <p className="admin-draft-hint">Salva como rascunho ao preencher marca e nome</p>
+                  <p className="admin-draft-hint">
+                    {productForm.type
+                      ? "Salva como rascunho ao preencher marca e nome"
+                      : "Selecione a categoria para salvar o rascunho"}
+                  </p>
                 )}
                 {draftStatus === "saving" && (
                   <p className="admin-draft-hint">
@@ -2449,10 +2499,12 @@ export default function ListTablePage() {
                   <span>Tipo (categoria)</span>
                   <AutocompleteSelect
                     required
+                    allowClear={false}
                     value={productForm.type}
                     options={categoryOptions}
                     placeholder="Buscar categoria…"
                     onChange={(slug) => {
+                      if (!slug) return;
                       const cat = categoryBySlug.get(slug);
                       setProductForm((f) => ({
                         ...f,
@@ -2771,6 +2823,17 @@ export default function ListTablePage() {
                 <button type="button" className="btn btn--outline" onClick={() => closeProductModal()}>
                   Fechar
                 </button>
+                {productForm.slug ? (
+                  <Link
+                    href={`/produto/${productForm.slug}`}
+                    className="btn btn--outline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ViewProductIcon />
+                    Ver página
+                  </Link>
+                ) : null}
                 <button type="submit" className="btn btn--gold" disabled={saving}>
                   {saving
                     ? "Salvando…"

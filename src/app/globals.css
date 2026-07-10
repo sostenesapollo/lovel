@@ -930,6 +930,12 @@ ul {
   color: var(--color-muted);
 }
 
+.product-card__size {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-black);
+}
+
 /* ── Variant Selector ── */
 
 .variant-selector {
@@ -1676,6 +1682,12 @@ ul {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 0.6rem;
+}
+
+.pdp__size {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
 }
 
 .variant-selector--pdp {
