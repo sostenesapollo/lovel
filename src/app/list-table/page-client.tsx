@@ -19,6 +19,7 @@ type Tab =
   | "coupons"
   | "promotions"
   | "hero"
+  | "store"
   | "emails";
 
 type Stats = { orders: number; products: number; users: number; revenue: number };
@@ -63,6 +64,10 @@ type Promotions = {
   freeShippingThreshold: number;
   pixDiscountPercent: number;
   banners: Array<{ highlight: string; text: string; code?: string }>;
+};
+
+type StoreConfig = {
+  maxPriceOnly: boolean;
 };
 
 type AdminProduct = Product & { promoText?: string | null };
@@ -124,6 +129,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "coupons", label: "Cupons" },
   { id: "promotions", label: "Promoções" },
   { id: "hero", label: "Carrossel home" },
+  { id: "store", label: "Loja" },
   { id: "emails", label: "E-mails" },
 ];
 
@@ -450,6 +456,7 @@ export default function ListTablePage() {
   const [coupons, setCoupons] = useState<CouponRow[]>([]);
   const [promotions, setPromotions] = useState<Promotions | null>(null);
   const [bannersJson, setBannersJson] = useState("[]");
+  const [storeConfig, setStoreConfig] = useState<StoreConfig>({ maxPriceOnly: false });
   const [heroProductIds, setHeroProductIds] = useState<string[]>([]);
   const [heroPickId, setHeroPickId] = useState("");
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
@@ -541,6 +548,7 @@ export default function ListTablePage() {
         fetch("/api/admin/coupons", { headers: h, credentials: "same-origin" }),
         fetch("/api/admin/promotions", { headers: h, credentials: "same-origin" }),
         fetch("/api/admin/hero", { headers: h, credentials: "same-origin" }),
+        fetch("/api/admin/store-config", { headers: h, credentials: "same-origin" }),
         fetch("/api/r2/presign-upload", { headers: h, credentials: "same-origin" }),
         fetch("/api/admin/emails", { method: "PUT", headers: h, credentials: "same-origin" }),
       ]);
@@ -560,7 +568,7 @@ export default function ListTablePage() {
         return;
       }
 
-      const [s, u, o, p, cats, coups, promo, hero, r2, logs] = await Promise.all(
+      const [s, u, o, p, cats, coups, promo, hero, store, r2, logs] = await Promise.all(
         responses.map((r) => r.json()),
       );
       setStats(s);
@@ -579,6 +587,7 @@ export default function ListTablePage() {
         setBannersJson(JSON.stringify(next.banners, null, 2));
       }
       setHeroProductIds(Array.isArray(hero?.productIds) ? hero.productIds : []);
+      setStoreConfig({ maxPriceOnly: Boolean(store?.maxPriceOnly) });
       setR2Configured(Boolean(r2?.configured));
       setEmailLogs(Array.isArray(logs) ? logs : []);
       setLoadError(false);
@@ -1409,6 +1418,32 @@ export default function ListTablePage() {
         heroProductIds.length === 0
           ? "Carrossel limpo — home usa featured + lançamentos."
           : "Carrossel da home salvo.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveStoreConfig(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/store-config", {
+        method: "PUT",
+        headers: { ...headers(), "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(storeConfig),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast(data.message ?? "Erro ao salvar configuração da loja.");
+        return;
+      }
+      if (data.config) setStoreConfig({ maxPriceOnly: Boolean(data.config.maxPriceOnly) });
+      toast(
+        storeConfig.maxPriceOnly
+          ? "Loja: só preço máximo — fracionados e categoria do produto ocultos."
+          : "Loja: fracionados e categorias do produto visíveis.",
       );
     } finally {
       setSaving(false);
@@ -2250,6 +2285,35 @@ export default function ListTablePage() {
               </button>
               <button type="submit" className="btn btn--gold" disabled={saving}>
                 {saving ? "Salvando…" : "Salvar carrossel"}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {tab === "store" && (
+          <form className="admin-email-form" onSubmit={saveStoreConfig} style={{ maxWidth: 640 }}>
+            <h3>Configuração da loja</h3>
+            <p className="admin-hint">
+              Afeta só a vitrine (home, categoria, PDP e APIs públicas). No admin os produtos
+              continuam com todas as variantes.
+            </p>
+            <label className="form-field form-field--full" style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+              <input
+                type="checkbox"
+                checked={storeConfig.maxPriceOnly}
+                onChange={(e) => setStoreConfig({ maxPriceOnly: e.target.checked })}
+                style={{ marginTop: "0.25rem" }}
+              />
+              <span>
+                <strong>Só preço máximo</strong>
+                <br />
+                Desativa fracionados na loja: cada produto mostra apenas a variante mais cara,
+                sem seletor de tamanho, e sem o texto de categoria no card/PDP.
+              </span>
+            </label>
+            <div className="admin-form-footer">
+              <button type="submit" className="btn btn--gold" disabled={saving}>
+                {saving ? "Salvando…" : "Salvar"}
               </button>
             </div>
           </form>

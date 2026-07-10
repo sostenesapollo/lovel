@@ -7,16 +7,18 @@ import { HeroMedia } from "@/components/hero-media";
 import { prisma } from "@/lib/db";
 import { getHeroSlides } from "@/lib/hero";
 import { parseProduct } from "@/lib/products";
+import { applyStorefrontProduct, getStoreConfig } from "@/lib/store-config";
 import { categoryPath } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [rows, heroSlides] = await Promise.all([
+  const [rows, heroSlides, storeConfig] = await Promise.all([
     prisma.product.findMany({ where: { active: true } }),
     getHeroSlides(),
+    getStoreConfig(),
   ]);
-  const products = rows.map(parseProduct);
+  const products = rows.map((row) => applyStorefrontProduct(parseProduct(row), storeConfig));
   const featured = products.filter((p) => p.featured).slice(0, 8);
   const launches = products.filter((p) => p.isLaunch).slice(0, 4);
 

@@ -73,7 +73,9 @@ export default function ProductPage() {
           <div className="pdp__info">
             <span className="pdp__brand">{product.brand}</span>
             <h1 className="pdp__title">{product.name}</h1>
-            <span className="pdp__category">{product.category}</span>
+            {product.category ? (
+              <span className="pdp__category">{product.category}</span>
+            ) : null}
 
             {product.variants.length > 1 && (
               <div className="pdp__variants">

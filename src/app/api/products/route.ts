@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { parseProduct } from "@/lib/products";
+import { applyStorefrontProduct, getStoreConfig } from "@/lib/store-config";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -9,10 +10,15 @@ export async function GET(request: NextRequest) {
   const launch = searchParams.get("launch");
   const featured = searchParams.get("featured");
 
-  let products = await prisma.product.findMany({
-    where: { active: true },
-    orderBy: { name: "asc" },
-  });
+  const [rows, storeConfig] = await Promise.all([
+    prisma.product.findMany({
+      where: { active: true },
+      orderBy: { name: "asc" },
+    }),
+    getStoreConfig(),
+  ]);
+
+  let products = rows;
 
   if (tipo === "lancamentos") {
     products = products.filter((p) => p.isLaunch);
@@ -23,5 +29,7 @@ export async function GET(request: NextRequest) {
   if (launch === "true") products = products.filter((p) => p.isLaunch);
   if (featured === "true") products = products.filter((p) => p.featured);
 
-  return NextResponse.json(products.map(parseProduct));
+  return NextResponse.json(
+    products.map((row) => applyStorefrontProduct(parseProduct(row), storeConfig)),
+  );
 }

@@ -48,7 +48,9 @@ export function ProductCard({ product }: { product: Product }) {
         <h3 className="product-card__name">
           <Link href={productPath(product)}>{product.name}</Link>
         </h3>
-        <span className="product-card__category">{product.category}</span>
+        {product.category ? (
+          <span className="product-card__category">{product.category}</span>
+        ) : null}
         {product.variants.length > 1 && (
           <div className="variant-selector" role="group" aria-label="Selecionar tamanho">
             {product.variants.map((v, i) => (
