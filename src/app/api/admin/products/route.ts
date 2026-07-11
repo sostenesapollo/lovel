@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminUnauthorized, isAdminAuthorized } from "@/lib/admin-auth";
+import { checkProductContentPolicy } from "@/lib/content-policy";
 import { prisma } from "@/lib/db";
 import { parseProduct } from "@/lib/products";
 
@@ -15,6 +16,15 @@ export async function POST(request: Request) {
 
   if (!body.name || !body.brand || !body.type) {
     return NextResponse.json({ message: "Nome, marca e tipo são obrigatórios." }, { status: 400 });
+  }
+
+  const policyError = checkProductContentPolicy({
+    name: body.name,
+    brand: body.brand,
+    description: body.description,
+  });
+  if (policyError) {
+    return NextResponse.json({ message: policyError }, { status: 400 });
   }
 
   const id = body.id || `${String(body.type)[0]}${Date.now()}`;

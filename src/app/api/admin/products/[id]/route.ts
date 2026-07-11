@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminUnauthorized, isAdminAuthorized } from "@/lib/admin-auth";
+import { checkProductContentPolicy } from "@/lib/content-policy";
 import { prisma } from "@/lib/db";
 import { parseProduct } from "@/lib/products";
 
@@ -14,6 +15,15 @@ export async function PUT(
   const existing = await prisma.product.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json({ message: "Produto não encontrado." }, { status: 404 });
+  }
+
+  const policyError = checkProductContentPolicy({
+    name: body.name,
+    brand: body.brand,
+    description: body.description,
+  });
+  if (policyError) {
+    return NextResponse.json({ message: policyError }, { status: 400 });
   }
 
   const images =
