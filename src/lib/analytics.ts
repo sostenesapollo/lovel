@@ -60,42 +60,51 @@ export function getTrackingConfig(): Promise<TrackingConfig> {
   if (typeof window !== "undefined" && window.__lovelTracking) {
     return Promise.resolve(window.__lovelTracking);
   }
-  if (build.ga4Id || build.adsId) {
-    const cfg = {
-      ga4Id: build.ga4Id || DEFAULT_GA4,
-      adsId: build.adsId,
-      purchaseConversionLabel: build.purchaseConversionLabel,
-    };
-    if (typeof window !== "undefined") window.__lovelTracking = cfg;
-    return Promise.resolve(cfg);
+
+  const buildCfg: TrackingConfig = {
+    ga4Id: build.ga4Id || DEFAULT_GA4,
+    adsId: build.adsId,
+    purchaseConversionLabel: build.purchaseConversionLabel,
+  };
+
+  // Build-time config is authoritative once it has resolved the Ads id, and on
+  // the server (where the runtime endpoint isn't reachable). Otherwise we still
+  // need the runtime fallback below to pick up the Ads id/label, since only the
+  // GA4 id is inlined as NEXT_PUBLIC_* at build time — without this the Ads
+  // conversion event never fires. (See /api/tracking-config.)
+  if (build.adsId || typeof window === "undefined") {
+    if (typeof window !== "undefined") window.__lovelTracking = buildCfg;
+    return Promise.resolve(buildCfg);
   }
-  if (typeof window === "undefined") {
-    return Promise.resolve({ ga4Id: DEFAULT_GA4, adsId: "", purchaseConversionLabel: "" });
-  }
+
   if (!configPromise) {
     configPromise = fetch("/api/tracking-config", { credentials: "same-origin" })
       .then(async (res) => {
         if (!res.ok) {
-          return { ga4Id: DEFAULT_GA4, adsId: "", purchaseConversionLabel: "" };
+          window.__lovelTracking = buildCfg;
+          return buildCfg;
         }
         const data = (await res.json()) as {
           ga4Id?: string | null;
           googleAdsId?: string | null;
           googleAdsPurchaseConversionLabel?: string | null;
         };
+        // Build-time values win when present; runtime fills the gaps.
         const cfg: TrackingConfig = {
-          ga4Id: data.ga4Id?.trim() || DEFAULT_GA4,
-          adsId: data.googleAdsId?.trim() || "",
-          purchaseConversionLabel: data.googleAdsPurchaseConversionLabel?.trim() || "",
+          ga4Id: build.ga4Id || data.ga4Id?.trim() || DEFAULT_GA4,
+          adsId: build.adsId || data.googleAdsId?.trim() || "",
+          purchaseConversionLabel:
+            build.purchaseConversionLabel ||
+            data.googleAdsPurchaseConversionLabel?.trim() ||
+            "",
         };
         window.__lovelTracking = cfg;
         return cfg;
       })
-      .catch(() => ({
-        ga4Id: DEFAULT_GA4,
-        adsId: "",
-        purchaseConversionLabel: "",
-      }));
+      .catch(() => {
+        window.__lovelTracking = buildCfg;
+        return buildCfg;
+      });
   }
   return configPromise;
 }
