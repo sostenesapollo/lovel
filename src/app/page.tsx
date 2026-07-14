@@ -13,10 +13,15 @@ import { categoryPath } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [rows, heroSlides, storeConfig] = await Promise.all([
+  const [rows, heroSlides, storeConfig, homeCategories] = await Promise.all([
     prisma.product.findMany({ where: { active: true } }),
     getHeroSlides(),
     getStoreConfig(),
+    prisma.category.findMany({
+      where: { showOnHome: true },
+      orderBy: { sortOrder: "asc" },
+      select: { slug: true, title: true, subtitle: true, image: true },
+    }),
   ]);
   const products = rows.map((row) => applyStorefrontProduct(parseProduct(row), storeConfig));
   const featured = products.filter((p) => p.featured).slice(0, 8);
@@ -50,7 +55,7 @@ export default async function HomePage() {
           <HeroMedia slides={heroSlides} />
         </section>
 
-        <CurationSection />
+        <CurationSection categories={homeCategories} />
 
         {launches.length > 0 && (
           <section className="section">

@@ -81,6 +81,7 @@ export type ProductCountAggregateOutputType = {
   name: number
   type: number
   subcategory: number
+  subcategories: number
   category: number
   image: number
   images: number
@@ -155,6 +156,7 @@ export type ProductCountAggregateInputType = {
   name?: true
   type?: true
   subcategory?: true
+  subcategories?: true
   category?: true
   image?: true
   images?: true
@@ -266,6 +268,7 @@ export type ProductGroupByOutputType = {
   name: string
   type: string
   subcategory: string
+  subcategories: runtime.JsonValue
   category: string
   image: string
   images: runtime.JsonValue
@@ -313,6 +316,7 @@ export type ProductWhereInput = {
   name?: Prisma.StringFilter<"Product"> | string
   type?: Prisma.StringFilter<"Product"> | string
   subcategory?: Prisma.StringFilter<"Product"> | string
+  subcategories?: Prisma.JsonFilter<"Product">
   category?: Prisma.StringFilter<"Product"> | string
   image?: Prisma.StringFilter<"Product"> | string
   images?: Prisma.JsonFilter<"Product">
@@ -337,6 +341,7 @@ export type ProductOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   subcategory?: Prisma.SortOrder
+  subcategories?: Prisma.SortOrder
   category?: Prisma.SortOrder
   image?: Prisma.SortOrder
   images?: Prisma.SortOrder
@@ -364,6 +369,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Product"> | string
   type?: Prisma.StringFilter<"Product"> | string
   subcategory?: Prisma.StringFilter<"Product"> | string
+  subcategories?: Prisma.JsonFilter<"Product">
   category?: Prisma.StringFilter<"Product"> | string
   image?: Prisma.StringFilter<"Product"> | string
   images?: Prisma.JsonFilter<"Product">
@@ -388,6 +394,7 @@ export type ProductOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   subcategory?: Prisma.SortOrder
+  subcategories?: Prisma.SortOrder
   category?: Prisma.SortOrder
   image?: Prisma.SortOrder
   images?: Prisma.SortOrder
@@ -420,6 +427,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Product"> | string
   type?: Prisma.StringWithAggregatesFilter<"Product"> | string
   subcategory?: Prisma.StringWithAggregatesFilter<"Product"> | string
+  subcategories?: Prisma.JsonWithAggregatesFilter<"Product">
   category?: Prisma.StringWithAggregatesFilter<"Product"> | string
   image?: Prisma.StringWithAggregatesFilter<"Product"> | string
   images?: Prisma.JsonWithAggregatesFilter<"Product">
@@ -444,6 +452,7 @@ export type ProductCreateInput = {
   name: string
   type: string
   subcategory?: string
+  subcategories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   category: string
   image: string
   images: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -468,6 +477,7 @@ export type ProductUncheckedCreateInput = {
   name: string
   type: string
   subcategory?: string
+  subcategories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   category: string
   image: string
   images: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -492,6 +502,7 @@ export type ProductUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   subcategory?: Prisma.StringFieldUpdateOperationsInput | string
+  subcategories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   category?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.StringFieldUpdateOperationsInput | string
   images?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -516,6 +527,7 @@ export type ProductUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   subcategory?: Prisma.StringFieldUpdateOperationsInput | string
+  subcategories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   category?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.StringFieldUpdateOperationsInput | string
   images?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -540,6 +552,7 @@ export type ProductCreateManyInput = {
   name: string
   type: string
   subcategory?: string
+  subcategories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   category: string
   image: string
   images: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -564,6 +577,7 @@ export type ProductUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   subcategory?: Prisma.StringFieldUpdateOperationsInput | string
+  subcategories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   category?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.StringFieldUpdateOperationsInput | string
   images?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -588,6 +602,7 @@ export type ProductUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   subcategory?: Prisma.StringFieldUpdateOperationsInput | string
+  subcategories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   category?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.StringFieldUpdateOperationsInput | string
   images?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -612,6 +627,7 @@ export type ProductCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   subcategory?: Prisma.SortOrder
+  subcategories?: Prisma.SortOrder
   category?: Prisma.SortOrder
   image?: Prisma.SortOrder
   images?: Prisma.SortOrder
@@ -690,6 +706,7 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   name?: boolean
   type?: boolean
   subcategory?: boolean
+  subcategories?: boolean
   category?: boolean
   image?: boolean
   images?: boolean
@@ -714,6 +731,7 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   name?: boolean
   type?: boolean
   subcategory?: boolean
+  subcategories?: boolean
   category?: boolean
   image?: boolean
   images?: boolean
@@ -738,6 +756,7 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   name?: boolean
   type?: boolean
   subcategory?: boolean
+  subcategories?: boolean
   category?: boolean
   image?: boolean
   images?: boolean
@@ -762,6 +781,7 @@ export type ProductSelectScalar = {
   name?: boolean
   type?: boolean
   subcategory?: boolean
+  subcategories?: boolean
   category?: boolean
   image?: boolean
   images?: boolean
@@ -779,7 +799,7 @@ export type ProductSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "brand" | "name" | "type" | "subcategory" | "category" | "image" | "images" | "description" | "notes" | "badges" | "variants" | "defaultVariant" | "featured" | "isLaunch" | "soldOut" | "active" | "promoText" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "brand" | "name" | "type" | "subcategory" | "subcategories" | "category" | "image" | "images" | "description" | "notes" | "badges" | "variants" | "defaultVariant" | "featured" | "isLaunch" | "soldOut" | "active" | "promoText" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 
 export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Product"
@@ -790,7 +810,14 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     brand: string
     name: string
     type: string
+    /**
+     * Slug principal (primeiro de subcategories) — compatibilidade
+     */
     subcategory: string
+    /**
+     * Slugs de todas as subcategorias: ["arabes","grifes"]
+     */
+    subcategories: runtime.JsonValue
     category: string
     image: string
     images: runtime.JsonValue
@@ -1235,6 +1262,7 @@ export interface ProductFieldRefs {
   readonly name: Prisma.FieldRef<"Product", 'String'>
   readonly type: Prisma.FieldRef<"Product", 'String'>
   readonly subcategory: Prisma.FieldRef<"Product", 'String'>
+  readonly subcategories: Prisma.FieldRef<"Product", 'Json'>
   readonly category: Prisma.FieldRef<"Product", 'String'>
   readonly image: Prisma.FieldRef<"Product", 'String'>
   readonly images: Prisma.FieldRef<"Product", 'Json'>

@@ -25,6 +25,44 @@ export async function savePromotions(value: Record<string, unknown>) {
   });
 }
 
+/** Normaliza legado (string) e array JSON para string[]. */
+export function normalizeSubcategories(input: {
+  subcategory?: string | null;
+  subcategories?: unknown;
+}): string[] {
+  const fromArray = Array.isArray(input.subcategories)
+    ? input.subcategories.map(String).map((s) => s.trim()).filter(Boolean)
+    : [];
+  if (fromArray.length) {
+    return [...new Set(fromArray)];
+  }
+  const single = (input.subcategory ?? "").trim();
+  return single ? [single] : [];
+}
+
+/** Exact match or child slugs (nicho → nicho-masculino). */
+export function productMatchesSub(subcategories: string[], sub: string): boolean {
+  return subcategories.some((s) => s === sub || s.startsWith(`${sub}-`));
+}
+
+/** Payload Prisma a partir de body admin (aceita subcategory string ou subcategories[]). */
+export function resolveSubcategoriesPayload(body: {
+  subcategory?: unknown;
+  subcategories?: unknown;
+}): { subcategory: string; subcategories: string[] } {
+  let list: string[] = [];
+  if (Array.isArray(body.subcategories)) {
+    list = body.subcategories.map(String).map((s) => s.trim()).filter(Boolean);
+  } else if (typeof body.subcategory === "string" && body.subcategory.trim()) {
+    list = body.subcategory
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  list = [...new Set(list)];
+  return { subcategory: list[0] ?? "", subcategories: list };
+}
+
 export function parseProduct(row: {
   id: string;
   slug: string;
@@ -32,6 +70,7 @@ export function parseProduct(row: {
   name: string;
   type: string;
   subcategory: string;
+  subcategories?: unknown;
   category: string;
   image: string;
   images: unknown;
@@ -48,8 +87,11 @@ export function parseProduct(row: {
   createdAt?: Date | string;
   updatedAt?: Date | string;
 }) {
+  const subcategories = normalizeSubcategories(row);
   return {
     ...row,
+    subcategory: subcategories[0] ?? row.subcategory ?? "",
+    subcategories,
     active: row.active !== false,
     promoText: row.promoText ?? null,
     createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : undefined,

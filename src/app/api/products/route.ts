@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { parseProduct } from "@/lib/products";
+import { normalizeSubcategories, parseProduct, productMatchesSub } from "@/lib/products";
 import { applyStorefrontProduct, getStoreConfig } from "@/lib/store-config";
 
 const DEFAULT_PAGE_SIZE = 24;
@@ -9,7 +9,6 @@ const MAX_PAGE_SIZE = 100;
 
 function buildWhere(searchParams: URLSearchParams): Prisma.ProductWhereInput {
   const tipo = searchParams.get("tipo");
-  const sub = searchParams.get("sub");
   const launch = searchParams.get("launch");
   const featured = searchParams.get("featured");
   const idsParam = searchParams.get("ids");
@@ -30,13 +29,7 @@ function buildWhere(searchParams: URLSearchParams): Prisma.ProductWhereInput {
   }
   if (featured === "true") where.featured = true;
 
-  // Exact match or child slugs (e.g. nicho → nicho-masculino / nicho-feminino)
-  if (sub) {
-    and.push({
-      OR: [{ subcategory: sub }, { subcategory: { startsWith: `${sub}-` } }],
-    });
-  }
-
+  // subcategory filter applied in memory (multi-sub + SQLite JSON)
   if (q) {
     and.push({
       OR: [{ name: { contains: q } }, { brand: { contains: q } }],
@@ -51,21 +44,27 @@ function buildWhere(searchParams: URLSearchParams): Prisma.ProductWhereInput {
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const where = buildWhere(searchParams);
+  const sub = searchParams.get("sub");
   const paginate = searchParams.has("page") || searchParams.has("limit");
 
   const storeConfigPromise = getStoreConfig();
 
+  const [rows, storeConfig] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+    }),
+    storeConfigPromise,
+  ]);
+
+  const matched = sub
+    ? rows.filter((row) => productMatchesSub(normalizeSubcategories(row), sub))
+    : rows;
+
+  const mapped = matched.map((row) => applyStorefrontProduct(parseProduct(row), storeConfig));
+
   if (!paginate) {
-    const [rows, storeConfig] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        orderBy: [{ name: "asc" }, { id: "asc" }],
-      }),
-      storeConfigPromise,
-    ]);
-    return NextResponse.json(
-      rows.map((row) => applyStorefrontProduct(parseProduct(row), storeConfig)),
-    );
+    return NextResponse.json(mapped);
   }
 
   const pageSize = Math.min(
@@ -74,19 +73,8 @@ export async function GET(request: NextRequest) {
   );
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
   const skip = (page - 1) * pageSize;
-
-  const [total, rows, storeConfig] = await Promise.all([
-    prisma.product.count({ where }),
-    prisma.product.findMany({
-      where,
-      orderBy: [{ name: "asc" }, { id: "asc" }],
-      skip,
-      take: pageSize,
-    }),
-    storeConfigPromise,
-  ]);
-
-  const items = rows.map((row) => applyStorefrontProduct(parseProduct(row), storeConfig));
+  const items = mapped.slice(skip, skip + pageSize);
+  const total = mapped.length;
   const hasMore = skip + items.length < total;
 
   return NextResponse.json({

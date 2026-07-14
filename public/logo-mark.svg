@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 72" fill="none" role="img" aria-label="Lovel">
+  <g fill="#c9a962">
+    <circle cx="46" cy="6" r="1.15" opacity="0.5"/>
+    <circle cx="51" cy="4" r="0.85" opacity="0.4"/>
+    <circle cx="55" cy="7.5" r="0.7" opacity="0.32"/>
+    <circle cx="49" cy="10" r="0.55" opacity="0.28"/>
+    <circle cx="57" cy="3" r="0.5" opacity="0.22"/>
+  </g>
+  <rect x="28" y="2" width="10" height="5.5" rx="1" fill="#c9a962"/>
+  <path d="M31 7.5h4v3.5h-4z" fill="#c9a962"/>
+  <circle cx="28" cy="40" r="22" stroke="#c9a962" stroke-width="1.6" fill="none" opacity="0.85"/>
+  <path d="M14 18.5V52.5c0 2.2 1.4 3.5 3.6 3.5H48" stroke="#c9a962" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M14 18.5h3.2" stroke="#c9a962" stroke-width="3.2" stroke-linecap="round"/>
+</svg>

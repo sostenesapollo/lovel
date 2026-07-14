@@ -17,7 +17,10 @@ export type Product = {
   brand: string;
   name: string;
   type: string;
+  /** Primeiro slug — compatível com filtros/legado */
   subcategory: string;
+  /** Todas as subcategorias do produto */
+  subcategories: string[];
   category: string;
   image: string;
   images: string[];

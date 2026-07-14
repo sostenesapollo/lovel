@@ -82,7 +82,10 @@ model Product {
   brand          String
   name           String
   type           String
+  /// Slug principal (primeiro de subcategories) — compatibilidade
   subcategory    String   @default("")
+  /// Slugs de todas as subcategorias: ["arabes","grifes"]
+  subcategories  Json     @default("[]")
   category       String
   image          String
   images         Json

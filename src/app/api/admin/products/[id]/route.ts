@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { adminUnauthorized, isAdminAuthorized } from "@/lib/admin-auth";
 import { checkProductContentPolicy } from "@/lib/content-policy";
 import { prisma } from "@/lib/db";
-import { parseProduct } from "@/lib/products";
+import { parseProduct, resolveSubcategoriesPayload } from "@/lib/products";
 
 export async function PUT(
   request: Request,
@@ -29,12 +29,18 @@ export async function PUT(
   const images =
     body.images?.length ? body.images : body.image ? [body.image] : (existing.images as string[]);
 
+  const hasSubUpdate = body.subcategories != null || body.subcategory != null;
+  const subFields = hasSubUpdate ? resolveSubcategoriesPayload(body) : {};
+
+  const { subcategory: _ignoreSub, subcategories: _ignoreSubs, ...rest } = body;
+
   const product = await prisma.product.update({
     where: { id },
     data: {
-      ...body,
+      ...rest,
       id,
       images,
+      ...subFields,
     },
   });
 

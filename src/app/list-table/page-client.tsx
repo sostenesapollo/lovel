@@ -77,7 +77,7 @@ type ProductForm = {
   brand: string;
   name: string;
   type: string;
-  subcategory: string;
+  subcategories: string[];
   category: string;
   slug: string;
   description: string;
@@ -144,7 +144,7 @@ function emptyProductForm(type = ""): ProductForm {
     brand: "",
     name: "",
     type,
-    subcategory: "",
+    subcategories: [],
     category: "",
     slug: "",
     description: "",
@@ -164,12 +164,18 @@ function emptyProductForm(type = ""): ProductForm {
 }
 
 function productToForm(p: AdminProduct): ProductForm {
+  const subs =
+    p.subcategories?.length
+      ? [...p.subcategories]
+      : p.subcategory
+        ? [p.subcategory]
+        : [];
   return {
     id: p.id,
     brand: p.brand,
     name: p.name,
     type: p.type,
-    subcategory: p.subcategory ?? "",
+    subcategories: subs,
     category: p.category ?? "",
     slug: p.slug,
     description: p.description ?? "",
@@ -200,7 +206,8 @@ function buildProductPayload(form: ProductForm, opts?: { active?: boolean }) {
     brand: form.brand.trim(),
     name: form.name.trim(),
     type: form.type,
-    subcategory: form.subcategory,
+    subcategory: form.subcategories[0] ?? "",
+    subcategories: form.subcategories,
     category: form.category || form.type,
     slug: form.slug || undefined,
     description: form.description,
@@ -2551,31 +2558,53 @@ export default function ListTablePage() {
                         ...f,
                         type: slug,
                         category: cat?.title || f.category || slug,
-                        subcategory: "",
+                        subcategories: [],
                       }));
                       setVariantLabelMode(cat?.variantLabels?.length ? "pick" : "free");
                     }}
                   />
                 </label>
-                <label className="form-field">
-                  <span>Subcategoria</span>
+                <div className="form-field form-field--full">
+                  <span>Subcategorias</span>
                   {selectedCategory?.subcategories?.length ? (
-                    <AutocompleteSelect
-                      value={productForm.subcategory}
-                      options={subcategoryOptions}
-                      placeholder="Buscar subcategoria…"
-                      allowClear
-                      onChange={(slug) =>
-                        setProductForm({ ...productForm, subcategory: slug })
-                      }
-                    />
+                    <div className="admin-form-row" style={{ flexWrap: "wrap", gap: "0.5rem 1rem" }}>
+                      {subcategoryOptions.map((opt) => {
+                        const checked = productForm.subcategories.includes(opt.value);
+                        return (
+                          <label key={opt.value}>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => {
+                                setProductForm((f) => {
+                                  const set = new Set(f.subcategories);
+                                  if (set.has(opt.value)) set.delete(opt.value);
+                                  else set.add(opt.value);
+                                  return { ...f, subcategories: [...set] };
+                                });
+                              }}
+                            />
+                            {opt.label}
+                          </label>
+                        );
+                      })}
+                    </div>
                   ) : (
                     <input
-                      value={productForm.subcategory}
-                      onChange={(e) => setProductForm({ ...productForm, subcategory: e.target.value })}
+                      value={productForm.subcategories.join(", ")}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          subcategories: e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean),
+                        })
+                      }
+                      placeholder="slug1, slug2 (vírgula)"
                     />
                   )}
-                </label>
+                </div>
                 <label className="form-field">
                   <span>Category label</span>
                   <input

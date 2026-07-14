@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/cart-context";
+import { LovelLogo } from "@/components/lovel-logo";
 import { categoryPath } from "@/lib/utils";
 import type { SafeUser } from "@/lib/types";
 
@@ -70,9 +70,8 @@ export function SiteHeader({ activeNav = "" }: { activeNav?: string }) {
             <span /><span /><span />
           </button>
 
-          <Link href="/" className="logo logo--with-icon">
-            <Image src="/icone.jpg" alt="LOVEL" width={40} height={40} className="logo__icon" priority />
-            <span>LOVEL</span>
+          <Link href="/" className="logo logo--brand" aria-label="Lovel — início">
+            <LovelLogo variant="header" />
           </Link>
 
           <nav className="nav" aria-label="Principal">
@@ -156,10 +155,10 @@ export function SiteFooter() {
       <div className="container footer__grid">
         <div>
           <div className="footer__brand">
-            <Image src="/icone.jpg" alt="LOVEL" width={48} height={48} className="footer__icon" />
-            <span className="footer__logo">LOVEL</span>
+            <Link href="/" className="logo logo--brand logo--footer" aria-label="Lovel — início">
+              <LovelLogo variant="footer" />
+            </Link>
           </div>
-          <p className="footer__tagline">Boutique · Essence · Soin</p>
           <p className="footer__text">Perfumes, cabelos e skincare premium.</p>
           <div className="footer__social">
             <a

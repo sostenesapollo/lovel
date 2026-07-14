@@ -87,7 +87,7 @@ async function main() {
       update: {
         title: cat.title,
         subtitle: cat.subtitle,
-        image: cat.image,
+        // Não sobrescrever image: fotos alteradas no admin devem permanecer
         showOnHome: cat.showOnHome,
         sortOrder: cat.sortOrder,
         variantLabels: cat.variantLabels,
@@ -97,6 +97,13 @@ async function main() {
   }
 
   for (const p of products) {
+    const subList = Array.isArray(p.subcategories)
+      ? (p.subcategories as string[]).map(String).filter(Boolean)
+      : p.subcategory
+        ? [String(p.subcategory)]
+        : [];
+    const subcategory = subList[0] ?? "";
+
     await prisma.product.upsert({
       where: { id: String(p.id) },
       create: {
@@ -105,7 +112,8 @@ async function main() {
         brand: String(p.brand),
         name: String(p.name),
         type: String(p.type),
-        subcategory: String(p.subcategory),
+        subcategory,
+        subcategories: subList,
         category: String(p.category),
         image: String(p.image),
         images: (p.images as string[]) ?? [String(p.image)],
@@ -123,7 +131,8 @@ async function main() {
         brand: String(p.brand),
         name: String(p.name),
         type: String(p.type),
-        subcategory: String(p.subcategory),
+        subcategory,
+        subcategories: subList,
         category: String(p.category),
         image: String(p.image),
         images: (p.images as string[]) ?? [String(p.image)],

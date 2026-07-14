@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { adminUnauthorized, isAdminAuthorized } from "@/lib/admin-auth";
 import { checkProductContentPolicy } from "@/lib/content-policy";
 import { prisma } from "@/lib/db";
-import { parseProduct } from "@/lib/products";
+import { parseProduct, resolveSubcategoriesPayload } from "@/lib/products";
 
 export async function GET(request: Request) {
   if (!isAdminAuthorized(request)) return adminUnauthorized();
@@ -32,6 +32,8 @@ export async function POST(request: Request) {
     body.slug ||
     `${body.brand}-${body.name}`.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 
+  const { subcategory, subcategories } = resolveSubcategoriesPayload(body);
+
   const product = await prisma.product.create({
     data: {
       id,
@@ -39,7 +41,8 @@ export async function POST(request: Request) {
       brand: body.brand,
       name: body.name,
       type: body.type,
-      subcategory: body.subcategory ?? "",
+      subcategory,
+      subcategories,
       category: body.category ?? body.type,
       image: body.image ?? "",
       images: body.images?.length ? body.images : body.image ? [body.image] : [],
