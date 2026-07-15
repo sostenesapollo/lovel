@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { OfferCountdown } from "@/components/offer-countdown";
+import { ProductRecommendations } from "@/components/product-recommendations";
 import { SafeImage } from "@/components/safe-image";
 import { ShippingEstimator } from "@/components/shipping-estimator";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
@@ -48,6 +49,8 @@ export default function CartPage() {
   }, [items]);
 
   const offers = crossSellOffers(products);
+  const recommendSeed =
+    products.find((p) => p.id === items[0]?.productId) ?? null;
 
   async function applyCoupon() {
     const res = await fetch("/api/coupons/validate", {
@@ -228,6 +231,12 @@ export default function CartPage() {
             </div>
           )}
         </div>
+
+        <ProductRecommendations
+          seed={recommendSeed}
+          excludeIds={items.map((i) => i.productId)}
+          pageType={!recommendSeed ? "perfumes" : undefined}
+        />
       </main>
       <SiteFooter />
     </>

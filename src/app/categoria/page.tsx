@@ -5,6 +5,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { ProductCard } from "@/components/product-card";
+import { ProductRecommendations } from "@/components/product-recommendations";
 import type { Product } from "@/lib/types";
 
 const PAGE_SIZE = 24;
@@ -217,6 +218,13 @@ function CategoryContent() {
             ) : null}
           </div>
         </div>
+
+        {!loading && !hasMore ? (
+          <ProductRecommendations
+            pageType={isLaunch ? undefined : tipo}
+            excludeIds={products.map((p) => p.id)}
+          />
+        ) : null}
       </main>
       <SiteFooter />
     </>

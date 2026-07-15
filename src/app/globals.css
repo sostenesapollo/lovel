@@ -5035,6 +5035,32 @@ ul {
   gap: var(--space-sm) var(--space-md);
 }
 
+/* ── Product recommendations ── */
+
+.recs {
+  margin-top: var(--space-md);
+}
+
+.recs__section {
+  padding-block: var(--space-lg);
+}
+
+.recs__section:nth-child(even) {
+  background: var(--color-cream);
+}
+
+.recs__head {
+  margin-bottom: var(--space-md);
+}
+
+.recs__eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 0.35rem;
+}
+
 @media (max-width: 480px) {
   .error-page {
     padding: var(--space-lg) var(--space-sm);

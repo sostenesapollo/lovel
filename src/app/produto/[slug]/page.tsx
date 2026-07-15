@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ImageCarousel } from "@/components/image-carousel";
 import { OfferCountdown } from "@/components/offer-countdown";
+import { ProductRecommendations } from "@/components/product-recommendations";
 import { ProductReviews } from "@/components/product-reviews";
 import { ShippingEstimator } from "@/components/shipping-estimator";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
@@ -218,6 +219,8 @@ export default function ProductPage() {
         <div id="avaliacoes">
           <ProductReviews proof={proof} productName={product.name} />
         </div>
+
+        <ProductRecommendations seed={product} />
       </main>
       <SiteFooter />
     </>
