@@ -7,6 +7,7 @@ export type RecommendSection = {
   eyebrow: string;
   title: string;
   products: Product[];
+  href?: string;
 };
 
 type BuildOptions = {
@@ -33,6 +34,8 @@ const TYPE_LABEL: Record<string, string> = {
   cabelos: "cabelos",
   skincare: "skincare",
 };
+
+const ALL_TYPES = ["perfumes", "cabelos", "skincare"] as const;
 
 function subLabel(type: string, sub: string): string {
   const cat = CATEGORIES[type as keyof typeof CATEGORIES];
@@ -105,6 +108,12 @@ function typeTitle(type: string): string {
   return CATEGORIES[type as keyof typeof CATEGORIES]?.title ?? TYPE_LABEL[type] ?? type;
 }
 
+function complementTitle(type: string): string {
+  if (type === "perfumes") return "Explore perfumes";
+  if (type === "cabelos") return "Cuidados para os cabelos";
+  return "Skincare para completar";
+}
+
 /**
  * Monta seções de recomendação sem repetir produtos entre si
  * nem os já vistos na página atual.
@@ -117,8 +126,8 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
     contextType,
     taste = null,
     alreadyShownIds = [],
-    limitPerSection = 16,
-    maxSections = 3,
+    limitPerSection = 40,
+    maxSections = 6,
   } = options;
 
   const used = new Set<string>([...excludeIds, ...alreadyShownIds, ...(seed ? [seed.id] : [])]);
@@ -146,7 +155,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
           preferSub,
           preferBrand: seed.brand,
         }),
-      12,
+      8,
     );
     if (similar.length) {
       const label = preferSub ? subLabel(seed.type, preferSub) : typeTitle(seed.type);
@@ -159,10 +168,12 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
             ? `Parecidos com ${seed.name}`
             : `Outras opções em ${label}`,
         products: similar,
+        href: preferSub
+          ? `/categoria?tipo=${seed.type}&sub=${preferSub}`
+          : `/categoria?tipo=${seed.type}`,
       });
     }
   } else if (contextType && contextType !== "lancamentos" && taste && taste.views.length >= 2) {
-    // Na categoria: só sugere mesma linha se o gosto já apontar pra ela
     const topSub = topKeys(taste.subs, 1)[0];
     const tasteSame = pick(
       catalog,
@@ -174,7 +185,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
           preferType: contextType,
           preferSub: topSub,
         }),
-      10,
+      8,
     );
     if (tasteSame.length) {
       push({
@@ -184,11 +195,14 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
           ? `Do seu gosto · ${subLabel(contextType, topSub)}`
           : "Escolhas alinhadas ao que você viu",
         products: tasteSame,
+        href: topSub
+          ? `/categoria?tipo=${contextType}&sub=${topSub}`
+          : `/categoria?tipo=${contextType}`,
       });
     }
   }
 
-  // 2) Com base no histórico de navegação (PDP / carrinho com seed)
+  // 2) Com base no histórico de navegação
   if (seed && taste && taste.views.length >= 2) {
     const topType = topKeys(taste.types, 1)[0];
     const topSub = topKeys(taste.subs, 1)[0];
@@ -205,7 +219,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
           preferSub: topSub,
           preferBrand: topBrand,
         }),
-      8,
+      6,
     );
     if (tastePicks.length) {
       push({
@@ -221,47 +235,83 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
     }
   }
 
-  // 3) Categoria complementar (outro tipo) — nunca a mesma seção da página
+  // 3) Outras subcategorias do mesmo tipo (ex.: Árabes, Nicho… quando está em Grifes)
+  if (seed?.type && seed.type in CATEGORIES) {
+    const cat = CATEGORIES[seed.type as keyof typeof CATEGORIES];
+    const currentSubs = new Set(
+      seed.subcategories?.length
+        ? seed.subcategories
+        : seed.subcategory
+          ? [seed.subcategory]
+          : [],
+    );
+    for (const sub of cat.subcategories) {
+      if (sections.length >= maxSections) break;
+      if (currentSubs.has(sub.slug)) continue;
+      const picks = pick(
+        catalog,
+        used,
+        limitPerSection,
+        (p) =>
+          scoreProduct(p, {
+            seed,
+            taste,
+            preferType: seed.type,
+            preferSub: sub.slug,
+          }),
+        45,
+      );
+      if (picks.length < 3) continue;
+      push({
+        id: `sub-${seed.type}-${sub.slug}`,
+        eyebrow: typeTitle(seed.type),
+        title: sub.label,
+        products: picks,
+        href: `/categoria?tipo=${seed.type}&sub=${sub.slug}`,
+      });
+    }
+  }
+
+  // 4) Outras categorias (todas as complementares — sem parar na primeira)
   const fromType =
     seed?.type ||
     (contextType && contextType !== "lancamentos" ? contextType : "") ||
     topKeys(taste?.types ?? {}, 1)[0] ||
     "perfumes";
-  const complements = (COMPLEMENT[fromType] ?? ["perfumes", "cabelos"]).filter(
-    (t) => t !== contextType,
-  );
-  for (const other of complements) {
+
+  const otherTypes = ALL_TYPES.filter((t) => t !== fromType && t !== contextType);
+  const orderedOthers = [
+    ...(COMPLEMENT[fromType] ?? []).filter((t) => otherTypes.includes(t as (typeof ALL_TYPES)[number])),
+    ...otherTypes,
+  ].filter((t, i, arr) => arr.indexOf(t) === i) as string[];
+
+  for (const other of orderedOthers) {
     if (sections.length >= maxSections) break;
     const complementPicks = pick(
       catalog,
       used,
       limitPerSection,
       (p) => scoreProduct(p, { seed, taste, preferType: other }),
-      20,
+      15,
     );
-    if (!complementPicks.length) continue;
+    if (complementPicks.length < 2) continue;
     push({
       id: `complement-${other}`,
-      eyebrow: "Descubra também",
-      title:
-        other === "perfumes"
-          ? "Perfumes que combinam com sua rotina"
-          : other === "cabelos"
-            ? "Cuidados para os cabelos"
-            : "Skincare para completar",
+      eyebrow: "Outras categorias",
+      title: complementTitle(other),
       products: complementPicks,
+      href: `/categoria?tipo=${other}`,
     });
-    break; // uma seção complementar basta
   }
 
-  // 4) Fallback: lançamentos / destaques
+  // 5) Fallback: lançamentos
   if (sections.length < 2) {
     const launches = pick(
       catalog,
       used,
       limitPerSection,
       (p) => (p.isLaunch ? 50 : p.featured ? 40 : 0) + scoreProduct(p, { seed, taste }),
-      35,
+      20,
     );
     if (launches.length) {
       push({
@@ -269,6 +319,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
         eyebrow: "Novidades",
         title: "Lançamentos que valem a pena",
         products: launches,
+        href: "/categoria?tipo=lancamentos",
       });
     }
   }
@@ -282,6 +333,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
       eyebrow: "Explore",
       title: `Outras opções em ${typeTitle(fromType)}`,
       products: fallback,
+      href: `/categoria?tipo=${fromType}`,
     });
   }
 
