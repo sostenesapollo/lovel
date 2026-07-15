@@ -4,11 +4,16 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ImageCarousel } from "@/components/image-carousel";
+import { OfferCountdown } from "@/components/offer-countdown";
+import { ProductReviews } from "@/components/product-reviews";
 import { ShippingEstimator } from "@/components/shipping-estimator";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
+import { StarRating } from "@/components/star-rating";
+import { TrustBar } from "@/components/trust-bar";
 import { useCart } from "@/context/cart-context";
 import { trackViewItem } from "@/lib/analytics";
 import { flyToCart } from "@/lib/fly-to-cart";
+import { getProductSocialProof } from "@/lib/product-social-proof";
 import type { Product } from "@/lib/types";
 import { formatPrice, formatProductDescription, getVariant, pixPrice } from "@/lib/utils";
 
@@ -61,6 +66,11 @@ export default function ProductPage() {
 
   const variant = getVariant(product, selected);
   const images = product.images?.length ? product.images : product.image ? [product.image] : [];
+  const proof = getProductSocialProof(product);
+  const discountPct =
+    variant.oldPrice && variant.oldPrice > variant.price
+      ? Math.round(((variant.oldPrice - variant.price) / variant.oldPrice) * 100)
+      : proof.offerPercent;
 
   return (
     <>
@@ -71,11 +81,45 @@ export default function ProductPage() {
             <ImageCarousel images={images} alt={product.name} />
           </div>
           <div className="pdp__info">
+            {product.badges.length > 0 ? (
+              <div className="pdp__badges">
+                {product.badges.map((b) => (
+                  <span key={b.text} className={`badge badge--${b.type}`}>
+                    {b.text}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
             <span className="pdp__brand">{product.brand}</span>
             <h1 className="pdp__title">{product.name}</h1>
             {product.category ? (
               <span className="pdp__category">{product.category}</span>
             ) : null}
+
+            <a href="#avaliacoes" className="pdp__rating">
+              <StarRating value={proof.rating} />
+              <span className="pdp__rating-score">{proof.rating.toFixed(1)}</span>
+              <span className="pdp__rating-count">
+                ({proof.reviewCount} avaliações)
+              </span>
+            </a>
+
+            <OfferCountdown
+              label="Oferta do dia termina em"
+              percent={discountPct}
+              className="pdp__offer"
+            />
+
+            <div className="pdp__signals" aria-live="polite">
+              <p className="pdp__stock">
+                Restam <strong>{proof.stockLeft}</strong> unidades neste lote
+              </p>
+              <p className="pdp__viewers">
+                <span className="pdp__viewers-dot" aria-hidden="true" />
+                {proof.viewers} pessoas vendo agora · {proof.soldThisWeek} vendidos nesta semana
+              </p>
+            </div>
 
             {product.variants.length > 1 ? (
               <div className="pdp__variants">
@@ -166,7 +210,13 @@ export default function ProductPage() {
                 }}
               />
             </div>
+
+            <TrustBar compact />
           </div>
+        </div>
+
+        <div id="avaliacoes">
+          <ProductReviews proof={proof} productName={product.name} />
         </div>
       </main>
       <SiteFooter />

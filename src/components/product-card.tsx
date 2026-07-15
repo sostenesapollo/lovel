@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { SafeImage } from "@/components/safe-image";
+import { StarRating } from "@/components/star-rating";
 import type { Product } from "@/lib/types";
 import { PRODUCT_PLACEHOLDER } from "@/lib/constants";
+import { getProductSocialProof } from "@/lib/product-social-proof";
 import { formatPrice, pixPrice, productPath, getVariant } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
 import { flyToCart } from "@/lib/fly-to-cart";
@@ -26,6 +28,7 @@ export function ProductCard({ product }: { product: Product }) {
   const [justAdded, setJustAdded] = useState(false);
   const variant = getVariant(product, selected);
   const imageSrc = product.image || PRODUCT_PLACEHOLDER;
+  const proof = getProductSocialProof(product);
 
   return (
     <article
@@ -51,6 +54,10 @@ export function ProductCard({ product }: { product: Product }) {
         {product.category ? (
           <span className="product-card__category">{product.category}</span>
         ) : null}
+        <div className="product-card__rating">
+          <StarRating value={proof.rating} />
+          <span className="product-card__rating-count">({proof.reviewCount})</span>
+        </div>
         {product.variants.length > 1 ? (
           <div className="variant-selector" role="group" aria-label="Selecionar tamanho">
             {product.variants.map((v, i) => (

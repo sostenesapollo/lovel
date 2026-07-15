@@ -46,13 +46,24 @@ export function SiteHeader({ activeNav = "" }: { activeNav?: string }) {
   return (
     <>
       <div className="top-banner" role="region" aria-label="Promoções">
-        <div className="container">
-          <div className="top-banner__track">
-            <span className="top-banner__item"><strong>Frete Grátis</strong> acima de R$199 · envio do Paraná</span>
-            <span className="top-banner__divider">|</span>
+        <div className="top-banner__track">
+          <div className="top-banner__group">
+            <span className="top-banner__item"><strong>Frete Grátis</strong> acima de R$199 · 🇧🇷 envio para todo o Brasil</span>
+            <span className="top-banner__divider" aria-hidden="true">·</span>
             <span className="top-banner__item"><strong>5% OFF</strong> no PIX</span>
-            <span className="top-banner__divider">|</span>
+            <span className="top-banner__divider" aria-hidden="true">·</span>
             <span className="top-banner__item">Cupom <strong>PRIMEIRACOMPRA</strong> na 1ª compra</span>
+            <span className="top-banner__divider" aria-hidden="true">·</span>
+            <span className="top-banner__item"><strong>Oferta do dia</strong> · preços até meia-noite</span>
+          </div>
+          <div className="top-banner__group top-banner__group--clone" aria-hidden="true">
+            <span className="top-banner__item"><strong>Frete Grátis</strong> acima de R$199 · 🇧🇷 envio para todo o Brasil</span>
+            <span className="top-banner__divider">·</span>
+            <span className="top-banner__item"><strong>5% OFF</strong> no PIX</span>
+            <span className="top-banner__divider">·</span>
+            <span className="top-banner__item">Cupom <strong>PRIMEIRACOMPRA</strong> na 1ª compra</span>
+            <span className="top-banner__divider">·</span>
+            <span className="top-banner__item"><strong>Oferta do dia</strong> · preços até meia-noite</span>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
+  url: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
 });
 const prisma = new PrismaClient({ adapter });
 

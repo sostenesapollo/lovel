@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { OfferCountdown } from "@/components/offer-countdown";
 import { SafeImage } from "@/components/safe-image";
 import { ShippingEstimator } from "@/components/shipping-estimator";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
@@ -170,6 +171,7 @@ export default function CartPage() {
               </div>
 
               <aside className="cart-summary">
+                <OfferCountdown label="Preços reservados por" className="cart-summary__offer" />
                 <h3>Resumo</h3>
                 <div className="cart-summary__row"><span>Subtotal</span><span>{formatPrice(t.subtotal)}</span></div>
                 {t.discount > 0 && <div className="cart-summary__row"><span>Desconto</span><span>-{formatPrice(t.discount)}</span></div>}

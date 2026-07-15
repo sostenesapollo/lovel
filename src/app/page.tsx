@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/site-layout";
 import { CurationSection } from "@/components/curation-section";
+import { OfferCountdown } from "@/components/offer-countdown";
 import { ReviewsSection } from "@/components/reviews-section";
 import { ProductCard } from "@/components/product-card";
 import { HeroMedia } from "@/components/hero-media";
+import { TrustBar } from "@/components/trust-bar";
 import { prisma } from "@/lib/db";
 import { getHeroSlides } from "@/lib/hero";
 import { parseProduct } from "@/lib/products";
@@ -54,6 +56,19 @@ export default async function HomePage() {
           </div>
           <HeroMedia slides={heroSlides} />
         </section>
+
+        <section className="flash-strip" aria-label="Oferta do dia">
+          <div className="container flash-strip__inner">
+            <p className="flash-strip__copy">
+              Condições especiais do dia · PIX −5% · cupom <strong>PRIMEIRACOMPRA</strong>
+            </p>
+            <OfferCountdown label="Termina em" percent={8} />
+          </div>
+        </section>
+
+        <div className="container">
+          <TrustBar />
+        </div>
 
         <CurationSection categories={homeCategories} />
 

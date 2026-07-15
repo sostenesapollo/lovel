@@ -2,11 +2,14 @@
   "name": "lovel",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
-    "dev": "prisma generate && node node_modules/next/dist/bin/next dev",
+    "dev": "prisma generate && node scripts/run-next.mjs dev",
     "build": "prisma generate && node node_modules/next/dist/bin/next build",
     "build:docker": "prisma generate && node node_modules/next/dist/bin/next build",
-    "start": "node node_modules/next/dist/bin/next start",
+    "start": "node scripts/run-next.mjs start",
     "lint": "eslint",
     "db:push": "prisma db push",
     "db:seed": "node --import tsx prisma/seed.ts",
