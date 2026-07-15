@@ -23,19 +23,23 @@ try {
   if (cols.includes('subcategories')) {
     const rows = db.prepare('SELECT id, subcategory, subcategories FROM Product').all();
     const upd = db.prepare('UPDATE Product SET subcategories = ? WHERE id = ?');
-    let fixed = 0;
     for (const row of rows) {
-      let ok = false;
+      let list = [];
       try {
-        const parsed = JSON.parse(row.subcategories == null ? '[]' : String(row.subcategories));
-        ok = Array.isArray(parsed);
-      } catch { ok = false; }
-      if (ok) continue;
-      const single = (row.subcategory || '').trim();
-      upd.run(JSON.stringify(single ? [single] : []), row.id);
-      fixed += 1;
+        const raw = row.subcategories;
+        const text = raw == null ? '' : (Buffer.isBuffer(raw) ? raw.toString('utf8') : String(raw)).trim();
+        if (text) {
+          const parsed = JSON.parse(text);
+          if (Array.isArray(parsed)) list = parsed.map(String).map((s) => s.trim()).filter(Boolean);
+        }
+      } catch { /* invalid JSON */ }
+      if (!list.length) {
+        const single = String(row.subcategory || '').trim();
+        if (single) list = [single];
+      }
+      upd.run(JSON.stringify(list), row.id);
     }
-    if (fixed) console.log('[entrypoint] subcategories backfill:', fixed, 'products');
+    console.log('[entrypoint] subcategories normalized:', rows.length, 'products');
   }
 } catch (e) { console.warn('[entrypoint] subcategories backfill:', e.message); }
 
