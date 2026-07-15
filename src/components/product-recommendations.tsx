@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ProductCard } from "@/components/product-card";
+import { ProductRail } from "@/components/product-rail";
 import { readTasteProfile, recordProductView, type TasteProfile } from "@/lib/browsing-taste";
 import { buildRecommendationSections, type RecommendSection } from "@/lib/recommendations";
 import type { Product } from "@/lib/types";
@@ -15,6 +15,8 @@ type ProductRecommendationsProps = {
   excludeIds?: string[];
   className?: string;
 };
+
+const RAIL_LIMIT = 16;
 
 export function ProductRecommendations({
   seed = null,
@@ -60,7 +62,7 @@ export function ProductRecommendations({
       taste,
       excludeIds: seed ? [seed.id, ...excluded] : excluded,
       alreadyShownIds: excluded,
-      limitPerSection: 4,
+      limitPerSection: RAIL_LIMIT,
       maxSections: 3,
     });
   }, [catalog, seed, taste, excludeKey, pageType]);
@@ -78,13 +80,16 @@ export function ProductRecommendations({
                 <h2 id={`recs-${section.id}`} className="section__title">
                   {section.title}
                 </h2>
+                {section.products.length > 4 ? (
+                  <p className="recs__count">{section.products.length} sugestões</p>
+                ) : null}
               </div>
             </header>
-            <div className="product-grid">
-              {section.products.map((p) => (
-                <ProductCard key={`${section.id}-${p.id}`} product={p} />
-              ))}
-            </div>
+            <ProductRail
+              products={section.products}
+              sectionId={section.id}
+              label={section.title}
+            />
           </div>
         </section>
       ))}

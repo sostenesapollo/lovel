@@ -117,7 +117,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
     contextType,
     taste = null,
     alreadyShownIds = [],
-    limitPerSection = 4,
+    limitPerSection = 16,
     maxSections = 3,
   } = options;
 
@@ -146,7 +146,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
           preferSub,
           preferBrand: seed.brand,
         }),
-      20,
+      12,
     );
     if (similar.length) {
       const label = preferSub ? subLabel(seed.type, preferSub) : typeTitle(seed.type);
@@ -174,7 +174,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
           preferType: contextType,
           preferSub: topSub,
         }),
-      20,
+      10,
     );
     if (tasteSame.length) {
       push({
@@ -205,7 +205,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
           preferSub: topSub,
           preferBrand: topBrand,
         }),
-      15,
+      8,
     );
     if (tastePicks.length) {
       push({
@@ -237,7 +237,7 @@ export function buildRecommendationSections(options: BuildOptions): RecommendSec
       used,
       limitPerSection,
       (p) => scoreProduct(p, { seed, taste, preferType: other }),
-      30,
+      20,
     );
     if (!complementPicks.length) continue;
     push({
