@@ -47,5 +47,28 @@ db.close();
 " "$DB_FILE" || true
 fi
 
-/usr/bin/node --import tsx ./prisma/seed.ts || true
+# Nunca sobrescrever catálogo em produção: seed só se o banco estiver vazio
+PRODUCT_COUNT=0
+if [ -f "$DB_FILE" ]; then
+  PRODUCT_COUNT="$(
+    /usr/bin/node -e "
+const Database = require('better-sqlite3');
+const db = new Database(process.argv[1]);
+try {
+  console.log(db.prepare('SELECT COUNT(*) AS n FROM Product').get().n);
+} catch {
+  console.log(0);
+}
+db.close();
+" "$DB_FILE" 2>/dev/null || echo 0
+  )"
+fi
+
+if [ "${PRODUCT_COUNT:-0}" -eq 0 ]; then
+  echo "[entrypoint] empty catalog — running seed"
+  /usr/bin/node --import tsx ./prisma/seed.ts || true
+else
+  echo "[entrypoint] catalog has ${PRODUCT_COUNT} products — skipping seed"
+fi
+
 exec /usr/bin/node server.js

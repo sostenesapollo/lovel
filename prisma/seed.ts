@@ -85,13 +85,7 @@ async function main() {
         subcategories: cat.subcategories,
       },
       update: {
-        title: cat.title,
-        subtitle: cat.subtitle,
-        // Não sobrescrever image: fotos alteradas no admin devem permanecer
-        showOnHome: cat.showOnHome,
-        sortOrder: cat.sortOrder,
-        variantLabels: cat.variantLabels,
-        subcategories: cat.subcategories,
+        // Categorias editadas no admin não devem ser resetadas pelo seed
       },
     });
   }
@@ -127,23 +121,7 @@ async function main() {
         soldOut: Boolean(p.soldOut),
       },
       update: {
-        slug: String(p.slug),
-        brand: String(p.brand),
-        name: String(p.name),
-        type: String(p.type),
-        subcategory,
-        subcategories: subList,
-        category: String(p.category),
-        image: String(p.image),
-        images: (p.images as string[]) ?? [String(p.image)],
-        description: String(p.description),
-        notes: (p.notes as object) ?? undefined,
-        badges: (p.badges as object[]) ?? [],
-        variants: (p.variants as object[]) ?? [],
-        defaultVariant: Number(p.defaultVariant ?? 0),
-        featured: Boolean(p.featured),
-        isLaunch: Boolean(p.isLaunch),
-        soldOut: Boolean(p.soldOut),
+        // Não sobrescrever produtos existentes em seed repetido — evita apagar fotos/preços reais
       },
     });
   }
@@ -161,12 +139,7 @@ async function main() {
         active: c.active !== false,
       },
       update: {
-        type: String(c.type),
-        value: Number(c.value),
-        minOrder: Number(c.minOrder ?? 0),
-        firstPurchaseOnly: Boolean(c.firstPurchaseOnly),
-        description: c.description ? String(c.description) : null,
-        active: c.active !== false,
+        // Cupons editados no admin não devem ser resetados pelo seed
       },
     });
   }
@@ -177,33 +150,26 @@ async function main() {
     const email = u.email.toLowerCase();
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      await prisma.user.update({
-        where: { email },
-        data: {
-          name: u.name,
-          role,
-          passwordHash,
-          passwordSetAt: existing.passwordSetAt ?? new Date(),
-        },
-      });
-    } else {
-      await prisma.user.create({
-        data: {
-          email,
-          name: u.name,
-          role,
-          passwordHash,
-          passwordSetAt: new Date(),
-        },
-      });
+      // Não resetar senha/nome de usuários já existentes
+      continue;
     }
+    await prisma.user.create({
+      data: {
+        email,
+        name: u.name,
+        role,
+        passwordHash,
+        passwordSetAt: new Date(),
+      },
+    });
   }
 
-  await prisma.setting.upsert({
-    where: { key: "promotions" },
-    create: { key: "promotions", value: promotions as object },
-    update: { value: promotions as object },
-  });
+  const promoExisting = await prisma.setting.findUnique({ where: { key: "promotions" } });
+  if (!promoExisting) {
+    await prisma.setting.create({
+      data: { key: "promotions", value: promotions as object },
+    });
+  }
 
   console.log(
     `Seed OK: ${DEFAULT_CATEGORIES.length} categories, ${products.length} products, ${coupons.length} coupons, ${users.length} users`,
