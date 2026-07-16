@@ -26,11 +26,26 @@ type ProductsPage = {
   hasMore: boolean;
 };
 
-function categoryHref(tipo: string, sub = "", q = "") {
+const SORT_OPTIONS = [
+  { value: "name", label: "A–Z" },
+  { value: "popular", label: "Mais pedidos" },
+  { value: "price_asc", label: "Menor preço" },
+  { value: "price_desc", label: "Maior preço" },
+] as const;
+
+type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+
+function parseSort(raw: string | null): SortValue {
+  const value = (raw ?? "").trim();
+  return SORT_OPTIONS.some((o) => o.value === value) ? (value as SortValue) : "name";
+}
+
+function categoryHref(tipo: string, sub = "", q = "", sort: SortValue = "name") {
   const qs = new URLSearchParams();
   qs.set("tipo", tipo);
   if (sub) qs.set("sub", sub);
   if (q) qs.set("q", q);
+  if (sort !== "name") qs.set("sort", sort);
   return `/categoria?${qs}`;
 }
 
@@ -40,6 +55,7 @@ function CategoryContent() {
   const tipo = params.get("tipo") ?? "perfumes";
   const sub = params.get("sub") ?? "";
   const q = (params.get("q") ?? "").trim();
+  const sort = parseSort(params.get("sort"));
   const [searchInput, setSearchInput] = useState(q);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -62,10 +78,10 @@ function CategoryContent() {
     const handle = window.setTimeout(() => {
       const next = searchInput.trim();
       if (next === q) return;
-      router.replace(categoryHref(tipo, sub, next), { scroll: false });
+      router.replace(categoryHref(tipo, sub, next, sort), { scroll: false });
     }, SEARCH_DEBOUNCE_MS);
     return () => window.clearTimeout(handle);
-  }, [searchInput, q, tipo, sub, router]);
+  }, [searchInput, q, tipo, sub, sort, router]);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -85,6 +101,7 @@ function CategoryContent() {
       else qs.set("tipo", tipo);
       if (sub) qs.set("sub", sub);
       if (q) qs.set("q", q);
+      if (sort !== "name") qs.set("sort", sort);
       qs.set("page", String(pageNum));
       qs.set("limit", String(PAGE_SIZE));
 
@@ -110,7 +127,7 @@ function CategoryContent() {
         if (reqId === requestIdRef.current) setLoading(false);
       }
     },
-    [tipo, sub, isLaunch, q],
+    [tipo, sub, isLaunch, q, sort],
   );
 
   useEffect(() => {
@@ -160,22 +177,43 @@ function CategoryContent() {
             ) : null}
           </header>
 
-          <label className="catalog-search">
-            <span className="visually-hidden">Buscar produtos</span>
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Buscar por nome ou marca…"
-              autoComplete="off"
-              enterKeyHint="search"
-            />
-          </label>
+          <div className="catalog-toolbar">
+            <label className="catalog-search">
+              <span className="visually-hidden">Buscar produtos</span>
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Buscar por nome ou marca…"
+                autoComplete="off"
+                enterKeyHint="search"
+              />
+            </label>
+
+            <label className="catalog-sort">
+              <span className="catalog-sort__label">Ordenar</span>
+              <select
+                value={sort}
+                onChange={(e) => {
+                  router.replace(categoryHref(tipo, sub, q, parseSort(e.target.value)), {
+                    scroll: false,
+                  });
+                }}
+                aria-label="Ordenar produtos"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           {category && !isLaunch && category.subcategories?.length > 0 && (
             <div className="filter-bar" role="tablist" aria-label="Subcategorias">
               <Link
-                href={categoryHref(tipo, "", q)}
+                href={categoryHref(tipo, "", q, sort)}
                 className={`filter-chip${!sub ? " filter-chip--active" : ""}`}
               >
                 Todos
@@ -183,7 +221,7 @@ function CategoryContent() {
               {category.subcategories.map((s) => (
                 <Link
                   key={s.slug}
-                  href={categoryHref(tipo, s.slug, q)}
+                  href={categoryHref(tipo, s.slug, q, sort)}
                   className={`filter-chip${sub === s.slug ? " filter-chip--active" : ""}`}
                 >
                   {s.label}

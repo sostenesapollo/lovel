@@ -37,6 +37,18 @@ export type Product = {
   updatedAt?: string;
 };
 
+export type HeroSlide = {
+  src: string;
+  alt: string;
+  brand: string;
+  name: string;
+  slug: string;
+  /** Menor preço exibido (preferência: decant/fracionado). */
+  fromPrice: number | null;
+  /** Rótulo da variante de entrada, ex.: "4ml". */
+  fromLabel: string | null;
+};
+
 export type CartItem = {
   key: string;
   productId: string;

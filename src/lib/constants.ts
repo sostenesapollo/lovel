@@ -15,6 +15,15 @@ export const CROSS_SELL_DISCOUNT = 0.1;
 export const FRACTIONAL_LABELS = ["4ml", "10ml", "30g", "50g"];
 export const FULL_BOTTLE_LABEL = "Frasco Inteiro";
 
+/** WhatsApp da loja (DDI + DDD + número, só dígitos) */
+export const WHATSAPP_NUMBER = "5585989716043";
+export const WHATSAPP_DISPLAY = "+55 85 98971-6043";
+export const WHATSAPP_DEFAULT_MESSAGE = "Olá! Vim pelo site da LOVEL.";
+
+export function whatsappHref(message = WHATSAPP_DEFAULT_MESSAGE) {
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+
 export const CATEGORIES = {
   perfumes: {
     title: "Perfumes",

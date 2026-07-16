@@ -4,10 +4,11 @@ import { CurationSection } from "@/components/curation-section";
 import { OfferCountdown } from "@/components/offer-countdown";
 import { ReviewsSection } from "@/components/reviews-section";
 import { ProductCard } from "@/components/product-card";
-import { HeroMedia } from "@/components/hero-media";
+import { HeroSplit } from "@/components/hero-split";
 import { TrustBar } from "@/components/trust-bar";
 import { prisma } from "@/lib/db";
 import { getHeroSlides } from "@/lib/hero";
+import { countPaidOrders } from "@/lib/product-popularity";
 import { parseProduct } from "@/lib/products";
 import { applyStorefrontProduct, getStoreConfig } from "@/lib/store-config";
 import { categoryPath } from "@/lib/utils";
@@ -15,7 +16,7 @@ import { categoryPath } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [rows, heroSlides, storeConfig, homeCategories] = await Promise.all([
+  const [rows, heroSlides, storeConfig, homeCategories, paidOrderCount] = await Promise.all([
     prisma.product.findMany({ where: { active: true } }),
     getHeroSlides(),
     getStoreConfig(),
@@ -24,6 +25,7 @@ export default async function HomePage() {
       orderBy: { sortOrder: "asc" },
       select: { slug: true, title: true, subtitle: true, image: true },
     }),
+    countPaidOrders(),
   ]);
   const products = rows.map((row) => applyStorefrontProduct(parseProduct(row), storeConfig));
   const featured = products.filter((p) => p.featured).slice(0, 8);
@@ -33,29 +35,7 @@ export default async function HomePage() {
     <>
       <SiteHeader activeNav="home" />
       <main>
-        <section className="hero hero--split">
-          <div className="hero__copy">
-            <div className="hero__copy-inner">
-              <h1 className="hero__title">
-                A essência da elegância, <em>em cada gota.</em>
-              </h1>
-              <p className="hero__subtitle">
-                Perfumes árabes, grifes e nicho, haircare importado e skincare de alta performance.
-                Escolha entre <em>frascos inteiros</em> ou nossos <em>decants</em> a partir de 4ml —
-                a experiência de luxo, do seu jeito.
-              </p>
-              <div className="hero__actions">
-                <Link href={categoryPath("perfumes")} className="btn btn--dark">
-                  Explorar perfumes →
-                </Link>
-                <Link href="/categoria?tipo=lancamentos" className="btn btn--text">
-                  Ver lançamentos
-                </Link>
-              </div>
-            </div>
-          </div>
-          <HeroMedia slides={heroSlides} />
-        </section>
+        <HeroSplit slides={heroSlides} paidOrderCount={paidOrderCount} />
 
         <section className="flash-strip" aria-label="Oferta do dia">
           <div className="container flash-strip__inner">

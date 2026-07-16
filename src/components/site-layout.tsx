@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/cart-context";
 import { LovelLogo } from "@/components/lovel-logo";
+import { WHATSAPP_DISPLAY, whatsappHref } from "@/lib/constants";
 import { categoryPath } from "@/lib/utils";
 import type { SafeUser } from "@/lib/types";
 
@@ -157,9 +158,6 @@ export function SiteHeader({ activeNav = "" }: { activeNav?: string }) {
   );
 }
 
-const WA = "5585989716043";
-const WA_DISPLAY = "+55 85 98971-6043";
-
 export function SiteFooter() {
   return (
     <footer className="footer" id="contato">
@@ -200,11 +198,11 @@ export function SiteFooter() {
           <h4 className="footer__heading">Contato</h4>
           <a
             className="footer__whatsapp"
-            href={`https://wa.me/${WA}?text=${encodeURIComponent("Olá! Vim pelo site da LOVEL.")}`}
+            href={whatsappHref()}
             target="_blank"
             rel="noopener noreferrer"
           >
-            WhatsApp {WA_DISPLAY}
+            WhatsApp {WHATSAPP_DISPLAY}
           </a>
           <p className="footer__text">contato@lovel.com</p>
         </div>

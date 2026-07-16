@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { Analytics } from "@/components/analytics";
 import { SocialProofToast } from "@/components/social-proof-toast";
+import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { CartProvider } from "@/context/cart-context";
 import { getSiteUrl, SITE_NAME, SITE_TAGLINE } from "@/lib/seo/site";
 import "./globals.css";
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CartProvider>
           {children}
           <SocialProofToast />
+          <WhatsAppFloat />
         </CartProvider>
       </body>
     </html>

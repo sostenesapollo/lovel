@@ -2292,7 +2292,8 @@ export default function ListTablePage() {
             <h3>Carrossel da home</h3>
             <p className="admin-hint">
               Produtos ao lado de “A essência da elegância…”. Ordem = ordem do carrossel.
-              Vazio = fallback automático (featured + lançamentos).
+              Vazio = bestsellers pagos (senão featured + lançamentos). Prefira os que mais
+              vendem — o visitante vê preço “a partir de” e o CTA leva à PDP.
             </p>
 
             <div className="admin-form-row" style={{ alignItems: "flex-end", gap: "0.75rem", flexWrap: "wrap" }}>
