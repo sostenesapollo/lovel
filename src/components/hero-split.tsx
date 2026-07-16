@@ -9,7 +9,7 @@ import { categoryPath, formatPrice, productPath } from "@/lib/utils";
 
 const INTERVAL_MS = 4200;
 const DECANT_HREF = "/categoria?tipo=perfumes&sort=price_asc";
-const SWIPE_THRESHOLD = 40;
+const toneCache = new Map<string, "on-dark" | "on-light">();
 
 type HeroSplitProps = {
   slides: HeroSlide[];
@@ -17,79 +17,143 @@ type HeroSplitProps = {
   paidOrderCount?: number;
 };
 
+const FALLBACK_SLIDE: HeroSlide = {
+  src: PRODUCT_PLACEHOLDER,
+  alt: "LOVEL",
+  brand: "",
+  name: "",
+  slug: "",
+  fromPrice: null,
+  fromLabel: null,
+};
+
+/** Amostra a região da legenda e decide se o fundo é claro ou escuro. */
+function detectCaptionTone(src: string): Promise<"on-dark" | "on-light"> {
+  const cached = toneCache.get(src);
+  if (cached) return Promise.resolve(cached);
+
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    const finish = (tone: "on-dark" | "on-light") => {
+      toneCache.set(src, tone);
+      resolve(tone);
+    };
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        const w = 64;
+        const h = 48;
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) {
+          finish("on-dark");
+          return;
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        const sx = 0;
+        const sy = Math.floor(h * 0.55);
+        const sw = Math.floor(w * 0.55);
+        const sh = h - sy;
+        const { data } = ctx.getImageData(sx, sy, sw, sh);
+        let sum = 0;
+        let n = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          sum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+          n += 1;
+        }
+        finish(sum / n > 145 ? "on-light" : "on-dark");
+      } catch {
+        finish("on-dark");
+      }
+    };
+    img.onerror = () => finish("on-dark");
+
+    if (src.startsWith("http")) img.crossOrigin = "anonymous";
+    img.src = src;
+  });
+}
+
 export function HeroSplit({ slides, paidOrderCount = 0 }: HeroSplitProps) {
-  const items = slides.length > 0 ? slides : null;
+  const items = slides.length > 0 ? slides : [FALLBACK_SLIDE];
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const drag = useRef<{ startX: number; startY: number; axis: "x" | "y" | null } | null>(null);
-  const suppressClick = useRef(false);
+  const [captionTone, setCaptionTone] = useState<"on-dark" | "on-light">("on-dark");
+  const trackRef = useRef<HTMLDivElement>(null);
+  const ignoreScroll = useRef(false);
 
-  const go = useCallback(
-    (delta: number) => {
-      if (!items || items.length < 2) return;
-      setIndex((i) => (i + delta + items.length) % items.length);
-    },
-    [items],
-  );
+  const scrollToIndex = useCallback((i: number, behavior: ScrollBehavior = "smooth") => {
+    const el = trackRef.current;
+    if (!el) return;
+    const width = el.clientWidth;
+    if (width <= 0) return;
+    ignoreScroll.current = true;
+    el.scrollTo({ left: i * width, behavior });
+    setIndex(i);
+    window.setTimeout(() => {
+      ignoreScroll.current = false;
+    }, behavior === "smooth" ? 450 : 50);
+  }, []);
 
   useEffect(() => {
-    if (!items || items.length < 2 || paused) return;
+    if (items.length < 2 || paused) return;
     const id = window.setInterval(() => {
-      setIndex((i) => (i + 1) % items.length);
+      const next = (index + 1) % items.length;
+      scrollToIndex(next);
     }, INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, [items, paused]);
+  }, [items.length, paused, index, scrollToIndex]);
 
   useEffect(() => {
-    if (!items) return;
-    if (index >= items.length) setIndex(0);
+    if (index >= items.length) scrollToIndex(0, "instant");
+  }, [items.length, index, scrollToIndex]);
+
+  useEffect(() => {
+    const src = items[index]?.src;
+    if (!src) {
+      setCaptionTone("on-dark");
+      return;
+    }
+    let cancelled = false;
+    detectCaptionTone(src).then((tone) => {
+      if (!cancelled) setCaptionTone(tone);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [items, index]);
 
-  function onPointerDown(e: React.PointerEvent) {
-    if (e.button !== 0) return;
-    if ((e.target as HTMLElement).closest("button, a.hero__dot")) return;
-    drag.current = { startX: e.clientX, startY: e.clientY, axis: null };
-    suppressClick.current = false;
-  }
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
 
-  function onPointerMove(e: React.PointerEvent) {
-    const state = drag.current;
-    if (!state) return;
-
-    const dx = e.clientX - state.startX;
-    const dy = e.clientY - state.startY;
-
-    if (!state.axis) {
-      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-      // Vertical → leave page scroll alone; horizontal → take over for slides
-      state.axis = Math.abs(dy) > Math.abs(dx) ? "y" : "x";
-      if (state.axis === "x") {
-        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      }
+    function onScroll() {
+      if (ignoreScroll.current) return;
+      const width = el!.clientWidth;
+      if (width <= 0) return;
+      const next = Math.round(el!.scrollLeft / width);
+      setIndex((prev) => (next !== prev ? Math.min(next, items.length - 1) : prev));
     }
-  }
 
-  function onPointerUp(e: React.PointerEvent) {
-    const state = drag.current;
-    drag.current = null;
-    if (!state || state.axis !== "x") return;
-
-    const dx = e.clientX - state.startX;
-    if (Math.abs(dx) > SWIPE_THRESHOLD) {
-      go(dx < 0 ? 1 : -1);
-      suppressClick.current = true;
-    }
-  }
-
-  function onSlideClick(e: React.MouseEvent) {
-    if (suppressClick.current) {
+    function onWheel(e: WheelEvent) {
+      if (items.length < 2) return;
+      const horizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey;
+      if (!horizontal) return;
       e.preventDefault();
-      e.stopPropagation();
-      suppressClick.current = false;
+      el!.scrollLeft += e.deltaX !== 0 ? e.deltaX : e.deltaY;
+      setPaused(true);
     }
-  }
 
-  const active = items?.[index];
+    el.addEventListener("scroll", onScroll, { passive: true });
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("wheel", onWheel);
+    };
+  }, [items.length]);
+
+  const active = items[index] ?? items[0];
   const productHref = active?.slug ? productPath({ slug: active.slug }) : categoryPath("perfumes");
   const socialLine =
     paidOrderCount >= 20
@@ -143,16 +207,12 @@ export function HeroSplit({ slides, paidOrderCount = 0 }: HeroSplitProps) {
         onBlurCapture={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPaused(false);
         }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => {
-          drag.current = null;
-        }}
       >
-        {(items ?? [{ src: PRODUCT_PLACEHOLDER, alt: "LOVEL", brand: "", name: "", slug: "", fromPrice: null, fromLabel: null }]).map(
-          (slide, i) => {
+        <div ref={trackRef} className="hero__track">
+          {items.map((slide, i) => {
             const isActive = i === index;
+            const className = `hero__slide${isActive ? " hero__slide--active" : ""}`;
+            const key = `${slide.slug || slide.src}-${i}`;
             const content = (
               <SafeImage
                 src={slide.src}
@@ -165,8 +225,6 @@ export function HeroSplit({ slides, paidOrderCount = 0 }: HeroSplitProps) {
                 draggable={false}
               />
             );
-            const className = `hero__slide${isActive ? " hero__slide--active" : ""}`;
-            const key = `${slide.slug || slide.src}-${i}`;
 
             if (slide.slug) {
               return (
@@ -177,7 +235,6 @@ export function HeroSplit({ slides, paidOrderCount = 0 }: HeroSplitProps) {
                   aria-hidden={!isActive}
                   tabIndex={isActive ? 0 : -1}
                   aria-label={`Ver ${slide.brand} ${slide.name}`}
-                  onClick={onSlideClick}
                 >
                   {content}
                 </Link>
@@ -189,11 +246,14 @@ export function HeroSplit({ slides, paidOrderCount = 0 }: HeroSplitProps) {
                 {content}
               </div>
             );
-          },
-        )}
+          })}
+        </div>
 
         {active?.name && (
-          <div className="hero__caption" key={`cap-${active.slug}`}>
+          <div
+            className={`hero__caption${captionTone === "on-light" ? " hero__caption--on-light" : ""}`}
+            key={`cap-${active.slug}`}
+          >
             {active.brand && <span className="hero__caption-brand">{active.brand}</span>}
             <span className="hero__caption-name">{active.name}</span>
             {active.fromPrice != null && (
@@ -206,20 +266,47 @@ export function HeroSplit({ slides, paidOrderCount = 0 }: HeroSplitProps) {
           </div>
         )}
 
-        {items && items.length > 1 && (
-          <div className="hero__dots" role="tablist" aria-label="Produtos em destaque">
-            {items.map((slide, i) => (
-              <button
-                key={`dot-${slide.slug}-${i}`}
-                type="button"
-                role="tab"
-                className={`hero__dot${i === index ? " hero__dot--active" : ""}`}
-                aria-label={`Ver ${slide.name}`}
-                aria-selected={i === index}
-                onClick={() => setIndex(i)}
-              />
-            ))}
-          </div>
+        {items.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="hero__nav hero__nav--prev"
+              aria-label="Perfume anterior"
+              onClick={() => {
+                setPaused(true);
+                scrollToIndex((index - 1 + items.length) % items.length);
+              }}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              className="hero__nav hero__nav--next"
+              aria-label="Próximo perfume"
+              onClick={() => {
+                setPaused(true);
+                scrollToIndex((index + 1) % items.length);
+              }}
+            >
+              ›
+            </button>
+            <div className="hero__dots" role="tablist" aria-label="Produtos em destaque">
+              {items.map((slide, i) => (
+                <button
+                  key={`dot-${slide.slug}-${i}`}
+                  type="button"
+                  role="tab"
+                  className={`hero__dot${i === index ? " hero__dot--active" : ""}`}
+                  aria-label={`Ver ${slide.name}`}
+                  aria-selected={i === index}
+                  onClick={() => {
+                    setPaused(true);
+                    scrollToIndex(i);
+                  }}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </section>
