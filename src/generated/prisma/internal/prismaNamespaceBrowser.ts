@@ -81,9 +81,9 @@ export const UserScalarFieldEnum = {
   name: 'name',
   role: 'role',
   status: 'status',
-  passwordSetAt: 'passwordSetAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  passwordSetAt: 'passwordSetAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -166,9 +166,6 @@ export const OrderScalarFieldEnum = {
   customer: 'customer',
   items: 'items',
   payment: 'payment',
-  paymentId: 'paymentId',
-  pixQrCode: 'pixQrCode',
-  pixQrCodeBase64: 'pixQrCodeBase64',
   coupon: 'coupon',
   subtotal: 'subtotal',
   discount: 'discount',
@@ -176,7 +173,10 @@ export const OrderScalarFieldEnum = {
   total: 'total',
   status: 'status',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  paymentId: 'paymentId',
+  pixQrCode: 'pixQrCode',
+  pixQrCodeBase64: 'pixQrCodeBase64'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
