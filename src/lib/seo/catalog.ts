@@ -56777,6 +56777,342 @@ const SEO_PAGES_PART_12: SeoPage[] = [
   }
 ];
 
+const SEO_PAGES_SKINCARE: SeoPage[] = [
+  {
+    kind: "guide",
+    slug: "melhor-serum-vitamina-c",
+    brand: "",
+    name: "Sérum de Vitamina C",
+    subcategory: "serum",
+    family: "skincare",
+    notes: "vitamina C brightening antioxidante",
+    title: "Melhor Sérum de Vitamina C — guia de compra 2025 | LOVEL",
+    h1: "Melhor Sérum de Vitamina C para Comprar em 2025",
+    description: "Guia completo dos melhores séruns de vitamina C: The Ordinary, La Roche-Posay, Drunk Elephant e mais. Preços, comparativo e onde comprar mais barato que o Mercado Livre.",
+    paragraphs: [
+      "A vitamina C é o ingrediente-chave para iluminar o tom da pele, combater manchas e estimular a produção de colágeno. Mas nem todos os séruns são iguais — a concentração, a forma química e a estabilidade fazem toda a diferença.",
+      "Para peles oleosas e com manchas, o The Ordinary Vitamin C Suspension 23% oferece o melhor custo-benefício do mercado. Já quem busca uma fórmula mais sofisticada pode optar pelo Drunk Elephant C-Firma ou pelo La Roche-Posay Pure Vitamin C10.",
+      "Na LOVEL você encontra mais de 30 opções de sérum vitamina C de marcas importadas originais, a preços abaixo do Mercado Livre — sem precisar importar ou arriscar em sites não confiáveis."
+    ],
+    faq: [
+      { q: "Qual a melhor concentração de vitamina C para o rosto?", a: "Para iniciantes, concentrações entre 5% e 10% são ideais para evitar irritação. Peles mais resistentes podem usar 15% a 20% para resultados mais rápidos." },
+      { q: "Posso usar vitamina C com retinol?", a: "Sim, mas use vitamina C de manhã e retinol à noite para evitar irritação. Ambos se complementam no combate ao envelhecimento e às manchas." },
+      { q: "O sérum de vitamina C da LOVEL é original?", a: "Sim, todos os produtos na LOVEL são originais importados. Trabalhamos com procedência selecionada e verificamos a autenticidade de cada lote." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "melhor-serum-acido-hialuronico",
+    brand: "",
+    name: "Sérum de Ácido Hialurônico",
+    subcategory: "serum",
+    family: "skincare",
+    notes: "hidratação ácido hialurônico plumping",
+    title: "Melhor Sérum de Ácido Hialurônico — comparativo 2025 | LOVEL",
+    h1: "Melhor Sérum de Ácido Hialurônico: Guia Completo",
+    description: "Compare os melhores séruns de ácido hialurônico disponíveis no Brasil: The Ordinary, Hada Labo, La Roche-Posay e mais. Dicas, preços e onde comprar com garantia de original.",
+    paragraphs: [
+      "O ácido hialurônico é o ingrediente mais popular em rotinas de skincare pela sua capacidade única de reter até 1000x o próprio peso em água, proporcionando hidratação imediata e efeito plumping visível.",
+      "Os séruns com múltiplos pesos moleculares — como o Hada Labo Gokujyun com 5 tipos de HA — agem em diferentes camadas da pele para uma hidratação mais completa. Já a versão clássica do The Ordinary Hyaluronic Acid 2% + B5 é a opção mais acessível e eficaz do mercado.",
+      "Na LOVEL você encontra séruns de ácido hialurônico de marcas como La Roche-Posay, Vichy, Clinique e COSRX, com preços competitivos e entrega para todo o Brasil."
+    ],
+    faq: [
+      { q: "Como usar sérum de ácido hialurônico?", a: "Aplique sobre a pele ligeiramente úmida após a limpeza, antes do hidratante. Isso potencializa a absorção de umidade pela pele." },
+      { q: "Ácido hialurônico resseca a pele?", a: "Pode acontecer em climas muito secos se não for selado com um hidratante. Sempre finalize com creme hidratante para travar a umidade." },
+      { q: "Qual o melhor ácido hialurônico para peles oleosas?", a: "Para peles oleosas, o The Ordinary HA 2% + B5 ou o Hada Labo versão light são ideais — texturas gel que hidratam sem pesar." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "melhor-serum-retinol",
+    brand: "",
+    name: "Sérum de Retinol",
+    subcategory: "serum",
+    family: "skincare",
+    notes: "retinol anti-aging renovação celular",
+    title: "Melhor Sérum de Retinol — guia para iniciantes e avançados | LOVEL",
+    h1: "Sérum de Retinol: como escolher e usar com segurança",
+    description: "Guia completo sobre séruns de retinol: concentrações, marcas, como introduzir na rotina e os melhores produtos disponíveis. Inclui The Ordinary, La Roche-Posay, Paula's Choice e mais.",
+    paragraphs: [
+      "O retinol é o ingrediente antiidade mais estudado da dermatologia, capaz de reduzir rugas, melhorar a textura e tratar manchas. Mas exige adaptação gradual para evitar irritação, descamação e vermelhidão.",
+      "Iniciantes devem começar com concentrações entre 0.1% e 0.3% (como o Revox Just Retinol 0.5% ou o Minimalist 0.3%), usando apenas 2x por semana à noite. Gradualmente, pode-se aumentar para concentrações de 0.5% a 1%.",
+      "Para resultados máximos, o The Ordinary Retinol 1% in Squalane ou o Paula's Choice CLINICAL 1% Retinol são as opções mais potentes disponíveis na LOVEL — ambos importados originais a preços justos."
+    ],
+    faq: [
+      { q: "Posso usar retinol com vitamina C?", a: "Evite usar juntos no mesmo momento. Use vitamina C de manhã e retinol à noite para máxima eficácia e menor risco de irritação." },
+      { q: "Quanto tempo leva para o retinol fazer efeito?", a: "Os primeiros resultados aparecem entre 4 e 12 semanas de uso regular. A paciência é fundamental — os benefícios são progressivos e duradouros." },
+      { q: "Retinol pode ser usado na gravidez?", a: "Não. Retinol é contraindicado durante a gravidez e lactação. Bakuchiol é uma alternativa vegana e segura para esse período." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "melhor-protetor-solar-facial-brasil",
+    brand: "",
+    name: "Protetor Solar Facial",
+    subcategory: "protetor",
+    family: "skincare",
+    notes: "FPS 50 protetor solar facial diário",
+    title: "Melhor Protetor Solar Facial — comparativo 2025 | LOVEL",
+    h1: "Melhor Protetor Solar Facial para o Brasil em 2025",
+    description: "Comparativo dos melhores protetores solares faciais disponíveis no Brasil: La Roche-Posay, Isdin, Bioderma, Heliocare e mais. Guia por tipo de pele e preços reais.",
+    paragraphs: [
+      "O protetor solar é o produto de skincare mais importante — protege contra UVA (envelhecimento), UVB (queimadura) e agora também contra luz visível e infravermelho. No Brasil, com sol intenso o ano todo, FPS 50+ é o mínimo recomendado.",
+      "Para peles oleosas, o La Roche-Posay Anthelios UV Mune 400 Oil Control é referência mundial — textura ultralight, toque seco e a mais avançada proteção UVA disponível. Para peles sensíveis, o Isdin Eryfotona Actinica com FPS 100+ repara danos existentes enquanto protege.",
+      "Na LOVEL você encontra mais de 70 protetores solares faciais importados, de marcas dermatológicas confiáveis, a preços abaixo dos grandes e-commerces brasileiros."
+    ],
+    faq: [
+      { q: "Qual o melhor protetor solar para pele oleosa?", a: "La Roche-Posay Anthelios UV Mune 400 Oil Control, Isdin Fotoprotector Fusion Water ou o Vichy Capital Soleil UV-Clear são as principais escolhas para peles oleosas." },
+      { q: "Protetor solar precisa de reaplicação?", a: "Sim. A cada 2-3 horas de exposição solar direta, ou após nadar ou transpirar muito. Para uso em escritório, uma aplicação matinal costuma ser suficiente." },
+      { q: "Posso usar protetor solar como base?", a: "Protetores com cobertura (BB Cream ou tinted) substituem parcialmente a base. Mas para cobertura completa, aplique protetor e depois a maquiagem por cima." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "melhor-hidratante-facial-pele-seca",
+    brand: "",
+    name: "Hidratante Facial Pele Seca",
+    subcategory: "hidratante",
+    family: "skincare",
+    notes: "hidratante facial pele seca ceramidas",
+    title: "Melhor Hidratante Facial para Pele Seca — guia 2025 | LOVEL",
+    h1: "Melhor Hidratante Facial para Pele Seca: o guia definitivo",
+    description: "Encontre o melhor hidratante facial para pele seca: CeraVe, La Roche-Posay, Clinique e mais. Comparativo com preços abaixo do Mercado Livre na LOVEL.",
+    paragraphs: [
+      "Peles secas precisam de hidratantes com ingredientes oclusivos (que selam a umidade), umectantes (que atraem água) e emolientes (que suavizam a textura). A combinação de ceramidas, ácido hialurônico e glicerina é considerada a mais eficaz pela dermatologia.",
+      "O CeraVe Moisturizing Cream é referência mundial — com 3 ceramidas e MVE Technology que libera hidratação durante 24h. Para quem busca algo mais luxuoso, o Kiehl's Ultra Facial Cream ou o Clinique Moisture Surge 100H proporcionam hidratação profunda e sensorial.",
+      "Peles secas também se beneficiam de cremes noturnos mais ricos, como o La Roche-Posay Cicaplast Baume B5+ ou o Estée Lauder Advanced Night Repair. Encontre todos na LOVEL com preços competitivos."
+    ],
+    faq: [
+      { q: "Qual hidratante facial é melhor para pele muito seca?", a: "CeraVe Moisturizing Cream, Eucerin Aquaphor e La Roche-Posay Cicaplast Baume B5+ são os mais indicados para peles muito ressecadas ou com eczema." },
+      { q: "Hidratante com ácido hialurônico resseca a pele em clima seco?", a: "Pode acontecer. Sempre sele o ácido hialurônico com um hidratante mais oclusivo por cima, especialmente em climas baixa umidade." },
+      { q: "Com que frequência devo usar hidratante facial?", a: "Duas vezes ao dia — de manhã (antes do protetor solar) e à noite (após a limpeza) — é o ideal para manutenção da barreira cutânea." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "rotina-skincare-iniciantes",
+    brand: "",
+    name: "Rotina de Skincare para Iniciantes",
+    subcategory: "serum",
+    family: "skincare",
+    notes: "rotina skincare passo a passo básico",
+    title: "Rotina de Skincare para Iniciantes — passo a passo 2025 | LOVEL",
+    h1: "Rotina de Skincare para Iniciantes: do básico ao avançado",
+    description: "Aprenda a montar sua rotina de skincare do zero: quais produtos comprar, em que ordem usar e as melhores marcas importadas para cada passo. Guia completo com dicas de dermatologistas.",
+    paragraphs: [
+      "Uma rotina básica de skincare tem 3 passos essenciais: limpeza, hidratante e protetor solar (de manhã). À noite, substitua o protetor por tratamentos específicos como sérum ou creme noturno.",
+      "Para iniciantes, o mais importante é a consistência. Comece com um limpador suave (CeraVe Hydrating Cleanser ou Cetaphil Gentle), um hidratante com ceramidas e um bom protetor solar FPS 50+. Só acrescente ativos (vitamina C, retinol, ácidos) quando a pele já estiver adaptada.",
+      "Na LOVEL você encontra todos os produtos para montar sua rotina completa com marcas importadas originais — de produtos acessíveis como The Ordinary e Minimalist até opções premium como Clinique e Estée Lauder."
+    ],
+    faq: [
+      { q: "Em que ordem usar os produtos de skincare?", a: "Manhã: limpeza → tônico (opcional) → sérum → hidratante → protetor solar. Noite: limpeza → tônico → sérum de tratamento → creme noturno." },
+      { q: "Posso pular o hidratante se usar sérum de ácido hialurônico?", a: "Não. O sérum de ácido hialurônico atrai umidade mas precisa ser selado com um hidratante. Pular o hidratante pode resultar em pele mais ressecada." },
+      { q: "Quanto tempo leva para ver resultados na pele?", a: "Para hidratação, resultados são imediatos. Para clarear manchas, 4 a 8 semanas. Para antienvelhecimento com retinol, de 3 a 6 meses de uso regular." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "melhor-niacinamida-serum",
+    brand: "",
+    name: "Sérum de Niacinamida",
+    subcategory: "serum",
+    family: "skincare",
+    notes: "niacinamida poros oleosidade manchas",
+    title: "Melhor Sérum de Niacinamida — comparativo de marcas 2025 | LOVEL",
+    h1: "Melhor Sérum de Niacinamida: The Ordinary, Minimalist e mais",
+    description: "Comparativo dos melhores séruns de niacinamida: The Ordinary, Minimalist, CeraVe e mais de 20 marcas importadas. Preços e benefícios para pele oleosa, manchas e poros.",
+    paragraphs: [
+      "A niacinamida (vitamina B3) é um dos ingredientes mais versáteis do skincare: controla a oleosidade, minimiza poros, trata manchas, fortalece a barreira cutânea e ilumina o tom da pele — tudo ao mesmo tempo.",
+      "O The Ordinary Niacinamide 10% + Zinc 1% é a referência de custo-benefício, com concentração eficaz a um preço acessível. Para resultados mais intensos, o Minimalist 10% Niacinamide ou o COSRX The Niacinamide 15 Serum elevam a concentração.",
+      "Para peles sensíveis, concentrações menores (5%) são igualmente eficazes e mais toleradas. Na LOVEL você encontra opções para todos os orçamentos e tipos de pele, com produtos 100% originais importados."
+    ],
+    faq: [
+      { q: "Niacinamida pode ser usada todos os dias?", a: "Sim, a niacinamida é um dos ingredientes mais seguros do skincare. Pode ser usada manhã e noite sem problema." },
+      { q: "Posso misturar niacinamida com vitamina C?", a: "Sim, a combinação é segura e complementar. Juntas, potencializam o clareamento de manchas e a uniformização do tom." },
+      { q: "Qual concentração de niacinamida é mais eficaz?", a: "Estudos mostram eficácia a partir de 2%. 5% é o sweet spot para a maioria das peles. 10% a 15% para casos mais resistentes de manchas e oleosidade." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "skincare-coreano-kbeauty-brasil",
+    brand: "",
+    name: "Skincare Coreano K-Beauty",
+    subcategory: "serum",
+    family: "skincare",
+    notes: "k-beauty coreano COSRX Hada Labo Some By Mi",
+    title: "Skincare Coreano (K-Beauty) no Brasil — onde comprar original | LOVEL",
+    h1: "Skincare Coreano K-Beauty: os melhores produtos e onde comprar",
+    description: "Guia completo de skincare coreano disponível no Brasil: COSRX, Hada Labo, Some By Mi, Beauty of Joseon, Anua e mais. Todos originais na LOVEL, com preços abaixo do Mercado Livre.",
+    paragraphs: [
+      "O skincare coreano revolucionou a indústria de beleza global com sua abordagem de cuidados em múltiplos passos, ingredientes inovadores e foco em hidratação profunda antes de qualquer tratamento.",
+      "As marcas coreanas mais procuradas no Brasil são COSRX (baba de caracol e BHA), Hada Labo (ácido hialurônico japonês), Some By Mi (trio de ácidos AHA+BHA+PHA), Beauty of Joseon (ginseng e arroz) e Anua (heartleaf para peles sensíveis).",
+      "Na LOVEL você encontra uma seleção curada dos melhores produtos K-Beauty e J-Beauty, todos originais importados, com preços competitivos e entrega rápida para qualquer cidade do Brasil."
+    ],
+    faq: [
+      { q: "Skincare coreano serve para pele brasileira?", a: "Sim! O clima tropical do Brasil, com muita umidade e sol, combina muito bem com a abordagem coreana de hidratação profunda e proteção solar rigorosa." },
+      { q: "Qual a diferença entre skincare coreano e ocidental?", a: "O K-Beauty prioriza prevenção e hidratação em múltiplos passos, enquanto o skincare ocidental foca mais em tratamento pontual de problemas existentes." },
+      { q: "COSRX baba de caracol é original na LOVEL?", a: "Sim, todos os produtos na LOVEL são originais. O COSRX Advanced Snail 96 Mucin Power Essence é um dos nossos mais vendidos de K-Beauty." }
+    ],
+  },
+];
+
+const SEO_PAGES_CABELOS: SeoPage[] = [
+  {
+    kind: "guide",
+    slug: "olaplex-vale-a-pena",
+    brand: "Olaplex",
+    name: "Olaplex — vale a pena?",
+    subcategory: "tratamento",
+    family: "bond-building",
+    notes: "Olaplex bond building reconstrução",
+    title: "Olaplex vale a pena? — guia completo 2025 | LOVEL",
+    h1: "Olaplex: o que é, como funciona e se vale a pena comprar",
+    description: "Guia completo do Olaplex: como funciona o bond building, qual número usar, diferença entre Nº3, Nº4, Nº5, Nº6 e Nº7, e onde comprar original no Brasil mais barato.",
+    paragraphs: [
+      "O Olaplex funciona por meio da tecnologia Bond Building — um único ingrediente ativo (bis-aminopropyl diglycol dimaleate) que reconecta as ligações de dissulfeto quebradas dentro da fibra capilar durante processos químicos ou pelo uso de calor excessivo.",
+      "O Nº3 Hair Perfector é o tratamento para usar em casa antes do shampoo — reconstrói e fortalece o cabelo em 10 minutos. O Nº4 e Nº5 são shampoo e condicionador com a mesma tecnologia. O Nº6 é leave-in e o Nº7 é o famoso óleo ultra-reparador.",
+      "Na LOVEL você encontra toda a linha Olaplex original importada, com fracionados e frascos inteiros — a opção mais econômica para testar antes de investir no frasco completo."
+    ],
+    faq: [
+      { q: "Olaplex Nº3 substitui o condicionador?", a: "Não. O Nº3 é um tratamento de pré-shampoo — use antes de lavar. Após o shampoo, use normalmente seu condicionador ou o Nº5 da Olaplex." },
+      { q: "Com que frequência usar Olaplex Nº3?", a: "Semanalmente para cabelos muito danificados, ou a cada 15 dias para manutenção. Deixe agir por 10 minutos antes de enxaguar." },
+      { q: "Olaplex funciona em cabelo natural sem química?", a: "Sim! O calor do ferro e do secador também quebra ligações. O Olaplex reconstrói independentemente do tipo de dano." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "melhor-mascara-capilar-cabelos-danificados",
+    brand: "",
+    name: "Máscara Capilar para Cabelos Danificados",
+    subcategory: "mascaras",
+    family: "haircare",
+    notes: "máscara capilar reconstrução hidratação Kérastase",
+    title: "Melhor Máscara Capilar para Cabelos Danificados 2025 | LOVEL",
+    h1: "Melhor Máscara Capilar para Cabelos Danificados: comparativo completo",
+    description: "Descubra as melhores máscaras capilares para cabelos danificados: Kérastase, Redken, Moroccanoil, Olaplex e mais. Preços e onde comprar original no Brasil.",
+    paragraphs: [
+      "Cabelos danificados por química (coloração, descoloração, alisamento) ou por calor excessivo perdem proteínas, lipídios e a integridade da cutícula, ficando porosos, quebradiços e sem brilho. Máscaras capilares reparadoras ajudam a restaurar essa estrutura.",
+      "Para danos severos, a Kérastase Resistance Masque Force Architecte reconstrói o fio com Cimento de Queratina. A Redken Acidic Bonding Concentrate Intensive Treatment repara ligações ácidas em apenas 5 minutos. O Olaplex Nº8 Bond Intense Moisture Mask combina hidratação e reparação de ligações.",
+      "Na LOVEL você encontra máscaras capilares de marcas profissionais como Kérastase, Redken, Wella, Moroccanoil e Alfaparf Milano, com opções fracionadas (30g/50g) para testar antes de comprar o pote inteiro."
+    ],
+    faq: [
+      { q: "Máscara capilar substitui o condicionador?", a: "Não exatamente. O condicionador é para uso semanal ou a cada lavagem. A máscara é um tratamento mais profundo, geralmente semanal ou quinzenal." },
+      { q: "Quanto tempo deixar a máscara no cabelo?", a: "Depende do produto. A maioria recomenda de 3 a 15 minutos. Algumas podem ser usadas como leave-in. Sempre leia as instruções do fabricante." },
+      { q: "Posso usar mascara capilar fracionada da LOVEL no salão?", a: "Sim! Os fracionados de 30g e 50g são perfeitos para testar o produto antes de comprar o pote profissional completo, e também para uso doméstico." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "moroccanoil-oleo-argan-original",
+    brand: "Moroccanoil",
+    name: "Moroccanoil — óleo de argan original",
+    subcategory: "oleos",
+    family: "haircare",
+    notes: "Moroccanoil óleo de argan brilho frizz",
+    title: "Moroccanoil Original: onde comprar e como usar | LOVEL",
+    h1: "Moroccanoil Treatment: o guia completo do óleo de argan",
+    description: "Tudo sobre o Moroccanoil Treatment: como usar, versão light vs original, onde comprar original no Brasil e alternativas. Preços abaixo do Mercado Livre na LOVEL.",
+    paragraphs: [
+      "O Moroccanoil Treatment é um dos produtos de haircare mais icônicos do mundo — um óleo de argan leve que nutre, ilumina, controla o frizz e protege termicamente sem pesar no cabelo.",
+      "Existem duas versões: o Original para cabelos normais a grossos e espessos, e o Light para cabelos finos ou oleosos. Ambos contêm óleo de argan marroquino prensado a frio e antioxidantes que prolongam a cor e adicionam brilho espelhado.",
+      "Na LOVEL você encontra o Moroccanoil Treatment original importado, incluindo versões fracionadas para testar a textura antes do investimento no frasco inteiro. Preços abaixo dos grandes e-commerces e lojas físicas."
+    ],
+    faq: [
+      { q: "Como usar Moroccanoil Treatment?", a: "Aplique de 1 a 2 bombinhas nos cabelos úmidos ou secos, do comprimento às pontas, evitando a raiz. Use antes de secar ou finalizar." },
+      { q: "Moroccanoil Light serve para todos os tipos de cabelo?", a: "A versão Light é ideal para cabelos finos ou oleosos. Para cabelos grossos, secos ou com muito frizz, prefira a versão Original." },
+      { q: "Moroccanoil da LOVEL é original ou imitação?", a: "100% original importado. Verificamos a procedência de cada lote e oferecemos produtos autênticos com certificação de origem." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "kerastase-vale-a-pena-brasil",
+    brand: "Kérastase",
+    name: "Kérastase — vale a pena no Brasil?",
+    subcategory: "mascaras",
+    family: "haircare",
+    notes: "Kérastase profissional luxo investimento",
+    title: "Kérastase vale a pena no Brasil? — guia de compra | LOVEL",
+    h1: "Kérastase: vale a pena comprar? Guia completo para o Brasil",
+    description: "Análise honesta da Kérastase no Brasil: os melhores produtos, preços reais e onde comprar original mais barato. Inclui Chronologiste, Résistance, Blond Absolu e Genesis.",
+    paragraphs: [
+      "A Kérastase é a marca de haircare de luxo mais renomada do mundo, com mais de 60 anos de pesquisa em colaboração com dermatologistas e institutos de ciência capilar. Os preços altos refletem formulações exclusivas com ingredientes de alta performance.",
+      "Para quem tem o orçamento, a Kérastase entrega resultados notáveis — especialmente a linha Chronologiste (anti-idade), a Résistance (reparação extrema) e a Genesis (anti-queda). O Masque Chronologiste, por exemplo, transforma completamente a textura de cabelos desgastados.",
+      "Na LOVEL, a Kérastase está disponível em frações de 30g e 50g — ideal para testar a linha certa para o seu tipo de cabelo antes de investir no pote de salão. Preços bem abaixo das lojas físicas e plataformas como Mercado Livre."
+    ],
+    faq: [
+      { q: "Qual linha Kérastase é melhor para cabelos danificados?", a: "A linha Résistance é específica para cabelos muito danificados. O Masque Force Architecte reconstrói e o Serum Thérapiste é ideal para pontas extremamente ressecadas." },
+      { q: "Quanto custa Kérastase em fracionado na LOVEL?", a: "Os fracionados de 30g partem de preços bem acessíveis. Consulte o site para preços atualizados por produto e linha." },
+      { q: "Posso comprar Kérastase fracionado para testar?", a: "Sim! Na LOVEL oferecemos Kérastase em frações de 30g e 50g para você experimentar antes de comprar o pote completo." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "melhor-oleo-capilar-frizz",
+    brand: "",
+    name: "Melhor Óleo Capilar para Frizz",
+    subcategory: "oleos",
+    family: "haircare",
+    notes: "óleo capilar frizz brilho argan",
+    title: "Melhor Óleo Capilar para Frizz — comparativo 2025 | LOVEL",
+    h1: "Melhor Óleo Capilar para Controle de Frizz em 2025",
+    description: "Comparativo dos melhores óleos capilares para frizz: Moroccanoil, Kérastase, Redken, Olaplex Nº7 e mais. Guia de preços e onde comprar original no Brasil.",
+    paragraphs: [
+      "O frizz é causado pela porosidade do cabelo — quando as cutículas estão abertas, o cabelo absorve umidade do ar e incha irregularmente. Óleos capilares atuam selando as cutículas, adicionando peso controlado e barreira protetora contra a umidade.",
+      "Para resultados mais intensos, o Moroccanoil Treatment Original é a referência global. O Olaplex Nº7 Bonding Oil repara e brilha ao mesmo tempo. Para versões mais leves, o Kérastase Elixir Ultime L'Huile Légère é ideal para cabelos finos com frizz.",
+      "Aplique sempre em pequena quantidade — 1 a 2 gotas ou bombinhas — nos cabelos úmidos antes de secar, ou em cabelos secos como finalizador. Excesso pode pesar e deixar o cabelo com aparência oleosa."
+    ],
+    faq: [
+      { q: "Óleo capilar pode ser usado em cabelos finos?", a: "Sim, mas com moderação. Prefira versões 'Light' ou 'Légère', e aplique apenas nas pontas. Nunca na raiz para não pesar." },
+      { q: "Qual óleo capilar tem mais brilho?", a: "O Moroccanoil Treatment e o Kérastase Chronologiste Huile de Parfum são referências em brilho espelhado intenso." },
+      { q: "Posso usar óleo capilar todos os dias?", a: "Sim, em pequenas quantidades como finalizador. Para tratamento profundo, 1x por semana é suficiente." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "melhor-shampoo-cabelos-danificados",
+    brand: "",
+    name: "Melhor Shampoo para Cabelos Danificados",
+    subcategory: "shampoos",
+    family: "haircare",
+    notes: "shampoo reparador reconstrução danificados",
+    title: "Melhor Shampoo para Cabelos Danificados — guia 2025 | LOVEL",
+    h1: "Melhor Shampoo para Cabelos Danificados: da farmácia ao profissional",
+    description: "Comparativo dos melhores shampoos para cabelos danificados disponíveis no Brasil: Redken Extreme, Kérastase Résistance, Olaplex e mais. Com preços e onde comprar mais barato.",
+    paragraphs: [
+      "Cabelos danificados precisam de shampoos que limpem sem agredir — sem sulfatos fortes — e que enteguem ingredientes reparadores como proteínas, ceramidas e queratina diretamente no fio durante a lavagem.",
+      "O Redken Extreme Shampoo usa RCT Protein Complex para reconstruir de dentro para fora. O Kérastase Résistance Bain Decalcifier remove minerais que enfraquecem o fio. Para danos severos por descoloração, o Schwarzkopf BC Bonacure Repair Rescue é a escolha dos profissionais.",
+      "Para orçamentos mais acessíveis, a linha Elseve Total Repair 5 entrega bons resultados a preços populares. Na LOVEL você encontra todas essas opções a preços competitivos, com entrega para todo o Brasil."
+    ],
+    faq: [
+      { q: "Shampoo sem sulfato é melhor para cabelos danificados?", a: "Em geral, sim. Sulfatos são agentes espumantes fortes que podem remover óleos naturais essenciais. Para cabelos danificados, shampoos sulfate-free são mais gentis." },
+      { q: "Com que frequência lavar cabelos danificados?", a: "2 a 3 vezes por semana é o ideal. Lavar diariamente resseca ainda mais o fio já fragilizado." },
+      { q: "Qual shampoo usar com o Olaplex?", a: "O próprio Olaplex Nº4 foi desenvolvido para usar com o tratamento. Mas qualquer shampoo suave pode ser combinado com o sistema Olaplex." }
+    ],
+  },
+  {
+    kind: "guide",
+    slug: "cronograma-capilar-completo",
+    brand: "",
+    name: "Cronograma Capilar Completo",
+    subcategory: "tratamento",
+    family: "haircare",
+    notes: "cronograma capilar hidratação nutrição reconstrução",
+    title: "Cronograma Capilar Completo — guia passo a passo | LOVEL",
+    h1: "Cronograma Capilar: o guia definitivo para cabelos saudáveis",
+    description: "Aprenda a montar seu cronograma capilar com os melhores produtos importados. Hidratação, nutrição e reconstrução com marcas profissionais disponíveis na LOVEL.",
+    paragraphs: [
+      "O cronograma capilar é uma técnica brasileira de cuidados capilares que alterna 3 tipos de tratamentos ao longo das semanas: hidratação (reposição de água), nutrição (reposição de óleos e gorduras) e reconstrução (reposição de proteínas).",
+      "Para um cronograma eficaz com produtos importados de alta performance: use a Kérastase Nutritive Masquintense para nutrição, o Olaplex Nº8 Bond Intense Moisture Mask para hidratação e o Redken Extreme Strengthening Treatment para reconstrução.",
+      "Alterne os tratamentos semanalmente: semana 1 hidratação, semana 2 nutrição, semana 3 reconstrução, semana 4 hidratação novamente. Ajuste conforme a necessidade do seu cabelo — danificados precisam de mais reconstrução."
+    ],
+    faq: [
+      { q: "Quanto tempo dura o cronograma capilar?", a: "É uma rotina contínua, não tem fim definido. Você mantém o cronograma indefinidamente para manter o cabelo saudável." },
+      { q: "Posso fazer cronograma capilar em cabelo com progressiva?", a: "Sim! Cabelos alisados precisam ainda mais de cronograma — priorize hidratação e nutrição, e use reconstrução com moderação para não pesar." },
+      { q: "Quais produtos da LOVEL usar no cronograma capilar?", a: "Para hidratação: Kérastase Nutritive ou Moroccanoil Hydrating Mask. Para nutrição: Alfaparf SEMI DI LINO Moisture Nutritive Mask. Para reconstrução: Redken Extreme ou Olaplex." }
+    ],
+  },
+];
+
 export const SEO_PAGES: SeoPage[] = [
   ...SEO_PAGES_PART_0,
   ...SEO_PAGES_PART_1,
@@ -56790,7 +57126,9 @@ export const SEO_PAGES: SeoPage[] = [
   ...SEO_PAGES_PART_9,
   ...SEO_PAGES_PART_10,
   ...SEO_PAGES_PART_11,
-  ...SEO_PAGES_PART_12
+  ...SEO_PAGES_PART_12,
+  ...SEO_PAGES_SKINCARE,
+  ...SEO_PAGES_CABELOS,
 ];
 
 export const SEO_PAGE_BY_SLUG: Record<string, SeoPage> = Object.fromEntries(

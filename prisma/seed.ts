@@ -47,6 +47,7 @@ const DEFAULT_CATEGORIES = [
       { slug: "mascaras", label: "Máscaras" },
       { slug: "oleos", label: "Óleos" },
       { slug: "shampoos", label: "Shampoos" },
+      { slug: "condicionadores", label: "Condicionadores" },
     ],
   },
   {
@@ -56,11 +57,12 @@ const DEFAULT_CATEGORIES = [
     image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800&h=500&fit=crop",
     showOnHome: true,
     sortOrder: 2,
-    variantLabels: ["15ml", "30ml", "50ml"],
+    variantLabels: ["15ml", "30ml", "50ml", "Frasco Inteiro"],
     subcategories: [
       { slug: "serum", label: "Séruns" },
       { slug: "protetor", label: "Protetores" },
       { slug: "hidratante", label: "Hidratantes" },
+      { slug: "limpeza", label: "Limpeza" },
     ],
   },
 ];

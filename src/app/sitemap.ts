@@ -71,14 +71,68 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: `${base}/categoria?tipo=cabelos`,
       lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: `${base}/categoria?tipo=cabelos&amp;sub=tratamento`,
+      lastModified: now,
       changeFrequency: "weekly",
-      priority: 0.6,
+      priority: 0.75,
+    },
+    {
+      url: `${base}/categoria?tipo=cabelos&amp;sub=mascaras`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
+    },
+    {
+      url: `${base}/categoria?tipo=cabelos&amp;sub=oleos`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
+    },
+    {
+      url: `${base}/categoria?tipo=cabelos&amp;sub=shampoos`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
+    },
+    {
+      url: `${base}/categoria?tipo=cabelos&amp;sub=condicionadores`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
     },
     {
       url: `${base}/categoria?tipo=skincare`,
       lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: `${base}/categoria?tipo=skincare&amp;sub=serum`,
+      lastModified: now,
       changeFrequency: "weekly",
-      priority: 0.6,
+      priority: 0.75,
+    },
+    {
+      url: `${base}/categoria?tipo=skincare&amp;sub=protetor`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
+    },
+    {
+      url: `${base}/categoria?tipo=skincare&amp;sub=hidratante`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
+    },
+    {
+      url: `${base}/categoria?tipo=skincare&amp;sub=limpeza`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
     },
   ];
 
