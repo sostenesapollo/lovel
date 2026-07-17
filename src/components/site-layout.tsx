@@ -13,6 +13,7 @@ const NAV = [
   { href: categoryPath("perfumes"), label: "Perfumes", key: "perfumes" },
   { href: categoryPath("cabelos"), label: "Cabelos", key: "cabelos" },
   { href: categoryPath("skincare"), label: "Skincare", key: "skincare" },
+  { href: "/personal-shopper", label: "Personal Shopper", key: "personal-shopper" },
   { href: "/guia", label: "Guias", key: "guia" },
   { href: "/depoimentos", label: "Depoimentos", key: "depoimentos" },
   { href: "/#contato", label: "Contato", key: "contato" },
@@ -217,6 +218,9 @@ export function SiteFooter() {
             </Link>
             <Link href="/categoria?tipo=perfumes" className="footer__link">
               Perfumes
+            </Link>
+            <Link href="/personal-shopper" className="footer__link">
+              Personal Shopper
             </Link>
             <Link href="/paraguai" className="footer__link">
               Comprar no Paraguai

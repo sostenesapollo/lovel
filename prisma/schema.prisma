@@ -7,37 +7,19 @@ datasource db {
   provider = "sqlite"
 }
 
-enum UserRole {
-  ADMIN
-  CUSTOMER
-}
-
-enum UserStatus {
-  ACTIVE
-  REVOKED
-}
-
-enum OrderStatus {
-  pending_payment
-  paid
-  shipped
-  delivered
-  cancelled
-}
-
 model User {
   id            String               @id @default(cuid())
   email         String               @unique
   passwordHash  String
   name          String
-  role          UserRole             @default(CUSTOMER)
-  status        UserStatus           @default(ACTIVE)
-  /// null = conta criada no pedido, ainda sem senha escolhida
-  passwordSetAt DateTime?
+  role          UserRole             @default("CUSTOMER")
+  status        UserStatus           @default("ACTIVE")
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
-  orders        Order[]
+  /// null = conta criada no pedido, ainda sem senha escolhida
+  passwordSetAt DateTime?
   emailLogs     EmailLog[]
+  orders        Order[]
   resetTokens   PasswordResetToken[]
 
   @@index([status])
@@ -47,30 +29,30 @@ model User {
 model PasswordResetToken {
   id        String    @id @default(cuid())
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
 }
 
 model Category {
-  id             String   @id @default(cuid())
-  slug           String   @unique
-  title          String
-  subtitle       String   @default("")
-  image          String   @default("")
-  showOnHome     Boolean  @default(true)
-  sortOrder      Int      @default(0)
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  subtitle      String   @default("")
+  image         String   @default("")
+  showOnHome    Boolean  @default(true)
+  sortOrder     Int      @default(0)
   /// Labels de volumetria disponíveis nesta categoria, ex.: ["4ml","10ml","100ml"]
-  variantLabels  Json     @default("[]")
+  variantLabels Json     @default("[]")
   /// Subcategorias: [{ "slug": "arabes", "label": "Árabes" }]
-  subcategories  Json     @default("[]")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  subcategories Json     @default("[]")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([showOnHome])
   @@index([sortOrder])
@@ -121,22 +103,22 @@ model Coupon {
 model Order {
   id              String      @id
   userId          String?
-  user            User?       @relation(fields: [userId], references: [id])
   userEmail       String?
   customer        Json
   items           Json
   payment         String
-  paymentId       String?
-  pixQrCode       String?
-  pixQrCodeBase64 String?
   coupon          Json?
   subtotal        Float
   discount        Float       @default(0)
   shipping        Float       @default(0)
   total           Float
-  status          OrderStatus @default(pending_payment)
+  status          OrderStatus @default("pending_payment")
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+  paymentId       String?
+  pixQrCode       String?
+  pixQrCodeBase64 String?
+  user            User?       @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([userEmail])
@@ -154,12 +136,30 @@ model Setting {
 model EmailLog {
   id        String   @id @default(cuid())
   userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
   userEmail String
   template  String
   subject   String
   sentAt    DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@index([userEmail])
   @@index([sentAt(sort: Desc)])
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum UserStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum OrderStatus {
+  pending_payment
+  paid
+  shipped
+  delivered
+  cancelled
 }
