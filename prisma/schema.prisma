@@ -12,8 +12,8 @@ model User {
   email         String               @unique
   passwordHash  String
   name          String
-  role          UserRole             @default("CUSTOMER")
-  status        UserStatus           @default("ACTIVE")
+  role          UserRole             @default(CUSTOMER)
+  status        UserStatus           @default(ACTIVE)
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
   /// null = conta criada no pedido, ainda sem senha escolhida
@@ -112,7 +112,7 @@ model Order {
   discount        Float       @default(0)
   shipping        Float       @default(0)
   total           Float
-  status          OrderStatus @default("pending_payment")
+  status          OrderStatus @default(pending_payment)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   paymentId       String?
