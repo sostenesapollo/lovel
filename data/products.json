@@ -171,6 +171,132 @@
   },
   {
     "id": "h1",
+    "slug": "olaplex-no3",
+    "brand": "Olaplex",
+    "name": "Nº3 Hair Perfector",
+    "type": "cabelos",
+    "subcategory": "tratamento",
+    "category": "Cabelos · Tratamento",
+    "image": "https://images.unsplash.com/photo-1527799820374-dcf8d9a4e3f0?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1527799820374-dcf8d9a4e3f0?w=800&h=800&fit=crop"
+    ],
+    "description": "Tratamento reparador Nº3 da Olaplex que reconecta as ligações quebradas do cabelo. Use antes do shampoo para cabelos danificados por química ou calor.",
+    "badges": [
+      {
+        "type": "promo",
+        "text": "Compre 5 Leve 4"
+      }
+    ],
+    "variants": [
+      {
+        "label": "30g",
+        "price": 49.9,
+        "sku": "H1-F30"
+      },
+      {
+        "label": "50g",
+        "price": 79.9,
+        "sku": "H1-F50"
+      },
+      {
+        "label": "Frasco Inteiro",
+        "price": 289.9,
+        "sku": "H1-FI"
+      }
+    ],
+    "defaultVariant": 0
+  },
+  {
+    "id": "h2",
+    "slug": "kerastase-masque-chronologiste",
+    "brand": "Kérastase",
+    "name": "Masque Chronologiste",
+    "type": "cabelos",
+    "subcategory": "mascaras",
+    "category": "Cabelos · Máscaras",
+    "image": "https://images.unsplash.com/photo-1608248543801-ba977f391900?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1608248543801-ba977f391900?w=800&h=800&fit=crop"
+    ],
+    "description": "Máscara de tratamento premium anti-idade para cabelos. Textura rica que devolve vitalidade, brilho e maciez extrema.",
+    "badges": [
+      {
+        "type": "urgent",
+        "text": "Poucas unidades"
+      }
+    ],
+    "variants": [
+      {
+        "label": "30g",
+        "price": 89.9,
+        "sku": "H2-F30"
+      },
+      {
+        "label": "50g",
+        "price": 139.9,
+        "sku": "H2-F50"
+      },
+      {
+        "label": "Frasco Inteiro",
+        "price": 689.0,
+        "sku": "H2-FI"
+      }
+    ],
+    "defaultVariant": 1,
+    "isLaunch": true
+  },
+  {
+    "id": "s1",
+    "slug": "laroche-anthelios-uv",
+    "brand": "La Roche-Posay",
+    "name": "Anthelios UV Mune 400",
+    "type": "skincare",
+    "subcategory": "protetor",
+    "category": "Skincare · Protetor Solar",
+    "image": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&h=800&fit=crop"
+    ],
+    "description": "Protetor solar facial com tecnologia UV Mune 400, a mais avançada proteção contra raios UVA. Textura fluida, toque seco.",
+    "badges": [],
+    "variants": [
+      {
+        "label": "Frasco Inteiro",
+        "price": 189.9,
+        "sku": "S1-FI"
+      }
+    ],
+    "defaultVariant": 0,
+    "singleVariant": true,
+    "isLaunch": true
+  },
+  {
+    "id": "s2",
+    "slug": "ordinary-niacinamide",
+    "brand": "The Ordinary",
+    "name": "Niacinamide 10% + Zinc 1%",
+    "type": "skincare",
+    "subcategory": "serum",
+    "category": "Skincare · Sérum",
+    "image": "https://images.unsplash.com/photo-1620916564558-54fa8f9d6a2e?w=800&h=800&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1620916564558-54fa8f9d6a2e?w=800&h=800&fit=crop"
+    ],
+    "description": "Sérum concentrado com niacinamida e zinco para controlar oleosidade, minimizar poros e uniformizar o tom da pele.",
+    "badges": [],
+    "variants": [
+      {
+        "label": "Frasco Inteiro",
+        "price": 69.9,
+        "sku": "S2-FI"
+      }
+    ],
+    "defaultVariant": 0,
+    "singleVariant": true
+  },
+  {
+    "id": "c1",
     "slug": "olaplex-no3plus-complete-repair-treatment",
     "brand": "Olaplex",
     "name": "Nº.3PLUS Complete Repair Treatment",
@@ -205,26 +331,26 @@
         "label": "30g",
         "price": 129.9,
         "oldPrice": 155.9,
-        "sku": "H1-30G"
+        "sku": "C1-30G"
       },
       {
         "label": "50g",
         "price": 199.9,
         "oldPrice": 239.9,
-        "sku": "H1-50G"
+        "sku": "C1-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 359.9,
         "oldPrice": 431.9,
-        "sku": "H1-FI"
+        "sku": "C1-FI"
       }
     ],
     "defaultVariant": 2,
     "featured": true
   },
   {
-    "id": "h2",
+    "id": "c2",
     "slug": "olaplex-no6-bond-smoother",
     "brand": "Olaplex",
     "name": "Nº.6 Bond Smoother",
@@ -259,26 +385,26 @@
         "label": "30g",
         "price": 129.9,
         "oldPrice": 155.9,
-        "sku": "H2-30G"
+        "sku": "C2-30G"
       },
       {
         "label": "50g",
         "price": 199.9,
         "oldPrice": 239.9,
-        "sku": "H2-50G"
+        "sku": "C2-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 359.9,
         "oldPrice": 431.9,
-        "sku": "H2-FI"
+        "sku": "C2-FI"
       }
     ],
     "defaultVariant": 2,
     "featured": true
   },
   {
-    "id": "h3",
+    "id": "c3",
     "slug": "wella-ultimate-repair-miracle-hair-rescue",
     "brand": "Wella Professionals",
     "name": "Ultimate Repair Miracle Hair Rescue",
@@ -313,25 +439,25 @@
         "label": "30g",
         "price": 89.9,
         "oldPrice": 107.9,
-        "sku": "H3-30G"
+        "sku": "C3-30G"
       },
       {
         "label": "50g",
         "price": 139.9,
         "oldPrice": 167.9,
-        "sku": "H3-50G"
+        "sku": "C3-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 239.9,
         "oldPrice": 287.9,
-        "sku": "H3-FI"
+        "sku": "C3-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h4",
+    "id": "c4",
     "slug": "wella-ultimate-smooth-silky-milk",
     "brand": "Wella Professionals",
     "name": "Ultimate Smooth 24/7 Silky Milk",
@@ -366,25 +492,25 @@
         "label": "30g",
         "price": 79.9,
         "oldPrice": 95.9,
-        "sku": "H4-30G"
+        "sku": "C4-30G"
       },
       {
         "label": "50g",
         "price": 129.9,
         "oldPrice": 155.9,
-        "sku": "H4-50G"
+        "sku": "C4-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 219.9,
         "oldPrice": 263.9,
-        "sku": "H4-FI"
+        "sku": "C4-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h5",
+    "id": "c5",
     "slug": "k18-heatbounce-thermal-styler",
     "brand": "K18",
     "name": "HeatBounce Thermal Styler",
@@ -419,26 +545,26 @@
         "label": "30g",
         "price": 139.9,
         "oldPrice": 167.9,
-        "sku": "H5-30G"
+        "sku": "C5-30G"
       },
       {
         "label": "50g",
         "price": 219.9,
         "oldPrice": 263.9,
-        "sku": "H5-50G"
+        "sku": "C5-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 499.9,
         "oldPrice": 599.9,
-        "sku": "H5-FI"
+        "sku": "C5-FI"
       }
     ],
     "defaultVariant": 2,
     "isLaunch": true
   },
   {
-    "id": "h6",
+    "id": "c6",
     "slug": "k18-airwash-scalp-hair-mist",
     "brand": "K18",
     "name": "Airwash Scalp & Hair Mist",
@@ -473,25 +599,25 @@
         "label": "30g",
         "price": 139.9,
         "oldPrice": 167.9,
-        "sku": "H6-30G"
+        "sku": "C6-30G"
       },
       {
         "label": "50g",
         "price": 219.9,
         "oldPrice": 263.9,
-        "sku": "H6-50G"
+        "sku": "C6-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 519.9,
         "oldPrice": 623.9,
-        "sku": "H6-FI"
+        "sku": "C6-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h7",
+    "id": "c7",
     "slug": "wella-fusion-intense-repair-mask",
     "brand": "Wella Professionals",
     "name": "Fusion Intense Repair Mask",
@@ -526,26 +652,26 @@
         "label": "30g",
         "price": 69.9,
         "oldPrice": 83.9,
-        "sku": "H7-30G"
+        "sku": "C7-30G"
       },
       {
         "label": "50g",
         "price": 109.9,
         "oldPrice": 131.9,
-        "sku": "H7-50G"
+        "sku": "C7-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 219.9,
         "oldPrice": 263.9,
-        "sku": "H7-FI"
+        "sku": "C7-FI"
       }
     ],
     "defaultVariant": 2,
     "featured": true
   },
   {
-    "id": "h8",
+    "id": "c8",
     "slug": "wella-invigo-intense-moisture-mask",
     "brand": "Wella Professionals",
     "name": "Invigo Intense Moisture Mask",
@@ -580,25 +706,25 @@
         "label": "30g",
         "price": 59.9,
         "oldPrice": 71.9,
-        "sku": "H8-30G"
+        "sku": "C8-30G"
       },
       {
         "label": "50g",
         "price": 99.9,
         "oldPrice": 119.9,
-        "sku": "H8-50G"
+        "sku": "C8-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 199.9,
         "oldPrice": 239.9,
-        "sku": "H8-FI"
+        "sku": "C8-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h9",
+    "id": "c9",
     "slug": "k18-leave-in-molecular-repair-mask",
     "brand": "K18",
     "name": "Leave-In Molecular Repair Hair Mask",
@@ -633,26 +759,26 @@
         "label": "30g",
         "price": 209.9,
         "oldPrice": 251.9,
-        "sku": "H9-30G"
+        "sku": "C9-30G"
       },
       {
         "label": "50g",
         "price": 339.9,
         "oldPrice": 407.9,
-        "sku": "H9-50G"
+        "sku": "C9-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 659.9,
         "oldPrice": 791.9,
-        "sku": "H9-FI"
+        "sku": "C9-FI"
       }
     ],
     "defaultVariant": 2,
     "featured": true
   },
   {
-    "id": "h10",
+    "id": "c10",
     "slug": "loreal-everpure-glossing-lamination-mask",
     "brand": "L'Oréal Paris",
     "name": "EverPure Glossing Lamination Mask",
@@ -687,25 +813,25 @@
         "label": "30g",
         "price": 45.9,
         "oldPrice": 55.9,
-        "sku": "H10-30G"
+        "sku": "C10-30G"
       },
       {
         "label": "50g",
         "price": 69.9,
         "oldPrice": 83.9,
-        "sku": "H10-50G"
+        "sku": "C10-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 109.9,
         "oldPrice": 131.9,
-        "sku": "H10-FI"
+        "sku": "C10-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h11",
+    "id": "c11",
     "slug": "loreal-elvive-total-repair-5-balm",
     "brand": "L'Oréal Paris",
     "name": "Elvive Total Repair 5 Damage Erasing Balm",
@@ -740,25 +866,25 @@
         "label": "30g",
         "price": 39.9,
         "oldPrice": 47.9,
-        "sku": "H11-30G"
+        "sku": "C11-30G"
       },
       {
         "label": "50g",
         "price": 59.9,
         "oldPrice": 71.9,
-        "sku": "H11-50G"
+        "sku": "C11-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 99.9,
         "oldPrice": 119.9,
-        "sku": "H11-FI"
+        "sku": "C11-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h12",
+    "id": "c12",
     "slug": "loreal-total-repair-5-power-restore",
     "brand": "L'Oréal Paris",
     "name": "Total Repair 5 Power Restore Treatment",
@@ -793,25 +919,25 @@
         "label": "30g",
         "price": 43.9,
         "oldPrice": 52.9,
-        "sku": "H12-30G"
+        "sku": "C12-30G"
       },
       {
         "label": "50g",
         "price": 65.9,
         "oldPrice": 79.9,
-        "sku": "H12-50G"
+        "sku": "C12-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 109.9,
         "oldPrice": 131.9,
-        "sku": "H12-FI"
+        "sku": "C12-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h13",
+    "id": "c13",
     "slug": "olaplex-no7-bonding-oil",
     "brand": "Olaplex",
     "name": "Nº.7 Bonding Oil",
@@ -846,26 +972,26 @@
         "label": "30g",
         "price": 159.9,
         "oldPrice": 191.9,
-        "sku": "H13-30G"
+        "sku": "C13-30G"
       },
       {
         "label": "50g",
         "price": 239.9,
         "oldPrice": 287.9,
-        "sku": "H13-50G"
+        "sku": "C13-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 359.9,
         "oldPrice": 431.9,
-        "sku": "H13-FI"
+        "sku": "C13-FI"
       }
     ],
     "defaultVariant": 2,
     "featured": true
   },
   {
-    "id": "h14",
+    "id": "c14",
     "slug": "olaplex-no7-shine-serum-oil-mist",
     "brand": "Olaplex",
     "name": "Nº.7 Shine Serum Oil Mist",
@@ -900,26 +1026,26 @@
         "label": "30g",
         "price": 179.9,
         "oldPrice": 215.9,
-        "sku": "H14-30G"
+        "sku": "C14-30G"
       },
       {
         "label": "50g",
         "price": 279.9,
         "oldPrice": 335.9,
-        "sku": "H14-50G"
+        "sku": "C14-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 439.9,
         "oldPrice": 527.9,
-        "sku": "H14-FI"
+        "sku": "C14-FI"
       }
     ],
     "defaultVariant": 2,
     "isLaunch": true
   },
   {
-    "id": "h15",
+    "id": "c15",
     "slug": "wella-ultimate-smooth-miracle-oil-serum",
     "brand": "Wella Professionals",
     "name": "Ultimate Smooth Miracle Oil Serum",
@@ -954,25 +1080,25 @@
         "label": "30g",
         "price": 99.9,
         "oldPrice": 119.9,
-        "sku": "H15-30G"
+        "sku": "C15-30G"
       },
       {
         "label": "50g",
         "price": 149.9,
         "oldPrice": 179.9,
-        "sku": "H15-50G"
+        "sku": "C15-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 259.9,
         "oldPrice": 311.9,
-        "sku": "H15-FI"
+        "sku": "C15-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h16",
+    "id": "c16",
     "slug": "wella-oil-reflections-light",
     "brand": "Wella Professionals",
     "name": "Oil Reflections Light Smoothening Oil",
@@ -1007,25 +1133,25 @@
         "label": "30g",
         "price": 89.9,
         "oldPrice": 107.9,
-        "sku": "H16-30G"
+        "sku": "C16-30G"
       },
       {
         "label": "50g",
         "price": 139.9,
         "oldPrice": 167.9,
-        "sku": "H16-50G"
+        "sku": "C16-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 239.9,
         "oldPrice": 287.9,
-        "sku": "H16-FI"
+        "sku": "C16-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h17",
+    "id": "c17",
     "slug": "k18-molecular-repair-hair-oil",
     "brand": "K18",
     "name": "Molecular Repair Hair Oil",
@@ -1060,26 +1186,26 @@
         "label": "30g",
         "price": 169.9,
         "oldPrice": 203.9,
-        "sku": "H17-30G"
+        "sku": "C17-30G"
       },
       {
         "label": "50g",
         "price": 259.9,
         "oldPrice": 311.9,
-        "sku": "H17-50G"
+        "sku": "C17-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 499.9,
         "oldPrice": 599.9,
-        "sku": "H17-FI"
+        "sku": "C17-FI"
       }
     ],
     "defaultVariant": 2,
     "featured": true
   },
   {
-    "id": "h18",
+    "id": "c18",
     "slug": "loreal-everpure-bond-repair-oil-serum",
     "brand": "L'Oréal Paris",
     "name": "EverPure Bond Repair Oil-In Serum",
@@ -1114,25 +1240,25 @@
         "label": "30g",
         "price": 59.9,
         "oldPrice": 71.9,
-        "sku": "H18-30G"
+        "sku": "C18-30G"
       },
       {
         "label": "50g",
         "price": 89.9,
         "oldPrice": 107.9,
-        "sku": "H18-50G"
+        "sku": "C18-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 129.9,
         "oldPrice": 155.9,
-        "sku": "H18-FI"
+        "sku": "C18-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h19",
+    "id": "c19",
     "slug": "olaplex-no4-bond-maintenance-shampoo",
     "brand": "Olaplex",
     "name": "Nº.4 Bond Maintenance Shampoo",
@@ -1167,26 +1293,26 @@
         "label": "30g",
         "price": 89.9,
         "oldPrice": 107.9,
-        "sku": "H19-30G"
+        "sku": "C19-30G"
       },
       {
         "label": "50g",
         "price": 139.9,
         "oldPrice": 167.9,
-        "sku": "H19-50G"
+        "sku": "C19-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 639.9,
         "oldPrice": 767.9,
-        "sku": "H19-FI"
+        "sku": "C19-FI"
       }
     ],
     "defaultVariant": 2,
     "featured": true
   },
   {
-    "id": "h20",
+    "id": "c20",
     "slug": "wella-ultimate-repair-shampoo",
     "brand": "Wella Professionals",
     "name": "Ultimate Repair Shampoo",
@@ -1221,25 +1347,25 @@
         "label": "30g",
         "price": 79.9,
         "oldPrice": 95.9,
-        "sku": "H20-30G"
+        "sku": "C20-30G"
       },
       {
         "label": "50g",
         "price": 119.9,
         "oldPrice": 143.9,
-        "sku": "H20-50G"
+        "sku": "C20-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 219.9,
         "oldPrice": 263.9,
-        "sku": "H20-FI"
+        "sku": "C20-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h21",
+    "id": "c21",
     "slug": "wella-invigo-brilliance-shampoo",
     "brand": "Wella Professionals",
     "name": "Invigo Brilliance Vibrant Color Shampoo",
@@ -1274,25 +1400,25 @@
         "label": "30g",
         "price": 69.9,
         "oldPrice": 83.9,
-        "sku": "H21-30G"
+        "sku": "C21-30G"
       },
       {
         "label": "50g",
         "price": 109.9,
         "oldPrice": 131.9,
-        "sku": "H21-50G"
+        "sku": "C21-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 179.9,
         "oldPrice": 215.9,
-        "sku": "H21-FI"
+        "sku": "C21-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h22",
+    "id": "c22",
     "slug": "wella-invigo-nutri-enrich-shampoo",
     "brand": "Wella Professionals",
     "name": "Invigo Nutri-Enrich Deep Nourishing Shampoo",
@@ -1327,25 +1453,25 @@
         "label": "30g",
         "price": 69.9,
         "oldPrice": 83.9,
-        "sku": "H22-30G"
+        "sku": "C22-30G"
       },
       {
         "label": "50g",
         "price": 109.9,
         "oldPrice": 131.9,
-        "sku": "H22-50G"
+        "sku": "C22-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 179.9,
         "oldPrice": 215.9,
-        "sku": "H22-FI"
+        "sku": "C22-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h23",
+    "id": "c23",
     "slug": "wella-fusion-intense-repair-shampoo",
     "brand": "Wella Professionals",
     "name": "Fusion Intense Repair Shampoo",
@@ -1380,25 +1506,25 @@
         "label": "30g",
         "price": 79.9,
         "oldPrice": 95.9,
-        "sku": "H23-30G"
+        "sku": "C23-30G"
       },
       {
         "label": "50g",
         "price": 119.9,
         "oldPrice": 143.9,
-        "sku": "H23-50G"
+        "sku": "C23-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 199.9,
         "oldPrice": 239.9,
-        "sku": "H23-FI"
+        "sku": "C23-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h24",
+    "id": "c24",
     "slug": "loreal-everpure-bond-strengthening-shampoo",
     "brand": "L'Oréal Paris",
     "name": "EverPure Bond Strengthening Color Care Shampoo",
@@ -1433,25 +1559,25 @@
         "label": "30g",
         "price": 45.9,
         "oldPrice": 55.9,
-        "sku": "H24-30G"
+        "sku": "C24-30G"
       },
       {
         "label": "50g",
         "price": 69.9,
         "oldPrice": 83.9,
-        "sku": "H24-50G"
+        "sku": "C24-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 109.9,
         "oldPrice": 131.9,
-        "sku": "H24-FI"
+        "sku": "C24-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h25",
+    "id": "c25",
     "slug": "olaplex-no5-bond-maintenance-conditioner",
     "brand": "Olaplex",
     "name": "Nº.5 Bond Maintenance Conditioner",
@@ -1486,26 +1612,26 @@
         "label": "30g",
         "price": 89.9,
         "oldPrice": 107.9,
-        "sku": "H25-30G"
+        "sku": "C25-30G"
       },
       {
         "label": "50g",
         "price": 129.9,
         "oldPrice": 155.9,
-        "sku": "H25-50G"
+        "sku": "C25-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 599.9,
         "oldPrice": 719.9,
-        "sku": "H25-FI"
+        "sku": "C25-FI"
       }
     ],
     "defaultVariant": 2,
     "featured": true
   },
   {
-    "id": "h26",
+    "id": "c26",
     "slug": "wella-invigo-brilliance-conditioner",
     "brand": "Wella Professionals",
     "name": "Invigo Brilliance Vibrant Color Conditioner",
@@ -1540,25 +1666,25 @@
         "label": "30g",
         "price": 69.9,
         "oldPrice": 83.9,
-        "sku": "H26-30G"
+        "sku": "C26-30G"
       },
       {
         "label": "50g",
         "price": 109.9,
         "oldPrice": 131.9,
-        "sku": "H26-50G"
+        "sku": "C26-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 179.9,
         "oldPrice": 215.9,
-        "sku": "H26-FI"
+        "sku": "C26-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h27",
+    "id": "c27",
     "slug": "k18-damage-shield-protective-conditioner",
     "brand": "K18",
     "name": "Damage Shield Protective Conditioner",
@@ -1593,25 +1719,25 @@
         "label": "30g",
         "price": 129.9,
         "oldPrice": 155.9,
-        "sku": "H27-30G"
+        "sku": "C27-30G"
       },
       {
         "label": "50g",
         "price": 199.9,
         "oldPrice": 239.9,
-        "sku": "H27-50G"
+        "sku": "C27-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 439.9,
         "oldPrice": 527.9,
-        "sku": "H27-FI"
+        "sku": "C27-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h28",
+    "id": "c28",
     "slug": "loreal-everpure-bond-strengthening-conditioner",
     "brand": "L'Oréal Paris",
     "name": "EverPure Bond Strengthening Color Care Conditioner",
@@ -1646,25 +1772,25 @@
         "label": "30g",
         "price": 45.9,
         "oldPrice": 55.9,
-        "sku": "H28-30G"
+        "sku": "C28-30G"
       },
       {
         "label": "50g",
         "price": 69.9,
         "oldPrice": 83.9,
-        "sku": "H28-50G"
+        "sku": "C28-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 109.9,
         "oldPrice": 131.9,
-        "sku": "H28-FI"
+        "sku": "C28-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h29",
+    "id": "c29",
     "slug": "loreal-everpure-glossing-conditioner",
     "brand": "L'Oréal Paris",
     "name": "EverPure Sulfate-Free Glossing Conditioner",
@@ -1699,25 +1825,25 @@
         "label": "30g",
         "price": 43.9,
         "oldPrice": 52.9,
-        "sku": "H29-30G"
+        "sku": "C29-30G"
       },
       {
         "label": "50g",
         "price": 65.9,
         "oldPrice": 79.9,
-        "sku": "H29-50G"
+        "sku": "C29-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 99.9,
         "oldPrice": 119.9,
-        "sku": "H29-FI"
+        "sku": "C29-FI"
       }
     ],
     "defaultVariant": 2
   },
   {
-    "id": "h30",
+    "id": "c30",
     "slug": "loreal-everpure-brass-toning-conditioner",
     "brand": "L'Oréal Paris",
     "name": "EverPure Brass Toning Purple Conditioner",
@@ -1752,19 +1878,19 @@
         "label": "30g",
         "price": 43.9,
         "oldPrice": 52.9,
-        "sku": "H30-30G"
+        "sku": "C30-30G"
       },
       {
         "label": "50g",
         "price": 65.9,
         "oldPrice": 79.9,
-        "sku": "H30-50G"
+        "sku": "C30-50G"
       },
       {
         "label": "Frasco Inteiro",
         "price": 99.9,
         "oldPrice": 119.9,
-        "sku": "H30-FI"
+        "sku": "C30-FI"
       }
     ],
     "defaultVariant": 2
