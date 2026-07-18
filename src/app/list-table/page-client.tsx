@@ -499,6 +499,13 @@ export default function ListTablePage() {
   const [categoryForm, setCategoryForm] = useState<CategoryForm>(emptyCategoryForm());
 
   const [couponForm, setCouponForm] = useState<CouponForm>(emptyCouponForm());
+  const [bulkModal, setBulkModal] = useState<{
+    action: "deactivate" | "activate";
+    categoryTitle: string;
+    products: AdminProduct[];
+    selected: Set<string>;
+  } | null>(null);
+  const [bulkSaving, setBulkSaving] = useState(false);
   const [inlineEdit, setInlineEdit] = useState<{ id: string; field: "name" | "price" } | null>(null);
   const [inlineValue, setInlineValue] = useState("");
   const [inlineSaving, setInlineSaving] = useState(false);
@@ -1264,6 +1271,65 @@ export default function ListTablePage() {
     loadAll();
   }
 
+  function openBulkDeactivate() {
+    if (!productCategoryFilter) return;
+    const cat = categoryBySlug.get(productCategoryFilter);
+    const catProducts = products.filter((p) => p.type === productCategoryFilter && p.active !== false);
+    if (!catProducts.length) {
+      toast("Nenhum produto ativo nessa categoria.");
+      return;
+    }
+    setBulkModal({
+      action: "deactivate",
+      categoryTitle: cat?.title ?? productCategoryFilter,
+      products: catProducts,
+      selected: new Set(catProducts.map((p) => p.id)),
+    });
+  }
+
+  function openBulkActivate() {
+    if (!productCategoryFilter) return;
+    const cat = categoryBySlug.get(productCategoryFilter);
+    const catProducts = products.filter((p) => p.type === productCategoryFilter && p.active === false);
+    if (!catProducts.length) {
+      toast("Nenhum produto inativo nessa categoria.");
+      return;
+    }
+    setBulkModal({
+      action: "activate",
+      categoryTitle: cat?.title ?? productCategoryFilter,
+      products: catProducts,
+      selected: new Set(catProducts.map((p) => p.id)),
+    });
+  }
+
+  async function executeBulkToggle() {
+    if (!bulkModal) return;
+    const ids = [...bulkModal.selected];
+    if (!ids.length) {
+      toast("Nenhum produto selecionado.");
+      return;
+    }
+    setBulkSaving(true);
+    const active = bulkModal.action === "activate";
+    try {
+      await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/admin/products/${id}`, {
+            method: "PUT",
+            headers: { ...headers(), "Content-Type": "application/json" },
+            body: JSON.stringify({ active }),
+          }),
+        ),
+      );
+      toast(active ? `${ids.length} produto(s) reativado(s).` : `${ids.length} produto(s) desativado(s).`);
+      setBulkModal(null);
+      loadAll();
+    } finally {
+      setBulkSaving(false);
+    }
+  }
+
   function startInlineEdit(p: AdminProduct, field: "name" | "price") {
     if (inlineSaving) return;
     setInlineEdit({ id: p.id, field });
@@ -1743,6 +1809,16 @@ export default function ListTablePage() {
                   allowClear
                 />
               </label>
+              {productCategoryFilter && (
+                <div className="admin-product-filters__bulk">
+                  <button type="button" className="btn btn--sm btn--outline" onClick={openBulkDeactivate}>
+                    Desativar todos
+                  </button>
+                  <button type="button" className="btn btn--sm btn--success" onClick={openBulkActivate}>
+                    Reativar todos
+                  </button>
+                </div>
+              )}
             </div>
             <div className="admin-table-wrap">
               <table className="admin-table">
@@ -2559,6 +2635,114 @@ export default function ListTablePage() {
           </>
         )}
       </main>
+
+      {bulkModal && (
+        <div
+          className="admin-modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => { if (!bulkSaving) setBulkModal(null); }}
+        >
+          <div className="admin-modal__panel" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal__header">
+              <h2 className="admin-modal__title">
+                {bulkModal.action === "deactivate" ? "Desativar" : "Reativar"} produtos —{" "}
+                {bulkModal.categoryTitle}
+              </h2>
+              <button
+                type="button"
+                className="admin-modal__close"
+                onClick={() => { if (!bulkSaving) setBulkModal(null); }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ padding: "1rem 1.5rem", overflowY: "auto", maxHeight: "60vh" }}>
+              <p className="admin-hint" style={{ marginBottom: "1rem" }}>
+                {bulkModal.action === "deactivate"
+                  ? "Desmarque os produtos que NÃO quer desativar:"
+                  : "Desmarque os produtos que NÃO quer reativar:"}
+              </p>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem", fontWeight: 600 }}
+              >
+                <input
+                  type="checkbox"
+                  checked={bulkModal.selected.size === bulkModal.products.length}
+                  onChange={(e) =>
+                    setBulkModal((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            selected: e.target.checked
+                              ? new Set(prev.products.map((p) => p.id))
+                              : new Set(),
+                          }
+                        : prev,
+                    )
+                  }
+                />
+                Selecionar todos ({bulkModal.products.length})
+              </label>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {bulkModal.products.map((p) => (
+                  <label
+                    key={p.id}
+                    style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.4rem 0.5rem", borderRadius: 6, cursor: "pointer" }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={bulkModal.selected.has(p.id)}
+                      onChange={(e) =>
+                        setBulkModal((prev) => {
+                          if (!prev) return prev;
+                          const selected = new Set(prev.selected);
+                          if (e.target.checked) selected.add(p.id);
+                          else selected.delete(p.id);
+                          return { ...prev, selected };
+                        })
+                      }
+                    />
+                    <SafeImage
+                      src={p.images?.[0] || p.image}
+                      alt=""
+                      width={32}
+                      height={32}
+                      unoptimized
+                      style={{ objectFit: "cover", borderRadius: 4, flexShrink: 0 }}
+                    />
+                    <span style={{ fontSize: "0.875rem" }}>
+                      <strong>{p.brand}</strong> — {p.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="admin-form-footer">
+              <button
+                type="button"
+                className="btn btn--outline"
+                disabled={bulkSaving}
+                onClick={() => setBulkModal(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={`btn ${bulkModal.action === "deactivate" ? "btn--warn" : "btn--success"}`}
+                disabled={bulkSaving || bulkModal.selected.size === 0}
+                onClick={executeBulkToggle}
+              >
+                {bulkSaving
+                  ? "Salvando…"
+                  : bulkModal.action === "deactivate"
+                    ? `Desativar ${bulkModal.selected.size} produto(s)`
+                    : `Reativar ${bulkModal.selected.size} produto(s)`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {productModal && (
         <div

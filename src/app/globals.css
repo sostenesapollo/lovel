@@ -4172,6 +4172,13 @@ a.hero__slide--active:focus-visible .hero__img {
   font-size: 0.65rem;
 }
 
+.admin-product-filters__bulk {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding-bottom: 0;
+}
+
 .admin-product-filters select,
 .admin-product-filters input {
   width: 100%;
