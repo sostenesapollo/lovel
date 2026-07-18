@@ -139,6 +139,7 @@ export const ProductScalarFieldEnum = {
   soldOut: 'soldOut',
   active: 'active',
   promoText: 'promoText',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

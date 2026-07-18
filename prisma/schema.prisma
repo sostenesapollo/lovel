@@ -81,6 +81,8 @@ model Product {
   soldOut        Boolean  @default(false)
   active         Boolean  @default(true)
   promoText      String?
+  /// Soft-delete: null = ativo; data = removido (não aparece no storefront nem na listagem default do admin)
+  deletedAt      DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -88,6 +90,7 @@ model Product {
   @@index([featured])
   @@index([isLaunch])
   @@index([active])
+  @@index([deletedAt])
 }
 
 model Coupon {

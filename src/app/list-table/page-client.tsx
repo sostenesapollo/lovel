@@ -459,6 +459,7 @@ export default function ListTablePage() {
   const [r2Configured, setR2Configured] = useState(false);
   const [productSearch, setProductSearch] = useState("");
   const [productCategoryFilter, setProductCategoryFilter] = useState("");
+  const [showTrashed, setShowTrashed] = useState(false);
   const [productDropActive, setProductDropActive] = useState(false);
   const [categoryDropActive, setCategoryDropActive] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -622,11 +623,13 @@ export default function ListTablePage() {
 
   useEffect(() => {
     setPage(0);
-  }, [tab, productSearch, productCategoryFilter]);
+  }, [tab, productSearch, productCategoryFilter, showTrashed]);
 
   const filteredProducts = useMemo(() => {
     const q = productSearch.trim().toLowerCase();
     const filtered = products.filter((p) => {
+      const isTrashed = Boolean(p.deletedAt);
+      if (isTrashed !== showTrashed) return false;
       const matchesName = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
       const matchesCategory = !productCategoryFilter || p.type === productCategoryFilter;
       return matchesName && matchesCategory;
@@ -638,7 +641,7 @@ export default function ListTablePage() {
       if (aDraft !== bDraft) return aDraft - bDraft;
       return 0;
     });
-  }, [products, productSearch, productCategoryFilter]);
+  }, [products, productSearch, productCategoryFilter, showTrashed]);
 
   const tabItemCount =
     tab === "products"
@@ -1195,17 +1198,46 @@ export default function ListTablePage() {
   }
 
   async function deleteProduct(id: string, name: string) {
-    if (!confirm(`Excluir produto "${name}"?`)) return;
+    if (!confirm(`Remover produto "${name}"? Ele vai para "Removidos" e pode ser restaurado depois.`)) return;
     const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE", headers: headers() });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      toast(data.message ?? "Erro ao excluir.");
+      toast(data.message ?? "Erro ao remover.");
       return;
     }
     if (localStorage.getItem(PRODUCT_DRAFT_KEY) === id) {
       localStorage.removeItem(PRODUCT_DRAFT_KEY);
     }
-    toast("Produto excluído.");
+    toast("Produto removido. Veja em \"Removidos\" para restaurar.");
+    loadAll();
+  }
+
+  async function restoreProduct(id: string) {
+    const res = await fetch(`/api/admin/products/${id}?action=restore`, {
+      method: "PATCH",
+      headers: headers(),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast(data.message ?? "Erro ao restaurar.");
+      return;
+    }
+    toast("Produto restaurado.");
+    loadAll();
+  }
+
+  async function purgeProduct(id: string, name: string) {
+    if (!confirm(`Excluir DEFINITIVAMENTE "${name}"? Essa ação não pode ser desfeita.`)) return;
+    const res = await fetch(`/api/admin/products/${id}?permanent=1`, {
+      method: "DELETE",
+      headers: headers(),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast(data.message ?? "Erro ao excluir definitivamente.");
+      return;
+    }
+    toast("Produto excluído definitivamente.");
     loadAll();
   }
 
@@ -1668,18 +1700,28 @@ export default function ListTablePage() {
           <div>
             <div className="admin-form-footer" style={{ border: 0, marginTop: 0, paddingTop: 0, justifyContent: "space-between" }}>
               <h2 className="admin-section-title" style={{ margin: 0 }}>
-                Produtos ({filteredProducts.length}
+                {showTrashed ? "Removidos" : "Produtos"} ({filteredProducts.length}
                 {filteredProducts.length !== products.length ? ` de ${products.length}` : ""})
               </h2>
-              <button
-                type="button"
-                className="btn btn--gold btn--sm"
-                onClick={openNewProduct}
-                disabled={!categories.length}
-                title={!categories.length ? "Carregando categorias…" : undefined}
-              >
-                Novo produto
-              </button>
+              <div className="admin-actions">
+                <button
+                  type="button"
+                  className={`btn btn--sm ${showTrashed ? "btn--gold" : "btn--outline"}`}
+                  onClick={() => setShowTrashed((v) => !v)}
+                  title={showTrashed ? "Voltar para produtos ativos" : "Ver produtos removidos"}
+                >
+                  {showTrashed ? "Ver ativos" : `Removidos (${products.filter((p) => p.deletedAt).length})`}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--gold btn--sm"
+                  onClick={openNewProduct}
+                  disabled={!categories.length || showTrashed}
+                  title={!categories.length ? "Carregando categorias…" : showTrashed ? "Volte para ativos para criar" : undefined}
+                >
+                  Novo produto
+                </button>
+              </div>
             </div>
             <div className="admin-product-filters">
               <label className="form-field admin-product-filters__search">
@@ -1720,18 +1762,27 @@ export default function ListTablePage() {
                     const thumb = p.images?.[0] || p.image;
                     const editingName = inlineEdit?.id === p.id && inlineEdit.field === "name";
                     const editingPrice = inlineEdit?.id === p.id && inlineEdit.field === "price";
-                    const isDraft = p.active === false;
-                    const statusLabel = isDraft ? "Rascunho" : p.soldOut ? "Esgotado" : "Ativo";
+                    const isTrashed = Boolean(p.deletedAt);
+                    const isDraft = !isTrashed && p.active === false;
+                    const statusLabel = isTrashed
+                      ? "Removido"
+                      : isDraft
+                        ? "Rascunho"
+                        : p.soldOut
+                          ? "Esgotado"
+                          : "Ativo";
                     return (
                       <tr key={p.id}>
                         <td className="admin-table__status-col">
                           <span
                             className={`admin-status-dot${
-                              isDraft
-                                ? " admin-status-dot--draft"
-                                : p.soldOut
-                                  ? " admin-status-dot--sold-out"
-                                  : " admin-status-dot--active"
+                              isTrashed
+                                ? " admin-status-dot--sold-out"
+                                : isDraft
+                                  ? " admin-status-dot--draft"
+                                  : p.soldOut
+                                    ? " admin-status-dot--sold-out"
+                                    : " admin-status-dot--active"
                             }`}
                             title={statusLabel}
                             aria-label={statusLabel}
@@ -1836,42 +1887,67 @@ export default function ListTablePage() {
                           )}
                         </td>
                         <td className="admin-actions">
-                          {p.slug ? (
-                            <Link
-                              href={`/produto/${p.slug}`}
-                              className="btn btn--sm btn--outline"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title="Ver página do produto"
-                            >
-                              <ViewProductIcon />
-                              Ver
-                            </Link>
-                          ) : null}
-                          <button type="button" className="btn btn--sm btn--edit" onClick={() => openEditProduct(p)}>
-                            <EditPencilIcon />
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            className={`btn btn--sm ${p.active === false ? "btn--success" : "btn--outline"}`}
-                            onClick={() => toggleProductActive(p)}
-                          >
-                            {p.active === false ? <CheckActivateIcon /> : <BanIcon />}
-                            {p.active === false ? "Publicar" : "Desativar"}
-                          </button>
-                          <button
-                            type="button"
-                            className={`btn btn--sm ${p.soldOut ? "btn--success" : "btn--warn"}`}
-                            onClick={() => toggleSoldOut(p)}
-                          >
-                            {p.soldOut ? <CheckActivateIcon /> : <BanIcon />}
-                            {p.soldOut ? "Ativar" : "Esgotar"}
-                          </button>
-                          <button type="button" className="btn btn--sm btn--danger" onClick={() => deleteProduct(p.id, p.name)}>
-                            <TrashIcon />
-                            Excluir
-                          </button>
+                          {showTrashed ? (
+                            <>
+                              <button
+                                type="button"
+                                className="btn btn--sm btn--success"
+                                onClick={() => restoreProduct(p.id)}
+                                title="Restaurar para a listagem ativa"
+                              >
+                                <CheckActivateIcon />
+                                Restaurar
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn--sm btn--danger"
+                                onClick={() => purgeProduct(p.id, p.name)}
+                                title="Excluir definitivamente"
+                              >
+                                <TrashIcon />
+                                Excluir definitivamente
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {p.slug ? (
+                                <Link
+                                  href={`/produto/${p.slug}`}
+                                  className="btn btn--sm btn--outline"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="Ver página do produto"
+                                >
+                                  <ViewProductIcon />
+                                  Ver
+                                </Link>
+                              ) : null}
+                              <button type="button" className="btn btn--sm btn--edit" onClick={() => openEditProduct(p)}>
+                                <EditPencilIcon />
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                className={`btn btn--sm ${p.active === false ? "btn--success" : "btn--outline"}`}
+                                onClick={() => toggleProductActive(p)}
+                              >
+                                {p.active === false ? <CheckActivateIcon /> : <BanIcon />}
+                                {p.active === false ? "Publicar" : "Desativar"}
+                              </button>
+                              <button
+                                type="button"
+                                className={`btn btn--sm ${p.soldOut ? "btn--success" : "btn--warn"}`}
+                                onClick={() => toggleSoldOut(p)}
+                              >
+                                {p.soldOut ? <CheckActivateIcon /> : <BanIcon />}
+                                {p.soldOut ? "Ativar" : "Esgotar"}
+                              </button>
+                              <button type="button" className="btn btn--sm btn--danger" onClick={() => deleteProduct(p.id, p.name)}>
+                                <TrashIcon />
+                                Remover
+                              </button>
+                            </>
+                          )}
                         </td>
                       </tr>
                     );
@@ -1879,7 +1955,11 @@ export default function ListTablePage() {
                   {filteredProducts.length === 0 && (
                     <tr>
                       <td colSpan={7} className="empty-state">
-                        {products.length === 0 ? "Nenhum produto." : "Nenhum produto encontrado."}
+                        {showTrashed
+                          ? "Nenhum produto removido."
+                          : products.length === 0
+                            ? "Nenhum produto."
+                            : "Nenhum produto encontrado."}
                       </td>
                     </tr>
                   )}

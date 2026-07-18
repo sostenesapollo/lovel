@@ -53,6 +53,38 @@ export async function DELETE(
 ) {
   if (!isAdminAuthorized(request)) return adminUnauthorized();
   const { id } = await params;
-  await prisma.product.delete({ where: { id } });
-  return NextResponse.json({ success: true });
+  const url = new URL(request.url);
+  const permanent = url.searchParams.get("permanent") === "1";
+
+  if (permanent) {
+    await prisma.product.delete({ where: { id } });
+    return NextResponse.json({ success: true, permanent: true });
+  }
+
+  // Soft-delete: marca deletedAt, mantém a linha no banco e esconde do storefront/listagem default.
+  await prisma.product.update({
+    where: { id },
+    data: { deletedAt: new Date(), active: false },
+  });
+  return NextResponse.json({ success: true, permanent: false });
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  if (!isAdminAuthorized(request)) return adminUnauthorized();
+  const { id } = await params;
+  const url = new URL(request.url);
+  const action = url.searchParams.get("action");
+
+  if (action === "restore") {
+    const product = await prisma.product.update({
+      where: { id },
+      data: { deletedAt: null },
+    });
+    return NextResponse.json({ success: true, product: parseProduct(product) });
+  }
+
+  return NextResponse.json({ message: "Ação desconhecida." }, { status: 400 });
 }

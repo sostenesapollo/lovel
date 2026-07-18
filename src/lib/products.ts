@@ -84,6 +84,7 @@ export function parseProduct(row: {
   soldOut: boolean;
   active: boolean;
   promoText?: string | null;
+  deletedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 }) {
@@ -94,6 +95,7 @@ export function parseProduct(row: {
     subcategories,
     active: row.active !== false,
     promoText: row.promoText ?? null,
+    deletedAt: row.deletedAt ? new Date(row.deletedAt).toISOString() : null,
     createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : undefined,
     updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : undefined,
     images: row.images as string[],

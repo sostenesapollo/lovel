@@ -76,7 +76,7 @@ function toSlide(product: {
 export async function getHeroSlides(): Promise<HeroSlide[]> {
   const [config, rows, storeConfig, orderCounts] = await Promise.all([
     getHeroCarouselConfig(),
-    prisma.product.findMany({ where: { active: true } }),
+    prisma.product.findMany({ where: { active: true, deletedAt: null } }),
     getStoreConfig(),
     getPaidOrderCounts(),
   ]);

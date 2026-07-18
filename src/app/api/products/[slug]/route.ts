@@ -10,7 +10,7 @@ export async function GET(
   const { slug } = await params;
   const [product, storeConfig] = await Promise.all([
     prisma.product.findFirst({
-      where: { active: true, OR: [{ slug }, { id: slug }] },
+      where: { active: true, deletedAt: null, OR: [{ slug }, { id: slug }] },
     }),
     getStoreConfig(),
   ]);

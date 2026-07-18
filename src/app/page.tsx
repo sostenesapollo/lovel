@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [rows, heroSlides, storeConfig, homeCategories, paidOrderCount] = await Promise.all([
-    prisma.product.findMany({ where: { active: true } }),
+    prisma.product.findMany({ where: { active: true, deletedAt: null } }),
     getHeroSlides(),
     getStoreConfig(),
     prisma.category.findMany({

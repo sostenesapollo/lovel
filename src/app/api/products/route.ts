@@ -18,7 +18,7 @@ function buildWhere(searchParams: URLSearchParams): Prisma.ProductWhereInput {
   const idsParam = searchParams.get("ids");
   const q = (searchParams.get("q") ?? searchParams.get("search") ?? "").trim();
 
-  const where: Prisma.ProductWhereInput = { active: true };
+  const where: Prisma.ProductWhereInput = { active: true, deletedAt: null };
   const and: Prisma.ProductWhereInput[] = [];
 
   if (idsParam) {

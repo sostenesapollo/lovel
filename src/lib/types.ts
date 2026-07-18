@@ -33,6 +33,7 @@ export type Product = {
   isLaunch?: boolean;
   soldOut?: boolean;
   active?: boolean;
+  deletedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
 };
