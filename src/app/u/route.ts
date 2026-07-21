@@ -21,6 +21,8 @@ type BuildInfo = {
   commits: BuildCommit[];
 };
 
+type DayGroup = { label: string; items: Array<BuildCommit & { time_label: string }> };
+
 function formatUptime(seconds: number): string {
   const total = Math.floor(seconds);
   const days = Math.floor(total / 86400);
@@ -96,7 +98,65 @@ function loadBuildInfo(): BuildInfo | null {
   return null;
 }
 
+function startOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function dayGroupLabel(when: Date, now: Date): string {
+  const diffDays = Math.round(
+    (startOfDay(now).getTime() - startOfDay(when).getTime()) / 86400000,
+  );
+  if (diffDays === 0) return "Hoje";
+  if (diffDays === 1) return "Ontem";
+  if (diffDays >= 2 && diffDays < 7) {
+    return when.toLocaleDateString("pt-BR", { weekday: "long" });
+  }
+  if (diffDays >= 7 && diffDays < 14) return "Semana passada";
+  if (diffDays >= 14 && diffDays < 45) return "Mês passado";
+  return when.toLocaleDateString("pt-BR", {
+    month: "short",
+    day: "numeric",
+    year: when.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  });
+}
+
+function formatCommitTime(when: Date, now: Date, group: string): string {
+  const diffMs = Math.max(0, now.getTime() - when.getTime());
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffH = Math.floor(diffMs / 3600000);
+  if (group === "Today") {
+    if (diffMin < 1) return "agora";
+    if (diffMin < 60) return `${diffMin} min atrás`;
+    return `${diffH}h atrás`;
+  }
+  return when.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+function groupCommits(commits: BuildCommit[], now = new Date()): DayGroup[] {
+  const groups: DayGroup[] = [];
+  const index = new Map<string, DayGroup>();
+  for (const c of commits) {
+    const when = c.authored_at ? new Date(c.authored_at) : null;
+    const label = when && !Number.isNaN(when.getTime()) ? dayGroupLabel(when, now) : "Unknown";
+    const time_label =
+      when && !Number.isNaN(when.getTime()) ? formatCommitTime(when, now, label) : "—";
+    let g = index.get(label);
+    if (!g) {
+      g = { label, items: [] };
+      index.set(label, g);
+      groups.push(g);
+    }
+    g.items.push({ ...c, time_label });
+  }
+  return groups;
+}
+
 function payload(uptimeSeconds: number, build: BuildInfo | null) {
+  const commits = build?.commits ?? [];
   return {
     ok: true as const,
     uptime: formatUptime(uptimeSeconds),
@@ -107,25 +167,31 @@ function payload(uptimeSeconds: number, build: BuildInfo | null) {
     branch: build?.branch ?? null,
     message: build?.message ?? null,
     built_at: build?.built_at ?? null,
-    commits: build?.commits ?? [],
+    commits,
+    commit_groups: groupCommits(commits),
   };
 }
 
 function renderHtml(data: ReturnType<typeof payload>, appName: string) {
   const parts = uptimeParts(data.uptime_seconds);
   const started = data.started_at;
-  const commits = data.commits || [];
-  const commitRows =
-    commits.length > 0
-      ? commits
-          .map(
-            (c) =>
-              `<li><code>${escapeHtml(c.short || c.hash.slice(0, 7))}</code> <span>${escapeHtml(c.message || "")}</span></li>`,
-          )
+  const groups = data.commit_groups || [];
+  const commitSection =
+    groups.length > 0
+      ? groups
+          .map((g) => {
+            const rows = g.items
+              .map(
+                (c) =>
+                  `<li><span class="when">${escapeHtml(c.time_label)}</span><code>${escapeHtml(c.short || c.hash.slice(0, 7))}</code><span class="msg">${escapeHtml(c.message || "")}</span></li>`,
+              )
+              .join("");
+            return `<div class="day"><h3>${escapeHtml(g.label)}</h3><ul>${rows}</ul></div>`;
+          })
           .join("")
       : data.commit_short
-        ? `<li><code>${escapeHtml(data.commit_short)}</code> <span>${escapeHtml(data.message || "")}</span></li>`
-        : `<li class="empty">Sem build-info.json nesta imagem</li>`;
+        ? `<div class="day"><ul><li><span class="when">—</span><code>${escapeHtml(data.commit_short)}</code><span class="msg">${escapeHtml(data.message || "")}</span></li></ul></div>`
+        : `<p class="empty">Sem build-info.json nesta imagem</p>`;
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -162,7 +228,7 @@ function renderHtml(data: ReturnType<typeof payload>, appName: string) {
       padding: 24px;
     }
     main {
-      width: min(640px, 100%);
+      width: min(720px, 100%);
       background: var(--card);
       backdrop-filter: blur(14px);
       border: 1px solid var(--line);
@@ -177,11 +243,7 @@ function renderHtml(data: ReturnType<typeof payload>, appName: string) {
       gap: 12px;
       margin-bottom: 28px;
     }
-    .brand {
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
+    .brand { font-size: 0.95rem; font-weight: 600; letter-spacing: 0.02em; }
     .live {
       display: inline-flex;
       align-items: center;
@@ -266,7 +328,7 @@ function renderHtml(data: ReturnType<typeof payload>, appName: string) {
       display: flex;
       flex-wrap: wrap;
       gap: 8px 14px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       font-size: 0.84rem;
       color: var(--muted);
     }
@@ -275,7 +337,16 @@ function renderHtml(data: ReturnType<typeof payload>, appName: string) {
       font-size: 0.8rem;
       color: var(--ink);
     }
-    .deploy ul {
+    .day { margin-bottom: 16px; }
+    .day h3 {
+      margin: 0 0 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .day ul {
       list-style: none;
       margin: 0;
       padding: 0;
@@ -283,28 +354,30 @@ function renderHtml(data: ReturnType<typeof payload>, appName: string) {
       flex-direction: column;
       gap: 8px;
     }
-    .deploy li {
+    .day li {
       display: grid;
-      grid-template-columns: 7.2rem 1fr;
+      grid-template-columns: 5.5rem 4.6rem 1fr;
       gap: 10px;
       align-items: baseline;
       font-size: 0.84rem;
       line-height: 1.35;
     }
-    .deploy li code {
+    .day .when {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .day code {
       font-family: "IBM Plex Mono", ui-monospace, monospace;
       font-size: 0.78rem;
       color: var(--ok);
     }
-    .deploy li span {
+    .day .msg {
       color: var(--ink);
       word-break: break-word;
     }
-    .deploy li.empty {
-      display: block;
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
+    .empty { color: var(--muted); font-size: 0.82rem; margin: 0; }
     .meta {
       margin-top: 24px;
       padding-top: 18px;
@@ -327,10 +400,10 @@ function renderHtml(data: ReturnType<typeof payload>, appName: string) {
       font-weight: 600;
     }
     a.json:hover { text-decoration: underline; }
-    @media (max-width: 420px) {
+    @media (max-width: 520px) {
       main { padding: 28px 18px 22px; border-radius: 22px; }
       .grid { grid-template-columns: repeat(2, 1fr); }
-      .deploy li { grid-template-columns: 1fr; gap: 2px; }
+      .day li { grid-template-columns: 1fr; gap: 2px; }
     }
   </style>
 </head>
@@ -359,7 +432,7 @@ function renderHtml(data: ReturnType<typeof payload>, appName: string) {
         ${data.branch ? `<div>Branch <code>${escapeHtml(data.branch)}</code></div>` : ""}
         ${data.built_at ? `<div>Built <code>${escapeHtml(data.built_at)}</code></div>` : ""}
       </div>
-      <ul>${commitRows}</ul>
+      ${commitSection}
     </section>
     <div class="meta">
       <div>Iniciado em <code id="started">${escapeHtml(started)}</code></div>
