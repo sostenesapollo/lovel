@@ -12,3 +12,7 @@ legacy/
 server/node_modules/
 src-app-globals.css.tmp
 public-icone.jpg.tmp
+
+# Gerado no CI / deploy — entra na imagem Docker, não no git
+build-info.json
+**/build-info.json

@@ -20,6 +20,8 @@ ENV PATH="/usr/bin:$PATH"
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Ensure build-info exists (CI writes it; local builds may not)
+RUN if [ ! -f build-info.json ]; then echo '{"commit":"unknown","commit_short":"unknown","commits":[]}' > build-info.json; fi
 COPY .env.production* ./
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -44,6 +46,7 @@ RUN chmod +x /app/docker-entrypoint.sh
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/build-info.json ./build-info.json
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/src/generated ./src/generated
 COPY --from=builder /app/prisma ./prisma

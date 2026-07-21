@@ -14,7 +14,8 @@
     "db:push": "prisma db push",
     "db:seed": "node --import tsx prisma/seed.ts",
     "db:pull": "node scripts/clone-prod-db.mjs",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "deploy-coolify": "bash ./scripts/deploy-coolify.sh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1079.0",
@@ -44,5 +45,11 @@
     "eslint-config-next": "16.2.10",
     "tsx": "^4.23.0",
     "typescript": "^5"
+  },
+  "coolify": {
+    "image": "ghcr.io/sostenesapollo/lovel",
+    "appUuid": "e94spl9klhnl6o2zofjqd9jj",
+    "healthUrl": "https://lovelessence.com/api/ready",
+    "notifyTitle": "LOVEL — App no ar"
   }
 }
