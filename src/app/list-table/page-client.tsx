@@ -272,6 +272,15 @@ function emptyCouponForm(): CouponForm {
   };
 }
 
+function formatCreatedAt(iso?: string) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 function priceRange(variants: ProductVariant[]) {
   if (!variants?.length) return "—";
   const prices = variants.map((v) => v.price).filter((n) => Number.isFinite(n));
@@ -512,6 +521,9 @@ export default function ListTablePage() {
   const skipInlineBlur = useRef(false);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [page, setPage] = useState(0);
+  const [bulkRemoveModal, setBulkRemoveModal] = useState(false);
+  const [bulkRemoveSelected, setBulkRemoveSelected] = useState<Set<string>>(new Set());
+  const [bulkRemoveSaving, setBulkRemoveSaving] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -649,6 +661,27 @@ export default function ListTablePage() {
       return 0;
     });
   }, [products, productSearch, productCategoryFilter, showTrashed]);
+
+  const bulkRemoveCandidates = useMemo(() => {
+    return [...filteredProducts].sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
+  }, [filteredProducts]);
+
+  const bulkRemoveFilterHint = useMemo(() => {
+    const parts: string[] = [];
+    if (productCategoryFilter) {
+      const cat = categories.find((c) => c.slug === productCategoryFilter);
+      parts.push(`categoria: ${cat?.title ?? productCategoryFilter}`);
+    }
+    if (productSearch.trim()) parts.push(`busca: “${productSearch.trim()}”`);
+    return parts.length ? parts.join(" · ") : "Todos os produtos da listagem";
+  }, [productCategoryFilter, productSearch, categories]);
+
+  const bulkRemoveAllSelected =
+    bulkRemoveCandidates.length > 0 && bulkRemoveSelected.size === bulkRemoveCandidates.length;
 
   const tabItemCount =
     tab === "products"
@@ -1219,6 +1252,74 @@ export default function ListTablePage() {
     loadAll();
   }
 
+  function openBulkRemoveModal() {
+    setBulkRemoveSelected(new Set());
+    setBulkRemoveModal(true);
+  }
+
+  function closeBulkRemoveModal() {
+    if (bulkRemoveSaving) return;
+    setBulkRemoveModal(false);
+    setBulkRemoveSelected(new Set());
+  }
+
+  function toggleBulkRemoveSelection(id: string) {
+    setBulkRemoveSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleBulkRemoveSelectAll(checked: boolean) {
+    if (checked) {
+      setBulkRemoveSelected(new Set(bulkRemoveCandidates.map((p) => p.id)));
+      return;
+    }
+    setBulkRemoveSelected(new Set());
+  }
+
+  async function confirmBulkRemove() {
+    const ids = [...bulkRemoveSelected];
+    if (!ids.length) {
+      toast("Selecione pelo menos um produto.");
+      return;
+    }
+    const label = ids.length === 1 ? "1 produto" : `${ids.length} produtos`;
+    if (!confirm(`Remover ${label}? Eles vão para "Removidos" e podem ser restaurados depois.`)) return;
+
+    setBulkRemoveSaving(true);
+    try {
+      const res = await fetch("/api/admin/products/bulk", {
+        method: "POST",
+        headers: { ...headers(), "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, action: "soft_delete" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast(data.message ?? "Erro ao remover em lote.");
+        return;
+      }
+      const draftId = localStorage.getItem(PRODUCT_DRAFT_KEY);
+      if (draftId && ids.includes(draftId)) {
+        localStorage.removeItem(PRODUCT_DRAFT_KEY);
+      }
+      const count = Number(data.count ?? ids.length);
+      toast(
+        count === 1
+          ? "1 produto removido. Veja em \"Removidos\" para restaurar."
+          : `${count} produtos removidos. Veja em \"Removidos\" para restaurar.`,
+      );
+      closeBulkRemoveModal();
+      loadAll();
+    } catch {
+      toast("Erro ao remover em lote.");
+    } finally {
+      setBulkRemoveSaving(false);
+    }
+  }
+
   async function restoreProduct(id: string) {
     const res = await fetch(`/api/admin/products/${id}?action=restore`, {
       method: "PATCH",
@@ -1778,6 +1879,22 @@ export default function ListTablePage() {
                 >
                   {showTrashed ? "Ver ativos" : `Removidos (${products.filter((p) => p.deletedAt).length})`}
                 </button>
+                {!showTrashed ? (
+                  <button
+                    type="button"
+                    className="btn btn--sm btn--danger"
+                    onClick={openBulkRemoveModal}
+                    disabled={filteredProducts.length === 0}
+                    title={
+                      filteredProducts.length === 0
+                        ? "Nenhum produto no filtro atual"
+                        : "Selecionar e remover vários produtos de uma vez"
+                    }
+                  >
+                    <TrashIcon />
+                    Remover em lote
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className="btn btn--gold btn--sm"
@@ -3178,6 +3295,138 @@ export default function ListTablePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {bulkRemoveModal && (
+        <div
+          className="admin-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bulk-remove-title"
+          onClick={closeBulkRemoveModal}
+        >
+          <div className="admin-modal__panel admin-modal__panel--wide" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal__header">
+              <div>
+                <h2 className="admin-modal__title" id="bulk-remove-title">
+                  Remover em lote
+                </h2>
+                <p className="admin-bulk-hint">
+                  {bulkRemoveFilterHint} · {bulkRemoveCandidates.length}{" "}
+                  {bulkRemoveCandidates.length === 1 ? "produto" : "produtos"} · mais recentes primeiro
+                </p>
+              </div>
+              <button
+                type="button"
+                className="admin-modal__close"
+                onClick={closeBulkRemoveModal}
+                disabled={bulkRemoveSaving}
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+            </div>
+
+            {bulkRemoveCandidates.length === 0 ? (
+              <p className="empty-state">Nenhum produto no filtro atual.</p>
+            ) : (
+              <div className="admin-bulk-table-wrap">
+                <table className="admin-bulk-table">
+                  <thead>
+                    <tr>
+                      <th>
+                        <label className="admin-bulk-check">
+                          <input
+                            type="checkbox"
+                            checked={bulkRemoveAllSelected}
+                            onChange={(e) => toggleBulkRemoveSelectAll(e.target.checked)}
+                            disabled={bulkRemoveSaving}
+                            aria-label="Selecionar todos"
+                          />
+                          <span>Todos</span>
+                        </label>
+                      </th>
+                      <th aria-hidden />
+                      <th>Marca</th>
+                      <th>Nome</th>
+                      <th>Tipo</th>
+                      <th>Criado em</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bulkRemoveCandidates.map((p) => {
+                      const thumb = p.images?.[0] || p.image;
+                      const checked = bulkRemoveSelected.has(p.id);
+                      return (
+                        <tr key={p.id} className={checked ? "admin-bulk-table__row--selected" : undefined}>
+                          <td>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleBulkRemoveSelection(p.id)}
+                              disabled={bulkRemoveSaving}
+                              aria-label={`Selecionar ${p.name}`}
+                            />
+                          </td>
+                          <td>
+                            {thumb ? (
+                              <SafeImage
+                                src={thumb}
+                                alt=""
+                                width={40}
+                                height={40}
+                                unoptimized
+                                style={{ objectFit: "cover" }}
+                              />
+                            ) : (
+                              <span className="admin-thumb-edit__empty">—</span>
+                            )}
+                          </td>
+                          <td>{p.brand}</td>
+                          <td>{p.name}</td>
+                          <td>{p.type}</td>
+                          <td>{formatCreatedAt(p.createdAt)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="admin-bulk-footer">
+              <span className="admin-bulk-count">
+                {bulkRemoveSelected.size}{" "}
+                {bulkRemoveSelected.size === 1 ? "selecionado" : "selecionados"}
+              </span>
+              <div className="admin-actions">
+                <button
+                  type="button"
+                  className="btn btn--sm btn--outline"
+                  onClick={closeBulkRemoveModal}
+                  disabled={bulkRemoveSaving}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--sm btn--danger"
+                  onClick={confirmBulkRemove}
+                  disabled={bulkRemoveSaving || bulkRemoveSelected.size === 0}
+                >
+                  <TrashIcon />
+                  {bulkRemoveSaving
+                    ? "Removendo…"
+                    : bulkRemoveSelected.size === 0
+                      ? "Remover selecionados"
+                      : bulkRemoveSelected.size === 1
+                        ? "Remover 1 produto"
+                        : `Remover ${bulkRemoveSelected.size} produtos`}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
