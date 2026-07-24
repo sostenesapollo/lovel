@@ -13,6 +13,7 @@ run_local() {
   [ -n "$root" ] || return 1
   local script="$root/$SCRIPT_REL"
   [ -f "$script" ] || return 1
+  echo "🔗 deploy-coolify: $script"
   exec bash "$script" "$@"
 }
 
