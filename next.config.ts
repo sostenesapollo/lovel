@@ -17,10 +17,11 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
+    const catalogBase = "/catalog/lovelessence";
     return {
       beforeFiles: [
-        { source: "/catalogo", destination: pedegasProxy("/catalogo") },
-        { source: "/catalogo/:path*", destination: pedegasProxy("/catalogo/:path*") },
+        { source: "/catalogo", destination: pedegasProxy(catalogBase) },
+        { source: "/catalogo/:path*", destination: pedegasProxy(`${catalogBase}/:path*`) },
         { source: "/assets/:path*", destination: pedegasProxy("/assets/:path*") },
         { source: "/api/v1/:path*", destination: pedegasProxy("/api/v1/:path*") },
         {
