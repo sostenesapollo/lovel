@@ -15,7 +15,7 @@ const NAV = [
   { href: categoryPath("skincare"), label: "Skincare", key: "skincare" },
   { href: "/personal-shopper", label: "Personal Shopper", key: "personal-shopper" },
   { href: "/guia", label: "Guias", key: "guia" },
-  { href: "/depoimentos", label: "Depoimentos", key: "depoimentos" },
+  { href: "/catalogo", label: "Catálogo", key: "catalogo" },
   { href: "/#contato", label: "Contato", key: "contato" },
 ];
 
@@ -213,8 +213,8 @@ export function SiteFooter() {
             <Link href="/conta" className="footer__link">
               Minha conta
             </Link>
-            <Link href="/depoimentos" className="footer__link">
-              Depoimentos
+            <Link href="/catalogo" className="footer__link">
+              Catálogo
             </Link>
             <Link href="/categoria?tipo=perfumes" className="footer__link">
               Perfumes
